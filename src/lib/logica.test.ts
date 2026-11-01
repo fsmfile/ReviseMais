@@ -1,0 +1,92 @@
+import { describe, expect, it } from 'vitest';
+import { interpretarEdital, recortarConteudo } from './editalParser';
+import { REVISOES, somarMeses } from './datas';
+import { calcularCorrelacoes, normalizar } from './correlacao';
+import type { Assunto, Disciplina, Plano } from './types';
+
+describe('revisões', () => {
+  it('gera 48h, 1 semana, 2 meses e 6 meses', () => {
+    expect(REVISOES.map((r) => r.calcular('2026-01-10'))).toEqual(['2026-01-12', '2026-01-17', '2026-03-10', '2026-07-10']);
+  });
+  it('ajusta fim de mês', () => {
+    expect(somarMeses('2026-12-31', 2)).toBe('2027-02-28');
+    expect(somarMeses('2027-08-31', 6)).toBe('2028-02-29');
+  });
+});
+
+const CESPE = `EDITAL Nº 1 – TJXX, DE 10 DE MARÇO DE 2026
+14 DOS OBJETOS DE AVALIAÇÃO (CONTEÚDOS PROGRAMÁTICOS)
+14.2.1 CONHECIMENTOS BÁSICOS
+LÍNGUA PORTUGUESA: 1 Compreensão e interpretação de textos de gêneros variados. 2 Reconhecimento de tipos e gêneros textuais. 3 Domínio da ortografia oficial.
+DIREITO CONSTITUCIONAL: 1 Constituição. 1.1 Conceito, objeto e classificações. 1.2 Supremacia da Constituição. 2 Direitos e garantias fundamentais (art. 5 da CF). 2.1 Direitos e deveres individuais e coletivos; Lei nº 8.112 de 1990. 3 Organização do Estado.
+DIREITO ADMINISTRATIVO: 1 Estado, governo e administração pública. 2 Atos administrativos. 3 Licitações (Lei nº 14.133/2021).`;
+
+describe('leitura do edital', () => {
+  it('lê editais numerados (estilo Cebraspe)', () => {
+    const r = interpretarEdital(recortarConteudo(CESPE));
+    expect(r.map((d) => d.nome)).toEqual(['Língua Portuguesa', 'Direito Constitucional', 'Direito Administrativo']);
+    const dc = r[1].assuntos;
+    expect(dc.map((a) => a.codigo)).toEqual(['1', '1.1', '1.2', '2', '2.1', '3']);
+    expect(dc[3].nome).toBe('Direitos e garantias fundamentais (art. 5 da CF)');
+    expect(dc[4].nome).toContain('Lei nº 8.112 de 1990');
+    expect(dc[1].nivel).toBe(2);
+    expect(r[2].assuntos[2].nome).toBe('Licitações (Lei nº 14.133/2021)');
+  });
+
+  it('lê editais sem numeração (estilo FCC) e remove cabeçalhos repetidos', () => {
+    const txt = [
+      'CONTEÚDO PROGRAMÁTICO',
+      'TRIBUNAL REGIONAL - EDITAL 01',
+      'Direito Penal: Aplicação da lei penal. Crime: conceito e elementos. Imputabilidade penal.',
+      'TRIBUNAL REGIONAL - EDITAL 01',
+      'Noções de Informática: Sistemas operacionais; Redes de computadores.',
+      'TRIBUNAL REGIONAL - EDITAL 01',
+      '12',
+    ].join('\n');
+    const r = interpretarEdital(recortarConteudo(txt));
+    expect(r.map((d) => d.nome)).toEqual(['Direito Penal', 'Noções de Informática']);
+    expect(r[0].assuntos.map((a) => a.nome)).toEqual(['Aplicação da lei penal', 'Crime: conceito e elementos', 'Imputabilidade penal']);
+    expect(r[1].assuntos.map((a) => a.nome)).toEqual(['Sistemas operacionais', 'Redes de computadores']);
+  });
+
+  it('aceita disciplina em linha própria sem dois-pontos', () => {
+    const r = interpretarEdital('DIREITO CIVIL\n1 Pessoas naturais.\n2 Pessoas jurídicas.\nDIREITO PROCESSUAL CIVIL\n1 Jurisdição.\n2 Ação.');
+    expect(r.map((d) => [d.nome, d.assuntos.length])).toEqual([
+      ['Direito Civil', 2],
+      ['Direito Processual Civil', 2],
+    ]);
+  });
+});
+
+describe('correlação entre editais', () => {
+  const planos: Plano[] = [
+    { id: 'p1', nome: 'TJ', orgao: null, cor: '#f00', ordem: 0, pdf_path: null, data_prova: null },
+    { id: 'p2', nome: 'MP', orgao: null, cor: '#0f0', ordem: 1, pdf_path: null, data_prova: null },
+  ];
+  const disciplinas: Disciplina[] = [
+    { id: 'd1', plano_id: 'p1', nome: 'Direito Constitucional', ordem: 0 },
+    { id: 'd2', plano_id: 'p2', nome: 'Noções de Direito Constitucional', ordem: 0 },
+    { id: 'd3', plano_id: 'p2', nome: 'Direito Penal', ordem: 1 },
+  ];
+  const a = (id: string, disciplina_id: string, nome: string): Assunto => ({ id, disciplina_id, nome, codigo: null, nivel: 1, ordem: 0 });
+  const assuntos = [
+    a('a1', 'd1', '2 Direitos e garantias fundamentais.'),
+    a('a2', 'd2', 'Direitos e Garantias Fundamentais'),
+    a('a3', 'd1', 'Controle de constitucionalidade'),
+    a('a4', 'd3', 'Aplicação da lei penal'),
+  ];
+
+  it('normaliza prefixos e numeração', () => {
+    expect(normalizar('Noções de Direito Constitucional')).toBe('direito constitucional');
+    expect(normalizar('2.1 Direitos e garantias.')).toBe('direitos e garantias');
+  });
+
+  it('marca disciplinas e assuntos presentes em outros editais', () => {
+    const c = calcularCorrelacoes({ planos, disciplinas, assuntos });
+    expect(c.disciplinas.get('d1')?.map((x) => x.plano.id)).toEqual(['p2']);
+    expect(c.disciplinas.get('d3')).toBeUndefined();
+    expect(c.assuntos.get('a1')?.[0].assunto?.id).toBe('a2');
+    expect(c.assuntos.get('a2')?.[0].assunto?.id).toBe('a1');
+    expect(c.assuntos.get('a3')).toBeUndefined();
+  });
+});

@@ -1,0 +1,406 @@
+import { useEffect, useMemo, useState } from 'react';
+import { Percentual } from '../components/Campos';
+import { ChipsCorrelacao } from '../components/Correlacao';
+import { HistoricoAssunto } from '../components/HistoricoAssunto';
+import { Modal } from '../components/Modal';
+import { RegistrarEstudo } from '../components/RegistrarEstudo';
+import { StatusRevisoes, estadoRevisao } from '../components/StatusRevisoes';
+import { backend } from '../lib/backend';
+import { diasEntre, formatarData, hoje } from '../lib/datas';
+import { href, ir } from '../lib/rota';
+import { CORES, useDados, useIndices } from '../lib/store';
+import type { Assunto, Plano as TPlano } from '../lib/types';
+
+type Filtro = 'todos' | 'nao' | 'estudados' | 'atrasados' | 'comuns';
+
+export function Plano({ id, destaque }: { id: string; destaque?: string }) {
+  const { dados, acoes, executar, correlacoes } = useDados();
+  const { estudosPorAssunto, revisoesPorAssunto } = useIndices();
+  const plano = dados.planos.find((p) => p.id === id);
+  const [busca, setBusca] = useState('');
+  const [filtro, setFiltro] = useState<Filtro>('todos');
+  const [fechadas, setFechadas] = useState<Set<string>>(new Set());
+  const [expandido, setExpandido] = useState<string | null>(destaque ?? null);
+  const [estudando, setEstudando] = useState<string | null>(null);
+  const [editando, setEditando] = useState(false);
+  const [novaDisc, setNovaDisc] = useState('');
+
+  useEffect(() => {
+    if (!destaque) return;
+    setExpandido(destaque);
+    setTimeout(() => document.getElementById(`a-${destaque}`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 100);
+  }, [destaque]);
+
+  const disciplinas = useMemo(
+    () => dados.disciplinas.filter((d) => d.plano_id === id).sort((a, b) => a.ordem - b.ordem),
+    [dados.disciplinas, id],
+  );
+  const assuntosPorDisc = useMemo(() => {
+    const m = new Map<string, Assunto[]>();
+    const ids = new Set(disciplinas.map((d) => d.id));
+    for (const a of dados.assuntos) if (ids.has(a.disciplina_id)) m.set(a.disciplina_id, [...(m.get(a.disciplina_id) ?? []), a]);
+    for (const l of m.values()) l.sort((a, b) => a.ordem - b.ordem);
+    return m;
+  }, [dados.assuntos, disciplinas]);
+
+  if (!plano) return <p className="vazio">Plano não encontrado. <a href={href({ tela: 'hoje' })}>Voltar</a></p>;
+
+  const ultimoPct = (aid: string) => {
+    const regs = [
+      ...(estudosPorAssunto.get(aid) ?? []).map((e) => ({ d: e.data, p: e.percentual })),
+      ...(revisoesPorAssunto.get(aid) ?? []).filter((r) => r.concluida_em).map((r) => ({ d: r.concluida_em!, p: r.percentual })),
+    ].filter((x) => x.p != null);
+    regs.sort((a, b) => a.d.localeCompare(b.d));
+    return regs.length ? regs[regs.length - 1].p : null;
+  };
+  const cicloAtual = (aid: string) => {
+    const est = estudosPorAssunto.get(aid);
+    if (!est?.length) return [];
+    const ult = est[est.length - 1].id;
+    return (revisoesPorAssunto.get(aid) ?? []).filter((r) => r.estudo_id === ult);
+  };
+  const atrasado = (aid: string) => (revisoesPorAssunto.get(aid) ?? []).some((r) => estadoRevisao(r) === 'atrasada');
+  const estudadoEmOutro = (aid: string) =>
+    (correlacoes.assuntos.get(aid) ?? []).find((c) => c.assunto && estudosPorAssunto.get(c.assunto.id)?.length);
+
+  const termo = busca.trim().toLowerCase();
+  const passa = (a: Assunto) => {
+    if (termo && !a.nome.toLowerCase().includes(termo)) return false;
+    const est = !!estudosPorAssunto.get(a.id)?.length;
+    switch (filtro) {
+      case 'nao':
+        return !est;
+      case 'estudados':
+        return est;
+      case 'atrasados':
+        return atrasado(a.id);
+      case 'comuns':
+        return !!correlacoes.assuntos.get(a.id)?.length;
+      default:
+        return true;
+    }
+  };
+
+  const todos = disciplinas.flatMap((d) => assuntosPorDisc.get(d.id) ?? []);
+  const estudados = todos.filter((a) => estudosPorAssunto.get(a.id)?.length).length;
+  const comuns = todos.filter((a) => correlacoes.assuntos.get(a.id)?.length).length;
+  const pcts = todos.map((a) => ultimoPct(a.id)).filter((p): p is number => p != null);
+  const media = pcts.length ? Math.round(pcts.reduce((s, x) => s + x, 0) / pcts.length) : null;
+  const diasProva = plano.data_prova ? diasEntre(hoje(), plano.data_prova) : null;
+
+  const verPdf = async () => {
+    const url = plano.pdf_path && (await executar(() => backend.urlPdf(plano.pdf_path!)));
+    if (url) window.open(url, '_blank');
+    else alert('O PDF não está disponível (no modo local ele só fica acessível na sessão em que foi enviado).');
+  };
+
+  return (
+    <div className="pagina-plano" style={{ ['--cor' as string]: plano.cor }}>
+      <header className="cab-plano">
+        <div>
+          <h1>{plano.nome}</h1>
+          <p className="suave">
+            {plano.orgao && <>{plano.orgao} · </>}
+            {plano.data_prova ? (
+              <>
+                Prova em {formatarData(plano.data_prova)}{' '}
+                {diasProva != null && diasProva >= 0 && <strong className="contagem">faltam {diasProva} dias</strong>}
+              </>
+            ) : (
+              'Sem data de prova'
+            )}
+          </p>
+        </div>
+        <div className="acoes">
+          {plano.pdf_path && (
+            <button className="secundario" onClick={verPdf}>
+              📄 Ver edital (PDF)
+            </button>
+          )}
+          <a className="botao secundario" href={href({ tela: 'importar', id: plano.id })}>
+            ⤓ Importar do edital
+          </a>
+          <button className="secundario" onClick={() => setEditando(true)}>
+            ✎ Editar plano
+          </button>
+        </div>
+      </header>
+
+      <div className="resumo">
+        <div className="cartao-num">
+          <strong>
+            {estudados}/{todos.length}
+          </strong>
+          <span>assuntos estudados</span>
+          <div className="barra">
+            <div style={{ width: `${todos.length ? (estudados / todos.length) * 100 : 0}%` }} />
+          </div>
+        </div>
+        <div className="cartao-num">
+          <Percentual valor={media} />
+          <span>média de acertos (último registro)</span>
+        </div>
+        <div className="cartao-num">
+          <strong>{comuns}</strong>
+          <span>assuntos presentes em outros editais</span>
+        </div>
+      </div>
+
+      {todos.length > 0 && (
+        <div className="filtros">
+          <input type="search" placeholder="Buscar assunto…" value={busca} onChange={(e) => setBusca(e.target.value)} />
+          <select value={filtro} onChange={(e) => setFiltro(e.target.value as Filtro)} aria-label="Filtro">
+            <option value="todos">Todos os assuntos</option>
+            <option value="nao">Ainda não estudados</option>
+            <option value="estudados">Já estudados</option>
+            <option value="atrasados">Com revisão atrasada</option>
+            <option value="comuns">Presentes em outros editais</option>
+          </select>
+          <button className="secundario" onClick={() => setFechadas(fechadas.size ? new Set() : new Set(disciplinas.map((d) => d.id)))}>
+            {fechadas.size ? 'Expandir tudo' : 'Recolher tudo'}
+          </button>
+        </div>
+      )}
+
+      <div className="legenda pequeno suave">
+        <span><span className="ponto feita" /> revisão feita</span>
+        <span><span className="ponto hoje" /> para hoje</span>
+        <span><span className="ponto atrasada" /> atrasada</span>
+        <span><span className="ponto futura" /> agendada</span>
+        <span><span className="chip-corr exemplo" style={{ ['--cor' as string]: '#888' }}><span className="bolinha" />Outro edital</span> também cai em outro edital seu</span>
+      </div>
+
+      {disciplinas.length === 0 && (
+        <div className="vazio">
+          <p>Este plano ainda não tem disciplinas.</p>
+          <a className="botao" href={href({ tela: 'importar', id: plano.id })}>
+            Importar do PDF do edital
+          </a>{' '}
+          ou adicione manualmente abaixo.
+        </div>
+      )}
+
+      {disciplinas.map((d) => {
+        const lista = assuntosPorDisc.get(d.id) ?? [];
+        const visiveis = lista.filter(passa);
+        if ((termo || filtro !== 'todos') && !visiveis.length) return null;
+        const est = lista.filter((a) => estudosPorAssunto.get(a.id)?.length).length;
+        const aberta = !fechadas.has(d.id);
+        return (
+          <section key={d.id} className="disciplina">
+            <header>
+              <button
+                className="icone"
+                aria-expanded={aberta}
+                onClick={() => {
+                  const s = new Set(fechadas);
+                  aberta ? s.add(d.id) : s.delete(d.id);
+                  setFechadas(s);
+                }}
+              >
+                {aberta ? '▾' : '▸'}
+              </button>
+              <h2>{d.nome}</h2>
+              <ChipsCorrelacao itens={correlacoes.disciplinas.get(d.id)} />
+              <span className="progresso-disc">
+                {est}/{lista.length}
+                <span className="barra">
+                  <span style={{ width: `${lista.length ? (est / lista.length) * 100 : 0}%` }} />
+                </span>
+              </span>
+              <span className="menu-disc">
+                <button
+                  className="link"
+                  onClick={() => {
+                    const nome = prompt('Novo assunto (pode começar com o número do edital, ex.: "4.2 Controle de constitucionalidade"):');
+                    const m = nome?.trim().match(/^(\d+(?:\.\d+)*)\.?\s+(.*)$/);
+                    if (nome?.trim()) executar(() => acoes.criarAssunto(d.id, m ? m[2] : nome.trim(), m ? m[1] : null));
+                  }}
+                >
+                  + assunto
+                </button>
+                <button
+                  className="link"
+                  onClick={() => {
+                    const nome = prompt('Nome da disciplina:', d.nome);
+                    if (nome?.trim()) executar(() => acoes.renomearDisciplina(d.id, nome.trim()));
+                  }}
+                >
+                  renomear
+                </button>
+                <button
+                  className="link perigo"
+                  onClick={() =>
+                    confirm(`Excluir "${d.nome}" com ${lista.length} assuntos e todo o histórico?`) && executar(() => acoes.excluirDisciplina(d.id))
+                  }
+                >
+                  excluir
+                </button>
+              </span>
+            </header>
+            {aberta && (
+              <ul className="assuntos">
+                {visiveis.map((a) => {
+                  const ests = estudosPorAssunto.get(a.id) ?? [];
+                  const ult = ests[ests.length - 1];
+                  const outro = !ult ? estudadoEmOutro(a.id) : undefined;
+                  const exp = expandido === a.id;
+                  return (
+                    <li key={a.id} id={`a-${a.id}`} className={`assunto ${ult ? 'estudado' : ''} ${destaque === a.id ? 'destacado' : ''}`}>
+                      <div className="linha-assunto" style={{ paddingLeft: `${(a.nivel - 1) * 1.25}rem` }}>
+                        <button className="icone mini" aria-expanded={exp} aria-label="Histórico" onClick={() => setExpandido(exp ? null : a.id)}>
+                          {exp ? '▾' : '▸'}
+                        </button>
+                        <span className={`marca ${ult ? 'ok' : ''}`} aria-label={ult ? 'estudado' : 'não estudado'}>
+                          {ult ? '✓' : ''}
+                        </span>
+                        <span className="nome-assunto">
+                          {a.codigo && <span className="codigo">{a.codigo}</span>} {a.nome}
+                          <ChipsCorrelacao itens={correlacoes.assuntos.get(a.id)} compacto />
+                          {outro && (
+                            <span className="nota-outro" title={`${outro.assunto?.nome}`}>
+                              já estudado em {outro.plano.nome}
+                            </span>
+                          )}
+                        </span>
+                        <span className="info-assunto">
+                          {ult && <span className="suave pequeno">{formatarData(ult.data)}</span>}
+                          <StatusRevisoes revisoes={cicloAtual(a.id)} />
+                          <Percentual valor={ultimoPct(a.id)} />
+                        </span>
+                        <span className="acoes-assunto">
+                          <button className="pequeno" onClick={() => setEstudando(a.id)}>
+                            {ult ? 'Estudei de novo' : 'Estudei'}
+                          </button>
+                          <button
+                            className="icone mini"
+                            title="Editar"
+                            aria-label="Editar assunto"
+                            onClick={() => {
+                              const nome = prompt('Nome do assunto:', a.nome);
+                              if (nome?.trim()) executar(() => acoes.atualizarAssunto(a.id, { nome: nome.trim() }));
+                            }}
+                          >
+                            ✎
+                          </button>
+                          <button
+                            className="icone mini perigo"
+                            title="Excluir"
+                            aria-label="Excluir assunto"
+                            onClick={() => confirm(`Excluir "${a.nome}"?`) && executar(() => acoes.excluirAssunto(a.id))}
+                          >
+                            🗑
+                          </button>
+                        </span>
+                      </div>
+                      {exp && <HistoricoAssunto assuntoId={a.id} />}
+                    </li>
+                  );
+                })}
+                {!lista.length && <li className="suave pequeno">Nenhum assunto. Use “+ assunto”.</li>}
+              </ul>
+            )}
+          </section>
+        );
+      })}
+
+      <form
+        className="nova-disc"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (novaDisc.trim()) executar(() => acoes.criarDisciplina(id, novaDisc.trim())).then(() => setNovaDisc(''));
+        }}
+      >
+        <input placeholder="Nova disciplina (ex.: Direito Penal)" value={novaDisc} onChange={(e) => setNovaDisc(e.target.value)} />
+        <button type="submit">+ Adicionar disciplina</button>
+      </form>
+
+      {estudando && <RegistrarEstudo assuntoId={estudando} aoFechar={() => setEstudando(null)} />}
+      {editando && <EditarPlano plano={plano} aoFechar={() => setEditando(false)} />}
+    </div>
+  );
+}
+
+function EditarPlano({ plano, aoFechar }: { plano: TPlano; aoFechar: () => void }) {
+  const { acoes, executar } = useDados();
+  const [nome, setNome] = useState(plano.nome);
+  const [orgao, setOrgao] = useState(plano.orgao ?? '');
+  const [cor, setCor] = useState(plano.cor);
+  const [prova, setProva] = useState(plano.data_prova ?? '');
+
+  return (
+    <Modal titulo="Editar plano" aoFechar={aoFechar}>
+      <label>
+        Nome da aba
+        <input value={nome} onChange={(e) => setNome(e.target.value)} />
+      </label>
+      <div className="grade-form">
+        <label>
+          Órgão / banca
+          <input value={orgao} onChange={(e) => setOrgao(e.target.value)} />
+        </label>
+        <label>
+          Data da prova
+          <input type="date" value={prova} onChange={(e) => setProva(e.target.value)} />
+        </label>
+      </div>
+      <SeletorCor cor={cor} aoMudar={setCor} />
+      <label>
+        Substituir / anexar PDF do edital
+        <input type="file" accept="application/pdf" onChange={(e) => e.target.files?.[0] && executar(() => acoes.anexarPdf(plano.id, e.target.files![0]))} />
+      </label>
+      <div className="acoes">
+        <button className="secundario" onClick={() => executar(() => acoes.moverPlano(plano.id, -1))}>
+          ← Mover aba
+        </button>
+        <button className="secundario" onClick={() => executar(() => acoes.moverPlano(plano.id, 1))}>
+          Mover aba →
+        </button>
+      </div>
+      <footer>
+        <button
+          className="perigo"
+          onClick={async () => {
+            if (!confirm(`Excluir o plano "${plano.nome}" e todo o histórico de estudos dele? Isso não pode ser desfeito.`)) return;
+            await executar(() => acoes.excluirPlano(plano.id));
+            ir({ tela: 'hoje' });
+          }}
+        >
+          Excluir plano
+        </button>
+        <span className="espaco" />
+        <button className="secundario" onClick={aoFechar}>
+          Cancelar
+        </button>
+        <button
+          disabled={!nome.trim()}
+          onClick={async () => {
+            await executar(() => acoes.atualizarPlano(plano.id, { nome: nome.trim(), orgao: orgao.trim() || null, cor, data_prova: prova || null }));
+            aoFechar();
+          }}
+        >
+          Salvar
+        </button>
+      </footer>
+    </Modal>
+  );
+}
+
+export function SeletorCor({ cor, aoMudar }: { cor: string; aoMudar: (c: string) => void }) {
+  return (
+    <fieldset className="cores">
+      <legend>Cor da aba (identifica o edital nas correlações)</legend>
+      {CORES.map((c) => (
+        <button
+          type="button"
+          key={c}
+          className={`cor ${c === cor ? 'sel' : ''}`}
+          style={{ background: c }}
+          aria-label={`Cor ${c}`}
+          aria-pressed={c === cor}
+          onClick={() => aoMudar(c)}
+        />
+      ))}
+    </fieldset>
+  );
+}
