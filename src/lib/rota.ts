@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 export type Rota =
   | { tela: 'hoje' }
+  | { tela: 'painel' }
   | { tela: 'plano'; id: string; assunto?: string }
   | { tela: 'novo' }
   | { tela: 'importar'; id: string }
@@ -19,6 +20,7 @@ function ler(): Rota {
     }
     case 'importar':
       return id ? { tela, id } : { tela: 'hoje' };
+    case 'painel':
     case 'novo':
     case 'desempenho':
     case 'comparar':

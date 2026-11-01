@@ -10,6 +10,7 @@ import { Desempenho } from './pages/Desempenho';
 import { Hoje } from './pages/Hoje';
 import { Login } from './pages/Login';
 import { NovoPlano } from './pages/NovoPlano';
+import { Painel } from './pages/Painel';
 import { Plano } from './pages/Plano';
 
 export function App() {
@@ -70,6 +71,9 @@ function Estrutura({ email }: { email?: string }) {
           <a href={href({ tela: 'hoje' })} className={`aba ${rota.tela === 'hoje' ? 'ativa' : ''}`}>
             Hoje {pendHoje > 0 && <span className="contador">{pendHoje}</span>}
           </a>
+          <a href={href({ tela: 'painel' })} className={`aba ${rota.tela === 'painel' ? 'ativa' : ''}`}>
+            📊 Painel
+          </a>
           {planos.map((p) => (
             <a
               key={p.id}
@@ -96,6 +100,8 @@ function Estrutura({ email }: { email?: string }) {
           <div className="carregando">Carregando seus estudos…</div>
         ) : rota.tela === 'plano' ? (
           <Plano key={rota.id} id={rota.id} destaque={rota.assunto} />
+        ) : rota.tela === 'painel' ? (
+          <Painel />
         ) : rota.tela === 'novo' ? (
           <NovoPlano />
         ) : rota.tela === 'importar' ? (
