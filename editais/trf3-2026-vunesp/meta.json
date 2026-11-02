@@ -1,0 +1,22 @@
+{
+  "orgao": "Tribunal Regional Federal da 3ª Região (TRF3) – JFSP e JFMS",
+  "banca": "Vunesp",
+  "ano": 2026,
+  "edital": "Edital de Abertura de Inscrições nº 01/2026 – Analista e Técnico Judiciário, 85 páginas",
+  "formato": [
+    "Edital completo; conteúdo no 'ANEXO VI - CONTEÚDO PROGRAMÁTICO' (termina no 'ANEXO VII - CRONOGRAMA').",
+    "Começa com parágrafo sobre legislação e a linha 'ENSINO SUPERIOR COMPLETO' (não é disciplina).",
+    "Grupos abertos por 'Para os cargos de A, B e C:' (lista em várias linhas, termina com ':'), cada um com 'CONHECIMENTOS GERAIS' e 'CONHECIMENTOS ESPECÍFICOS' sem numeração romana.",
+    "Nos específicos, título de cargo em letras mistas com dois-pontos e quebrado em 2 linhas ('Analista Judiciário – Área Judiciária – Especialidade: OFICIAL DE JUSTIÇA AVALIADOR FEDERAL' / '– JFSP'); o título omite 'de' em relação à lista ('Área Apoio' x 'Área de Apoio').",
+    "Disciplinas em formato título com dois-pontos no início do parágrafo ('Direito Civil: Lei: eficácia; ...').",
+    "Assuntos sem numeração separados por ponto; ';' com minúscula dentro de tópico com ':' são subitens.",
+    "Armadilhas: siglas com dois-pontos no meio da frase ('SISNAMA: estrutura...') não são disciplinas; 'arts. 337-E' não quebra frase."
+  ],
+  "conferido": {
+    "Analista Judiciário – Área Judiciária – JFMS": {
+      "Direito Civil": 16,
+      "Direito Penal": 17
+    }
+  },
+  "nomeSugerido": "TRF3 2026"
+}

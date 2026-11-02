@@ -16,7 +16,7 @@ const INICIO_CONTEUDO =
 
 /** Nomes que aparecem em maiúsculas no edital mas não são disciplinas. */
 const NAO_DISCIPLINA =
-  /^(anexo|conteudo programatico|conhecimentos (basicos|gerais|especificos|complementares|do cargo|da area)|cargo|cargos|edital|prova|provas|nivel|para todos|objetos? de avaliacao|conhecimentos$|comum\\b|habilidades|observac|obs\b|grupo|bloco|modulo|parte|area|especialidade|todos os cargos|disciplinas?\b|materias?\b)/;
+  /^(anexo|conteudo programatico|conhecimentos (basicos|gerais|especificos|complementares|do cargo|da area)|cargo|cargos|edital|prova|provas|nivel|para todos|objetos? de avaliacao|conhecimentos$|comum\\b|ensino (superior|medio|fundamental)|habilidades|observac|obs\b|grupo|bloco|modulo|parte|area|especialidade|todos os cargos|disciplinas?\b|materias?\b)/;
 
 /** Início de nome de disciplina comum em editais (usado quando o nome não está em maiúsculas). */
 const NOME_DISCIPLINA =
@@ -110,7 +110,7 @@ export interface BlocoCargo {
   primeiraLinha?: string;
 }
 
-const INICIO_BLOCO = /^\s*(cargos?\s*(\/\s*especialidades?)?\b|quadro\s+[ivxlc\d]+\b|cargo\s*[:–-])/i;
+const INICIO_BLOCO = /^\s*(cargos?\s*(\/\s*especialidades?)?\b|quadro\s+[ivxlc\d]+\b|cargo\s*[:–-]|para\s+os?\s+cargos?\s+de\b)/i;
 
 /**
  * Editais com vários cargos costumam ter um bloco de matérias por cargo/grupo
@@ -179,12 +179,22 @@ export interface OpcaoCargo {
   especificos: string | null;
 }
 
-const normCargo = (s: string) => ` ${semAcentos(s.toLowerCase()).replace(/[^a-z0-9]+/g, ' ').trim()} `;
-const LINHA_ESPECIFICOS = /^\s*II\s*[.\-–)]\s*conhecimentos\s+espec/i;
-const LINHA_BASICOS = /^\s*I\s*[.\-–)]\s*conhecimentos\b/i;
+// Compara nomes de cargo ignorando acentos, pontuação e "de/da/do" ("Área de Apoio" = "Área Apoio").
+const normCargo = (s: string) =>
+  ` ${semAcentos(s.toLowerCase()).replace(/[^a-z0-9]+/g, ' ').replace(/\b(de|da|do|das|dos|e)\b/g, ' ').replace(/\s+/g, ' ').trim()} `;
+const LINHA_ESPECIFICOS = /^\s*(?:II\s*[.\-–)]\s*)?conhecimentos\s+espec[ií]ficos\b/i;
+const LINHA_BASICOS = /^\s*(I\s*[.\-–)]\s*conhecimentos\b|conhecimentos\s+(gerais|b[aá]sicos)\b)/i;
 
 function nomeCargo(linha: string): string {
   // "ANALISTA DE BANCO DE DADOS (DBA)" -> "Analista de Banco de Dados (DBA)"
+  // "Especialidade: OFICIAL DE JUSTIÇA – JFSP" -> "Especialidade: Oficial de Justiça – JFSP" (siglas ficam)
+  if (!ehMaiusculo(linha))
+    return linha
+      .trim()
+      .replace(/\s+/g, ' ')
+      .replace(/\b[A-ZÀ-Ý][A-ZÀ-Ý0-9]+\b/g, (p) =>
+        /^(DE|DA|DO|DAS|DOS|E|EM)$/.test(p) ? p.toLowerCase() : /[AEIOUÁÉÍÓÚÂÊÔÃÕ]/.test(p) && p.length >= 4 ? p.charAt(0) + p.slice(1).toLowerCase() : p,
+      );
   const t = tituloDisciplina(linha.trim());
   return t.replace(/\(([^)]{1,6})\)/g, (m, x) => (x === x.toLowerCase() && /^[a-z/.]+$/i.test(x) ? `(${x.toUpperCase()})` : m));
 }
@@ -217,9 +227,12 @@ function cargoDoTitulo(titulo: string): string {
 /** Cargos dentro de blocos "Cargos/especialidades ..." / "QUADRO ..." / "CARGO N: ...". */
 function cargosPorBlocos(blocos: BlocoCargo[]): OpcaoInterna[] {
   const opcoes: OpcaoInterna[] = [];
+  let nGrupo = 0;
   for (const bloco of blocos) {
     const linhas = bloco.texto.split('\n');
-    const grupo = (bloco.titulo.split(/ — | \/ /)[0] || bloco.titulo).trim();
+    const grupoBruto = (bloco.titulo.split(/ — | \/ /)[0] || bloco.titulo).trim();
+    // "Para os cargos de A, B e C:" vira "Grupo de cargos N" (a lista completa aparece nas opções).
+    const grupo = /^para\s/i.test(grupoBruto) ? `Grupo de cargos ${++nGrupo}` : grupoBruto;
     // Cargo dividido em áreas/especialidades ("CARGO: X" / "ÁREA: Y"): cada área é uma opção.
     const areas = linhas.map((l, i) => (LINHA_AREA.test(l) ? i : -1)).filter((i) => i >= 0);
     if (areas.length) {
@@ -238,28 +251,46 @@ function cargosPorBlocos(blocos: BlocoCargo[]): OpcaoInterna[] {
       fimCab = primeiro ? bloco.texto.slice(0, primeiro.inicio).split('\n').length - 1 : 0;
     }
     const cabecalho = linhas.slice(0, fimCab);
-    const listaCargos = cabecalho.filter((l) => l.trim() && !INICIO_BLOCO.test(l)).join(' ');
+    const listaCargos = cabecalho
+      .map((l) => l.replace(/^\s*para\s+os?\s+cargos?\s+de\s+/i, ''))
+      .filter((l, k) => l.trim() && !(INICIO_BLOCO.test(l) && !/^\s*para\s/i.test(cabecalho[k])))
+      .join(' ');
     const alvo = normCargo(listaCargos);
 
     const iEsp = linhas.findIndex((l) => LINHA_ESPECIFICOS.test(l));
     const inicioEsp = iEsp >= 0 ? iEsp + 1 : fimCab;
-    // Títulos de cargo: linha inteira em maiúsculas que está na lista de cargos do cabeçalho.
-    const titulos: number[] = [];
+    // Títulos de cargo: linha que está na lista de cargos do cabeçalho — em maiúsculas ("ANALISTA CONTÁBIL")
+    // ou começando com nome de cargo ("Analista Judiciário – Área Judiciária – Especialidade: OFICIAL DE JUSTIÇA ...").
+    // O título pode continuar na linha seguinte ("– JFSP").
+    const titulos: { i: number; fim: number; nome: string }[] = [];
     for (let i = inicioEsp; i < linhas.length; i++) {
       const t = linhas[i].trim();
-      if (!t || t.includes(':') || t.length > 120 || !ehMaiusculo(t)) continue;
-      const n = normCargo(t);
-      if (n.trim().length >= 4 && alvo.includes(n)) titulos.push(i);
+      if (!t || t.length > 140) continue;
+      const formatoTitulo = (ehMaiusculo(t) && !t.includes(':')) || (PALAVRA_CARGO.test(semAcentos(t)) && normCargo(t).trim().split(' ').length >= 3);
+      if (!formatoTitulo || !alvo.includes(normCargo(t)) || normCargo(t).trim().length < 4) continue;
+      let nome = t;
+      let fim = i;
+      for (let j = i + 1; j < linhas.length && j <= i + 3; j++) {
+        const seg = linhas[j].trim();
+        if (!seg) continue;
+        if (seg.split(/\s+/).length <= 6 && !/:\s*\S/.test(seg) && alvo.includes(normCargo(`${nome} ${seg}`))) {
+          nome = `${nome} ${seg}`;
+          fim = j;
+        }
+        break;
+      }
+      titulos.push({ i, fim, nome });
+      i = fim;
     }
 
     if (titulos.length) {
-      const basicos = linhas.slice(fimCab, iEsp >= 0 ? iEsp : titulos[0]).join('\n');
-      titulos.forEach((ini, k) => {
+      const basicos = linhas.slice(fimCab, iEsp >= 0 ? iEsp : titulos[0].i).join('\n');
+      titulos.forEach((t, k) => {
         opcoes.push({
-          cargo: nomeCargo(linhas[ini]),
+          cargo: nomeCargo(t.nome),
           grupo,
           basicos,
-          especificos: linhas.slice(ini + 1, titulos[k + 1] ?? linhas.length).join('\n'),
+          especificos: linhas.slice(t.fim + 1, titulos[k + 1]?.i ?? linhas.length).join('\n'),
         });
       });
     } else {
@@ -449,6 +480,8 @@ function encontrarCabecalhos(texto: string): Cabecalho[] {
       // Só vale como título no início da linha ou depois do fim de uma frase (evita "linguagem SQL: ...").
       const antes = texto.slice(Math.max(0, inicio - 3), inicio);
       if (inicio > 0 && !/(^|[\n.;])\s*$/.test(antes) && !/[.;]\s*\d*\s*$/.test(texto.slice(Math.max(0, inicio - 12), inicio))) continue;
+      // Uma palavra só (ex.: "SISNAMA: estrutura...") no meio da linha é sigla dentro do assunto, não disciplina.
+      if (!/\s/.test(nome) && inicio > 0 && !/\n\s*$/.test(texto.slice(Math.max(0, inicio - 4), inicio))) continue;
       achados.push({ inicio, fim: m.index! + m[0].length, nome });
     }
   }

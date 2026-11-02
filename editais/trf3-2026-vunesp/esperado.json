@@ -1,0 +1,323 @@
+{
+  "inicioRecorte": "A legislação, para todos os cargos, deve ser considerada com as alterações e atu",
+  "fimRecorte": "Sistemas Informatizados de Gestão de Processos e Documentos do Poder Judiciário.",
+  "cargos": [
+    {
+      "cargo": "Analista Judiciário – Área Judiciária – Especialidade: Oficial de Justiça Avaliador Federal – JFSP",
+      "grupo": "Grupo de cargos 1",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa e Raciocínio Analítico",
+          "assuntos": 29
+        },
+        {
+          "nome": "Raciocínio Lógico-Matemático",
+          "assuntos": 5
+        },
+        {
+          "nome": "Ética no Serviço Público e Integridade",
+          "assuntos": 12
+        },
+        {
+          "nome": "Noções de Direitos Humanos e Fundamentais e de Acessibilidade",
+          "assuntos": 16
+        },
+        {
+          "nome": "Informática, Inteligência Artificial e Inovação",
+          "assuntos": 21
+        },
+        {
+          "nome": "Direito Civil",
+          "assuntos": 17
+        },
+        {
+          "nome": "Direito Processual Civil",
+          "assuntos": 45
+        },
+        {
+          "nome": "Direito Constitucional",
+          "assuntos": 25
+        },
+        {
+          "nome": "Direito Administrativo e Administração Pública",
+          "assuntos": 28
+        },
+        {
+          "nome": "Direito Penal",
+          "assuntos": 17
+        },
+        {
+          "nome": "Direito Processual Penal",
+          "assuntos": 15
+        },
+        {
+          "nome": "Direito Tributário",
+          "assuntos": 18
+        },
+        {
+          "nome": "Direito Previdenciário",
+          "assuntos": 13
+        },
+        {
+          "nome": "Direito Ambiental",
+          "assuntos": 29
+        }
+      ]
+    },
+    {
+      "cargo": "Analista Judiciário – Área Judiciária – JFMS",
+      "grupo": "Grupo de cargos 1",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa e Raciocínio Analítico",
+          "assuntos": 29
+        },
+        {
+          "nome": "Raciocínio Lógico-Matemático",
+          "assuntos": 5
+        },
+        {
+          "nome": "Ética no Serviço Público e Integridade",
+          "assuntos": 12
+        },
+        {
+          "nome": "Noções de Direitos Humanos e Fundamentais e de Acessibilidade",
+          "assuntos": 16
+        },
+        {
+          "nome": "Informática, Inteligência Artificial e Inovação",
+          "assuntos": 21
+        },
+        {
+          "nome": "Direito Civil",
+          "assuntos": 16
+        },
+        {
+          "nome": "Direito Processual Civil",
+          "assuntos": 56
+        },
+        {
+          "nome": "Direito Constitucional",
+          "assuntos": 27
+        },
+        {
+          "nome": "Direito Administrativo e Administração Pública",
+          "assuntos": 40
+        },
+        {
+          "nome": "Direito Penal",
+          "assuntos": 17
+        },
+        {
+          "nome": "Direito Processual Penal",
+          "assuntos": 16
+        },
+        {
+          "nome": "Direito Tributário",
+          "assuntos": 18
+        },
+        {
+          "nome": "Direito Previdenciário",
+          "assuntos": 11
+        },
+        {
+          "nome": "Direito Ambiental",
+          "assuntos": 29
+        }
+      ]
+    },
+    {
+      "cargo": "Técnico Judiciário – Área Apoio Especializado – Especialidade: Contabilidade – JFSP",
+      "grupo": "Grupo de cargos 1",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa e Raciocínio Analítico",
+          "assuntos": 29
+        },
+        {
+          "nome": "Raciocínio Lógico-Matemático",
+          "assuntos": 5
+        },
+        {
+          "nome": "Ética no Serviço Público e Integridade",
+          "assuntos": 12
+        },
+        {
+          "nome": "Noções de Direitos Humanos e Fundamentais e de Acessibilidade",
+          "assuntos": 16
+        },
+        {
+          "nome": "Informática, Inteligência Artificial e Inovação",
+          "assuntos": 21
+        },
+        {
+          "nome": "Contabilidade Geral",
+          "assuntos": 7
+        },
+        {
+          "nome": "Contabilidade Aplicada ao Setor Público e Governança",
+          "assuntos": 6
+        },
+        {
+          "nome": "Administração Orçamentária, Financeira e Controle",
+          "assuntos": 12
+        },
+        {
+          "nome": "Matemática Financeira e Cálculos Judiciais Aplicados à Fazenda Pública",
+          "assuntos": 5
+        },
+        {
+          "nome": "Gestão e Legislação Administrativa Contemporânea",
+          "assuntos": 5
+        },
+        {
+          "nome": "Noções de Arquivologia",
+          "assuntos": 4
+        }
+      ]
+    },
+    {
+      "cargo": "Analista Judiciário – Área Apoio Especializado – Especialidade: Análise de Sistemas de Informação – TRF3",
+      "grupo": "Grupo de cargos 2",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa e Raciocínio Analítico",
+          "assuntos": 29
+        },
+        {
+          "nome": "Raciocínio Lógico-Matemático",
+          "assuntos": 5
+        },
+        {
+          "nome": "Ética no Serviço Público e Integridade",
+          "assuntos": 12
+        },
+        {
+          "nome": "Noções de Direitos Humanos e Fundamentais e de Acessibilidade",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos específicos – Analista Judiciário – Área Apoio Especializado – Especialidade: Análise de Sistemas de Informação – TRF3",
+          "assuntos": 21
+        },
+        {
+          "nome": "Ansi)",
+          "assuntos": 20
+        }
+      ]
+    },
+    {
+      "cargo": "Analista Judiciário – Área Apoio Especializado – Especialidade: Suporte em Tecnologia da Informação – TRF3",
+      "grupo": "Grupo de cargos 2",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa e Raciocínio Analítico",
+          "assuntos": 29
+        },
+        {
+          "nome": "Raciocínio Lógico-Matemático",
+          "assuntos": 5
+        },
+        {
+          "nome": "Ética no Serviço Público e Integridade",
+          "assuntos": 12
+        },
+        {
+          "nome": "Noções de Direitos Humanos e Fundamentais e de Acessibilidade",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos específicos – Analista Judiciário – Área Apoio Especializado – Especialidade: Suporte em Tecnologia da Informação – TRF3",
+          "assuntos": 56
+        }
+      ]
+    },
+    {
+      "cargo": "Técnico Judiciário – Área Apoio Especializado – Especialidade: Desenvolvimento de Sistemas de Informação – TRF3",
+      "grupo": "Grupo de cargos 2",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa e Raciocínio Analítico",
+          "assuntos": 29
+        },
+        {
+          "nome": "Raciocínio Lógico-Matemático",
+          "assuntos": 5
+        },
+        {
+          "nome": "Ética no Serviço Público e Integridade",
+          "assuntos": 12
+        },
+        {
+          "nome": "Noções de Direitos Humanos e Fundamentais e de Acessibilidade",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos específicos – Técnico Judiciário – Área Apoio Especializado – Especialidade: Desenvolvimento de Sistemas de Informação – TRF3",
+          "assuntos": 4
+        },
+        {
+          "nome": "Linguagens, Frameworks e Tecnologias de Mercado",
+          "assuntos": 19
+        },
+        {
+          "nome": "(sql Ansi)",
+          "assuntos": 14
+        }
+      ]
+    },
+    {
+      "cargo": "Técnico Judiciário – Área Apoio Especializado – Especialidade: Suporte Técnico – TRF3",
+      "grupo": "Grupo de cargos 2",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa e Raciocínio Analítico",
+          "assuntos": 29
+        },
+        {
+          "nome": "Raciocínio Lógico-Matemático",
+          "assuntos": 5
+        },
+        {
+          "nome": "Ética no Serviço Público e Integridade",
+          "assuntos": 12
+        },
+        {
+          "nome": "Noções de Direitos Humanos e Fundamentais e de Acessibilidade",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos específicos – Técnico Judiciário – Área Apoio Especializado – Especialidade: Suporte Técnico – TRF3",
+          "assuntos": 40
+        }
+      ]
+    },
+    {
+      "cargo": "Técnico Judiciário – Área Apoio Especializado – Especialidade: Tecnologia da Informação – JFMS",
+      "grupo": "Grupo de cargos 2",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa e Raciocínio Analítico",
+          "assuntos": 29
+        },
+        {
+          "nome": "Raciocínio Lógico-Matemático",
+          "assuntos": 5
+        },
+        {
+          "nome": "Ética no Serviço Público e Integridade",
+          "assuntos": 12
+        },
+        {
+          "nome": "Noções de Direitos Humanos e Fundamentais e de Acessibilidade",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos específicos – Técnico Judiciário – Área Apoio Especializado – Especialidade: Tecnologia da Informação – JFMS",
+          "assuntos": 64
+        }
+      ]
+    }
+  ],
+  "disciplinas": null
+}

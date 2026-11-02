@@ -106,9 +106,18 @@ export function identificarEdital(texto: string): IdentificacaoEdital {
     if (m && m[1] === m[1].toUpperCase()) sigla = m[1];
   }
   if (orgao && !sigla) {
-    // Sigla pelas iniciais, se ela aparece no texto (ex.: Procuradoria Geral do Estado -> PGE).
+    // Sigla pelas iniciais (ou o começo delas) que mais aparece no texto:
+    // Procuradoria Geral do Estado -> PGE; Tribunal Regional Federal da 3ª Região -> TRF3.
     const ini = iniciais(orgao);
-    if (ini.length >= 2 && new RegExp(`\\b${ini}\\b`).test(corpo)) sigla = ini;
+    let melhorN = 0;
+    for (let n = ini.length; n >= 3 || (n === 2 && n === ini.length); n--) {
+      const c = ini.slice(0, n);
+      const vezes = corpo.match(new RegExp(`\\b${c}\\b`, 'g'))?.length ?? 0;
+      if (vezes > melhorN) {
+        melhorN = vezes;
+        sigla = c;
+      }
+    }
   }
   if (iAto >= 0 && !sigla) {
     // "RESOLUÇÃO PGE Nº 5463"
