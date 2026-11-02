@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { ChipsCorrelacao } from '../components/Correlacao';
 import { calcularCorrelacoes } from '../lib/correlacao';
-import { interpretarEdital, recortarConteudo, type DisciplinaExtraida } from '../lib/editalParser';
+import { dividirBlocos, interpretarEdital, limparTexto, recortarConteudo, type BlocoCargo, type DisciplinaExtraida } from '../lib/editalParser';
 import { ir } from '../lib/rota';
 import { CORES, useDados } from '../lib/store';
 import type { Assunto, Disciplina, Plano } from '../lib/types';
@@ -22,6 +22,33 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
   const [texto, setTexto] = useState('');
   const [progresso, setProgresso] = useState<number | null>(null);
   const [estrutura, setEstrutura] = useState<DisciplinaExtraida[] | null>(null);
+  const [blocos, setBlocos] = useState<BlocoCargo[]>([]);
+  const [blocosSel, setBlocosSel] = useState<Set<number>>(new Set());
+  const [desmarcadas, setDesmarcadas] = useState<Set<number>>(new Set());
+
+  const aplicarBlocos = (bl: BlocoCargo[], sel: Set<number>) => {
+    setBlocosSel(sel);
+    setDesmarcadas(new Set());
+    setEstrutura(sel.size ? interpretarEdital(bl.filter((_, i) => sel.has(i)).map((b) => b.texto).join('\n')) : null);
+  };
+
+  /** Detecta blocos por cargo; se houver, pede a escolha antes de montar a estrutura. */
+  const processar = (txt: string) => {
+    const bl = dividirBlocos(txt);
+    setBlocos(bl);
+    if (bl.length) {
+      // Sugere o bloco jurídico (o app é para concursos jurídicos).
+      // Ignora "(exceto Advogado, ...)" para não sugerir o bloco errado.
+      const jur = bl.findIndex((b) =>
+        /advogad|jur[ií]dic|procurador|juiz|promotor|defensor|delegad|magistrat/i.test(b.titulo.replace(/\(?\s*exceto[^)/—]*\)?/gi, '')),
+      );
+      aplicarBlocos(bl, new Set(jur >= 0 ? [jur] : []));
+    } else {
+      setBlocosSel(new Set());
+      setDesmarcadas(new Set());
+      setEstrutura(interpretarEdital(txt));
+    }
+  };
   const [erro, setErro] = useState('');
   const [salvando, setSalvando] = useState(false);
 
@@ -37,9 +64,9 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
         setProgresso(null);
         return;
       }
-      const recorte = recortarConteudo(bruto);
+      const recorte = recortarConteudo(limparTexto(bruto));
       setTexto(recorte);
-      setEstrutura(interpretarEdital(recorte));
+      processar(recorte);
       if (!nome && !existente) setNome(f.name.replace(/\.pdf$/i, '').replace(/[_-]+/g, ' ').slice(0, 40));
     } catch (e) {
       setErro(`Não consegui ler o PDF: ${(e as Error).message}`);
@@ -75,12 +102,12 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
     setEstrutura(c);
   };
 
-  const total = estrutura?.reduce((s, d) => s + d.assuntos.length, 0) ?? 0;
+  const total = estrutura?.reduce((s, d, i) => s + (desmarcadas.has(i) ? 0 : d.assuntos.length), 0) ?? 0;
 
   const salvar = async () => {
     if (!existente && !nome.trim()) return setErro('Dê um nome para a aba do plano.');
     setSalvando(true);
-    const est = (estrutura ?? []).filter((d) => d.nome.trim());
+    const est = (estrutura ?? []).filter((d, i) => d.nome.trim() && !desmarcadas.has(i));
     if (existente) {
       await executar(async () => {
         await acoes.adicionarEstrutura(existente.id, est);
@@ -159,7 +186,7 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
               placeholder={'DIREITO CONSTITUCIONAL: 1 Constituição. 1.1 Conceito... 2 Direitos e garantias fundamentais...\nDIREITO ADMINISTRATIVO: 1 ...'}
               onChange={(e) => setTexto(e.target.value)}
             />
-            <button className="secundario" onClick={() => setEstrutura(interpretarEdital(texto))} disabled={!texto.trim()}>
+            <button className="secundario" onClick={() => processar(texto)} disabled={!texto.trim()}>
               Interpretar texto
             </button>
           </details>
@@ -167,19 +194,72 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
         {erro && <p className="erro-texto">{erro}</p>}
       </section>
 
+      {blocos.length > 0 && origem !== 'branco' && (
+        <section className="cartao">
+          <h2>{existente ? '2.' : '3.'} Escolha o seu cargo</h2>
+          <p className="suave">
+            Este edital tem conteúdo programático diferente para cada grupo de cargos. Marque o(s) que você vai prestar — só eles serão importados.
+          </p>
+          <div className="blocos-cargo">
+            {blocos.map((b, i) => (
+              <label key={i} className={`bloco-cargo ${blocosSel.has(i) ? 'sel' : ''}`}>
+                <input
+                  type="checkbox"
+                  checked={blocosSel.has(i)}
+                  onChange={(e) => {
+                    const n = new Set(blocosSel);
+                    e.target.checked ? n.add(i) : n.delete(i);
+                    aplicarBlocos(blocos, n);
+                  }}
+                />
+                <span>{b.titulo}</span>
+              </label>
+            ))}
+          </div>
+        </section>
+      )}
+
       {estrutura && origem !== 'branco' && (
         <section className="cartao">
-          <h2>{existente ? '2.' : '3.'} Revise o edital verticalizado</h2>
+          <h2>
+            {(existente ? 2 : 3) + (blocos.length ? 1 : 0)}. Revise o edital verticalizado
+          </h2>
           <p className="suave">
-            {estrutura.length} disciplinas · {total} assuntos. Edite os nomes, remova o que não interessa. As etiquetas coloridas indicam o que já aparece nos seus outros editais.
+            {estrutura.length - desmarcadas.size} de {estrutura.length} disciplinas marcadas · {total} assuntos. Desmarque o que não cai para você e
+            ajuste os nomes. As etiquetas coloridas indicam o que já aparece nos seus outros editais.
           </p>
+          <div className="acoes pequeno">
+            <button className="link" onClick={() => setDesmarcadas(new Set())}>
+              marcar todas
+            </button>
+            <button className="link" onClick={() => setDesmarcadas(new Set(estrutura.map((_, i) => i)))}>
+              desmarcar todas
+            </button>
+          </div>
           {estrutura.map((d, i) => (
-            <div key={i} className="prev-disc">
+            <div key={i} className={`prev-disc ${desmarcadas.has(i) ? 'desmarcada' : ''}`}>
               <div className="prev-disc-cab">
+                <input
+                  type="checkbox"
+                  className="marcar-disc"
+                  aria-label={`Importar ${d.nome}`}
+                  checked={!desmarcadas.has(i)}
+                  onChange={(e) => {
+                    const n = new Set(desmarcadas);
+                    e.target.checked ? n.delete(i) : n.add(i);
+                    setDesmarcadas(n);
+                  }}
+                />
                 <input value={d.nome} onChange={(e) => alterar((c) => (c[i].nome = e.target.value))} aria-label="Nome da disciplina" />
                 <ChipsCorrelacao itens={prev?.disciplinas.get(`__d${i}`)} />
                 <span className="suave pequeno">{d.assuntos.length} assuntos</span>
-                <button className="link perigo" onClick={() => alterar((c) => c.splice(i, 1))}>
+                <button
+                  className="link perigo"
+                  onClick={() => {
+                    alterar((c) => c.splice(i, 1));
+                    setDesmarcadas(new Set([...desmarcadas].filter((x) => x !== i).map((x) => (x > i ? x - 1 : x))));
+                  }}
+                >
                   remover disciplina
                 </button>
               </div>
@@ -210,7 +290,7 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
         <button className="secundario" onClick={() => history.back()}>
           Cancelar
         </button>
-        <button onClick={salvar} disabled={salvando || (!!existente && !estrutura?.length)}>
+        <button onClick={salvar} disabled={salvando || (!!existente && !estrutura?.length) || (blocos.length > 0 && !blocosSel.size && origem !== 'branco')}>
           {salvando ? 'Salvando…' : existente ? 'Adicionar ao plano' : 'Criar plano'}
         </button>
       </footer>

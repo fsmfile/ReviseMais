@@ -1,4 +1,5 @@
 import * as pdfjs from 'pdfjs-dist';
+import { QUEBRA_PAGINA } from './editalParser';
 import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
 pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
@@ -29,5 +30,5 @@ export async function extrairTextoPdf(arquivo: File, aoProgredir?: (p: number) =
     paginas.push(texto);
     aoProgredir?.(i / doc.numPages);
   }
-  return paginas.join('\n');
+  return paginas.join(`\n${QUEBRA_PAGINA}\n`);
 }

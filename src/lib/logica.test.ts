@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { interpretarEdital, recortarConteudo } from './editalParser';
+import { dividirBlocos, interpretarEdital, limparTexto, recortarConteudo } from './editalParser';
 import { REVISOES, somarMeses } from './datas';
 import { calcularCorrelacoes, normalizar } from './correlacao';
 import type { Assunto, Disciplina, Plano } from './types';
@@ -55,6 +55,33 @@ describe('leitura do edital', () => {
       ['Direito Civil', 2],
       ['Direito Processual Civil', 2],
     ]);
+  });
+});
+
+describe('edital completo com vários cargos', () => {
+  const pg = (corpo: string, n: number) => `CONSELHO REGIONAL X\nEDITAL DE CONCURSO PÚBLICO Nº 1/2026\nPágina ${n} de 9\n${corpo}`;
+  const LP = 'LÍNGUA PORTUGUESA\n1 Compreensão de textos. 2 Ortografia oficial.';
+  const pdf = [
+    pg('Anexos:\na) Anexo I - CONTEÚDO PROGRAMÁTICO DAS PROVAS;\nb) Anexo II - ATRIBUIÇÕES;\n1. DAS DISPOSIÇÕES PRELIMINARES\n1.1 O concurso será regido por este edital.', 1),
+    pg('2. DAS INSCRIÇÕES\n2.1 As inscrições serão feitas pela internet. 2.2 A taxa é de R$ 100.', 2),
+    pg('ANEXO I\nCONTEÚDO PROGRAMÁTICO DAS PROVAS OBJETIVAS\nCargos/especialidades do QUADRO I\nAnalista Contábil; Jornalista\nI. Conhecimentos Básicos\n' + LP + '\nCONTABILIDADE GERAL\n1 Patrimônio. 2 Balanço.', 3),
+    pg('Cargos/especialidades do QUADRO II\nAdvogado e Analista Jurídico\nI. Conhecimentos Básicos\n' + LP + '\nII. Conhecimentos Específicos\nCONHECIMENTOS DO CARGO\nDIREITO CONSTITUCIONAL\nDireito Constitucional: 1 Constituição. 2 Poder constituinte.', 4),
+    pg('ANEXO II\nATRIBUIÇÕES DOS CARGOS\nADVOGADO\nAtuar em processos judiciais.', 5),
+  ].join('\n\f\n');
+
+  it('ignora a menção no índice, para no Anexo II e separa os cargos', () => {
+    const recorte = recortarConteudo(limparTexto(pdf));
+    expect(recorte).not.toContain('DISPOSIÇÕES PRELIMINARES');
+    expect(recorte).not.toContain('ATRIBUIÇÕES');
+    const blocos = dividirBlocos(recorte);
+    expect(blocos.map((b) => b.titulo)).toEqual([
+      'Cargos/especialidades do QUADRO I — Analista Contábil; Jornalista',
+      'Cargos/especialidades do QUADRO II — Advogado e Analista Jurídico',
+    ]);
+    const jur = interpretarEdital(blocos[1].texto);
+    expect(jur.map((d) => d.nome)).toEqual(['Língua Portuguesa', 'Direito Constitucional']);
+    expect(jur[0].assuntos.map((a) => a.nome)).toEqual(['Compreensão de textos', 'Ortografia oficial']);
+    expect(jur[1].assuntos.map((a) => a.nome)).toEqual(['Constituição', 'Poder constituinte']);
   });
 });
 

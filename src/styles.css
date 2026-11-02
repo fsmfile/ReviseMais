@@ -225,7 +225,7 @@ button.icone:hover { background: var(--superficie-2); }
 .texto-edital textarea { font-family: ui-monospace, monospace; font-size: 0.82rem; margin-bottom: 0.5rem; }
 .prev-disc { border-bottom: 1px solid var(--grade); padding: 0.5rem 0; }
 .prev-disc-cab { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
-.prev-disc-cab input { flex: 1 1 240px; width: auto; font-weight: 700; }
+.prev-disc-cab input:not([type=checkbox]) { flex: 1 1 200px; min-width: 0; width: auto; font-weight: 700; }
 .prev-disc ul { list-style: none; padding: 0; margin: 0.4rem 0 0; display: grid; gap: 0.25rem; }
 .prev-disc li { display: flex; gap: 0.35rem; align-items: center; }
 .prev-disc li input { padding: 0.25rem 0.5rem; font-size: 0.88rem; }
@@ -323,3 +323,8 @@ button.icone:hover { background: var(--superficie-2); }
   .grade-graficos { grid-template-columns: 1fr; }
   .painel-topo select { width: 100%; }
 }
+.blocos-cargo { display: grid; gap: 0.5rem; }
+.bloco-cargo { flex-direction: row; align-items: flex-start; gap: 0.6rem; color: var(--texto); font-size: 0.92rem; border: 1px solid var(--borda); border-radius: 8px; padding: 0.6rem 0.75rem; margin: 0; cursor: pointer; }
+.bloco-cargo.sel { border-color: var(--primaria); background: color-mix(in srgb, var(--primaria) 8%, var(--superficie)); }
+.bloco-cargo input, .marcar-disc { width: auto; margin-top: 0.2rem; flex: none; }
+.prev-disc.desmarcada { opacity: 0.5; }
