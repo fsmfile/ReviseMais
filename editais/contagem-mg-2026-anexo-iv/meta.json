@@ -1,0 +1,22 @@
+{
+  "orgao": "Prefeitura/Município de Contagem – MG",
+  "banca": "IBGP (aparece só no logotipo, que é imagem: não identificável pelo texto)",
+  "ano": 2026,
+  "edital": "Concurso Público do Município de Contagem/MG – Edital nº 01/2026 – Anexo IV – Conteúdos Programáticos (Retificação nº 01), 34 páginas",
+  "formato": [
+    "PDF só do anexo (não é o edital completo): começa com 'ANEXO IV - CONTEÚDOS PROGRAMÁTICOS' e 'RETIFICAÇÃO Nº 01'.",
+    "Cabeçalho em todas as páginas: 'CONCURSO PÚBLICO DO MUNICÍPIO DE' / 'CONTAGEM/MG - EDITAL Nº 01/2026' + 'Página X de 34'.",
+    "Dois níveis: 'ENSINO MÉDIO E ENSINO MÉDIO/TÉCNICO' e 'ENSINO SUPERIOR E ENSINO SUPERIOR COM ESPECIALIZAÇÃO', cada um com suas matérias comuns (Língua Portuguesa, Raciocínio Lógico, [Noções de Informática], Conhecimentos Gerais do Município).",
+    "Cada cargo: linha 'CONHECIMENTOS ESPECÍFICOS' seguida de código + nome ('301 - ASSISTENTE ADMINISTRATIVO'); 36 cargos.",
+    "Disciplinas comuns em maiúsculas em linha própria; 'CONHECIMENTOS GERAIS DO MUNICÍPIO' é matéria (não confundir com o título estrutural 'CONHECIMENTOS GERAIS').",
+    "Assuntos sem numeração: 'Tópico: subitens; subitens.' com ';' e '.' (padrão parecido com FGV).",
+    "Retificação: texto revogado aparece RISCADO (vermelho) seguido de '(Revogado)'; o risco não vem no texto extraído. O app marca o assunto anterior com '⚠ revogado' e mostra aviso para o usuário conferir."
+  ],
+  "conferido": {
+    "Assistente Administrativo": {
+      "Língua Portuguesa": 19,
+      "Conhecimentos Gerais do Município": 10
+    }
+  },
+  "nomeSugerido": "Contagem/MG 2026"
+}

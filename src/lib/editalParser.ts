@@ -16,7 +16,7 @@ const INICIO_CONTEUDO =
 
 /** Nomes que aparecem em maiúsculas no edital mas não são disciplinas. */
 const NAO_DISCIPLINA =
-  /^(anexo|conteudo programatico|conhecimentos (basicos|gerais|especificos|complementares|do cargo|da area)|cargo|cargos|edital|prova|provas|nivel|para todos|objetos? de avaliacao|conhecimentos$|comum\\b|ensino (superior|medio|fundamental)|habilidades|observac|obs\b|grupo|bloco|modulo|parte|area|especialidade|todos os cargos|disciplinas?\b|materias?\b)/;
+  /^(anexo|conteudo programatico|conhecimentos (basicos|gerais|especificos|complementares|do cargo|da area)(?! (do|da|de) (municipio|estado|cidade|regiao|distrito))|cargo|cargos|edital|prova|provas|nivel|para todos|objetos? de avaliacao|conhecimentos$|comum\\b|ensino (superior|medio|fundamental)|habilidades|observac|obs\b|grupo|bloco|modulo|parte|area|especialidade|todos os cargos|disciplinas?\b|materias?\b)/;
 
 /** Início de nome de disciplina comum em editais (usado quando o nome não está em maiúsculas). */
 const NOME_DISCIPLINA =
@@ -195,7 +195,9 @@ function nomeCargo(linha: string): string {
       .replace(/\b[A-ZÀ-Ý][A-ZÀ-Ý0-9]+\b/g, (p) =>
         /^(DE|DA|DO|DAS|DOS|E|EM)$/.test(p) ? p.toLowerCase() : /[AEIOUÁÉÍÓÚÂÊÔÃÕ]/.test(p) && p.length >= 4 ? p.charAt(0) + p.slice(1).toLowerCase() : p,
       );
-  const t = tituloDisciplina(linha.trim());
+  // Siglas curtas continuam em maiúsculas ("ANALISTA DE TI" -> "Analista de TI").
+  const siglas = new Set((linha.match(/(?<!\p{L})\p{Lu}{2,3}(?!\p{L})/gu) ?? []).filter((p) => !/^(DE|DA|DO|DAS|DOS|EM|NO|NA|AO|OS|AS|E)$/.test(p) && (p.length === 2 || !/[AEIOUÁÉÍÓÚÂÊÔÃÕ]/.test(p))));
+  const t = tituloDisciplina(linha.trim()).replace(/(?<!\p{L})\p{L}{2,3}(?!\p{L})/gu, (p) => (siglas.has(p.toUpperCase()) ? p.toUpperCase() : p));
   return t.replace(/\(([^)]{1,6})\)/g, (m, x) => (x === x.toLowerCase() && /^[a-z/.]+$/i.test(x) ? `(${x.toUpperCase()})` : m));
 }
 
@@ -210,7 +212,8 @@ export function listarCargos(texto: string): OpcaoCargo[] {
   const opcoes = blocosFortes.length ? cargosPorBlocos(blocosFortes) : cargosPorTitulos(limpo);
   if (!opcoes.length) return opcoes;
   // Matérias antes do primeiro cargo ("CONHECIMENTOS BÁSICOS PARA TODOS OS CARGOS") valem para todos.
-  const marco = blocosFortes.length ? (blocosFortes[0].primeiraLinha ?? blocosFortes[0].texto) : (opcoes[0].inicioTexto ?? '\u0000');
+  if (!blocosFortes.length) return opcoes;
+  const marco = blocosFortes[0].primeiraLinha ?? blocosFortes[0].texto;
   const primeiro = limpo.indexOf(marco);
   const comum = primeiro > 0 ? limpo.slice(0, primeiro) : '';
   const temMaterias = comum && interpretarEdital(comum).some((d) => d.nome !== 'Conteúdo do edital');
@@ -312,27 +315,37 @@ const PALAVRA_CARGO =
   /^(analista|t[eé]cnico|escrevente|oficial|juiz|promotor|procurador|defensor|delegado|auditor|assistente|agente|escriv[aã]o|inspetor|perito|advogado|assessor|investigador|papiloscopista|auxiliar|tabeli[aã]o|registrador|not[aá]rio|titular|consultor|especialista|fiscal|contador|administrador|economista|engenheiro|m[eé]dico|psic[oó]logo|assistente social|bibliotec[aá]rio|arquivista)\b/i;
 
 /** Sem blocos "Cargo ...": títulos de cargo em maiúsculas em linha própria (FCC, Vunesp). */
+const LINHA_NIVEL = /^ENSINO\s+(SUPERIOR|M[EÉ]DIO|FUNDAMENTAL|T[EÉ]CNICO)\b/;
+/** "301 - ASSISTENTE ADMINISTRATIVO" (código + nome do cargo). */
+const CARGO_CODIGO = /^\d{2,4}\s*[-–]\s*(\p{Lu}.{2,100})$/u;
+
+/**
+ * Sem blocos "Cargo ...": títulos de cargo em linha própria — em maiúsculas começando com nome de cargo
+ * (FCC/Vunesp) ou com código ("301 - ASSISTENTE ADMINISTRATIVO"). Se o edital separa por nível de ensino
+ * ("ENSINO MÉDIO ...", "ENSINO SUPERIOR ..."), cada cargo recebe as matérias comuns do seu nível.
+ */
 function cargosPorTitulos(limpo: string): OpcaoInterna[] {
   const linhas = limpo.split('\n');
   const titulos = linhas
     .map((l, i) => ({ t: l.trim(), i }))
-    .filter(
-      ({ t }) =>
-        t.length >= 6 &&
-        t.length <= 110 &&
-        ehMaiusculo(t) &&
-        PALAVRA_CARGO.test(semAcentos(t)) &&
-        !/[.;:,]$/.test(t) &&
-        !/\b(direito|legisla|nocoes|conhecimentos|lingua)\b/i.test(semAcentos(t)),
-    );
+    .filter(({ t }) => {
+      if (t.length < 6 || t.length > 110 || !ehMaiusculo(t) || /[.;:,]$/.test(t)) return false;
+      if (CARGO_CODIGO.test(t)) return true;
+      return PALAVRA_CARGO.test(semAcentos(t)) && !/\b(direito|legisla|nocoes|conhecimentos|lingua)\b/i.test(semAcentos(t));
+    });
   if (titulos.length < 2) return [];
-  return titulos.map(({ t, i }, k) => ({
-    cargo: nomeCargo(t),
-    grupo: 'Cargos',
-    basicos: '',
-    especificos: linhas.slice(i + 1, titulos[k + 1]?.i ?? linhas.length).join('\n'),
-    inicioTexto: k === 0 ? linhas[i] : undefined,
-  }));
+  const niveis = linhas.map((l, i) => (LINHA_NIVEL.test(l.trim()) ? i : -1)).filter((i) => i >= 0);
+  const fimSecao = (i: number) => Math.min(...[...titulos.map((t) => t.i), ...niveis].filter((x) => x > i), linhas.length);
+  return titulos.map(({ t, i }) => {
+    // Matérias comuns: do início do nível (ou do documento) até o primeiro título de cargo depois dele.
+    const nivel = niveis.filter((n) => n < i).pop();
+    const ini = nivel ?? 0;
+    const primeiroDoNivel = titulos.find((x) => x.i > ini)!.i;
+    const basicos = linhas.slice(nivel !== undefined ? nivel + 1 : 0, primeiroDoNivel).join('\n');
+    const nome = CARGO_CODIGO.exec(t)?.[1] ?? t;
+    const grupo = nivel !== undefined ? tituloDisciplina(linhas[nivel].trim()) : 'Cargos';
+    return { cargo: nomeCargo(nome), grupo, basicos, especificos: linhas.slice(i + 1, fimSecao(i)).join('\n') };
+  });
 }
 
 /** Monta as disciplinas de um cargo: básicos do grupo + específicos do cargo. */
@@ -640,10 +653,24 @@ function dividirSemNumero(corpo: string): AssuntoExtraido[] {
     if (atual !== null) saida.push(atual);
     return saida;
   });
-  return partes
+  const assuntos = partes
     .map(limparNome)
     .filter((s) => s.length >= 3)
     .map((nome) => ({ codigo: null, nome: nome.charAt(0).toUpperCase() + nome.slice(1), nivel: 1 }));
+  // Retificações riscam o trecho revogado e escrevem "(Revogado)" depois dele: o marcador sai da lista
+  // e o assunto anterior fica sinalizado para o usuário conferir (o risco em si não vem no texto do PDF).
+  const saida: AssuntoExtraido[] = [];
+  for (const a of assuntos) {
+    const m = /^\(revogad[oa]\)\s*/i.exec(a.nome);
+    if (m) {
+      if (saida.length && !saida[saida.length - 1].nome.includes('⚠')) saida[saida.length - 1].nome += ' ⚠ revogado';
+      const resto = a.nome.slice(m[0].length).trim();
+      if (resto.length >= 3) saida.push({ ...a, nome: resto.charAt(0).toUpperCase() + resto.slice(1) });
+      continue;
+    }
+    saida.push({ ...a, nome: a.nome.replace(/\s*\(revogad[oa]\)$/i, ' ⚠ revogado') });
+  }
+  return saida;
 }
 
 /** Transforma o texto do edital em disciplinas e assuntos (o usuário revisa antes de salvar). */
@@ -654,7 +681,11 @@ export function interpretarEdital(texto: string): DisciplinaExtraida[] {
     .filter(
       (l) =>
         !/^\s*([IVX]+\.\s+conhecimentos\b|cargos?\s*(\/\s*especialidades?)?\b|quadro\s+[ivx\d]+\b|anexo\s+[ivx\d]+\b)/i.test(l) &&
-        !/^\s*(\d+(\.\d+)*\s+)?CONHECIMENTOS\s+(DO\s+CARGO|B[AÁ]SICOS|ESPEC[IÍ]FICOS|GERAIS|COMPLEMENTARES)\b[^a-z]*$/.test(l),
+        !(
+          /^\s*(\d+(\.\d+)*\s+)?CONHECIMENTOS\s+(DO\s+CARGO|B[AÁ]SICOS|ESPEC[IÍ]FICOS|GERAIS|COMPLEMENTARES)\b[^a-z]*$/.test(l) &&
+          // "CONHECIMENTOS GERAIS DO MUNICÍPIO" é matéria, não título de estrutura
+          !/\b(DO|DA|DE)\s+(MUNIC[IÍ]PIO|ESTADO|CIDADE|REGI[AÃ]O|DISTRITO)\b/.test(l)
+        ),
     )
     .join('\n');
   const cabecalhos = encontrarCabecalhos(limpo);

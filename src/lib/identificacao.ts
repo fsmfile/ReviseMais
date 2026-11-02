@@ -36,6 +36,15 @@ const BANCAS: [string, RegExp][] = [
   ['FUMARC', /\bFUMARC\b/gi],
   ['Instituto Access', /\bINSTITUTO ACCESS\b/gi],
   ['FEPESE', /\bFEPESE\b/gi],
+  ['IBGP', /\bIBGP\b|Instituto Brasileiro de Gest[aã]o e Pesquisa/gi],
+  ['Instituto Consulplan', /\bINSTITUTO CONSULPLAN\b/gi],
+  ['FUNDEP', /\bFUNDEP\b/gi],
+  ['Avança SP', /\bAVAN[CÇ]A SP\b/gi],
+  ['Instituto Selecon', /\bINSTITUTO SELECON\b/gi],
+  ['FAUEL', /\bFAUEL\b/gi],
+  ['Instituto Mais', /\bINSTITUTO MAIS\b/gi],
+  ['FUNCERN', /\bFUNCERN\b/gi],
+  ['Legalle', /\bLEGALLE\b/gi],
   ['Objetiva', /\bObjetiva Concursos\b/gi],
 ];
 
@@ -99,6 +108,15 @@ export function identificarEdital(texto: string): IdentificacaoEdital {
     } else orgao = titulo(linhaOrgao.replace(/[,.;:]+$/, ''));
   }
   const corpo = linhas.join(' ');
+  if (!orgao) {
+    // "CONCURSO PÚBLICO DO MUNICÍPIO DE CONTAGEM/MG", "PREFEITURA MUNICIPAL DE X - UF"
+    const m = /\b(MUNIC[IÍ]PIO|PREFEITURA(?:\s+MUNICIPAL)?)\s+DE\s+([A-ZÀ-Ý][A-ZÀ-Ý' ]{2,40}?)\s*(?:[/–-]\s*([A-Z]{2}))?\b(?=[\s,.;–-]|$)/i.exec(corpo.slice(0, 3000));
+    if (m) {
+      const cidade = titulo(m[2].trim());
+      orgao = `${/^MUNIC/i.test(m[1]) ? 'Município' : 'Prefeitura'} de ${cidade}${m[3] ? `/${m[3].toUpperCase()}` : ''}`;
+      sigla = `${cidade}${m[3] ? `/${m[3].toUpperCase()}` : ''}`;
+    }
+  }
   if (orgao && !sigla) {
     // "CONSELHO REGIONAL DE MEDICINA DO RIO DE JANEIRO - CREMERJ" ou "(CREMERJ)" em algum lugar do texto
     const nome = escapar(orgao).replace(/\s+/g, '\\s+');
@@ -162,5 +180,6 @@ export function nomeSugerido(id: IdentificacaoEdital, cargo?: string | null): st
 
 /** Texto para o campo "Órgão / banca". */
 export function orgaoBanca(id: IdentificacaoEdital): string {
-  return [id.sigla && id.orgao ? `${id.orgao} (${id.sigla})` : id.orgao ?? id.sigla, id.banca].filter(Boolean).join(' · ');
+  const nome = id.sigla && id.orgao && !id.orgao.includes(id.sigla) ? `${id.orgao} (${id.sigla})` : id.orgao ?? id.sigla;
+  return [nome, id.banca].filter(Boolean).join(' · ');
 }

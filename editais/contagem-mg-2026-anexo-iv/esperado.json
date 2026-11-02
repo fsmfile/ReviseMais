@@ -1,0 +1,847 @@
+{
+  "inicioRecorte": "ANEXO IV - CONTEÚDOS PROGRAMÁTICOS\n\nRETIFICAÇÃO Nº 01\n\nEm todos os conteúdos pro",
+  "fimRecorte": " - Lei\n\nComplementar nº 393, de 17 de novembro de 2025 e alterações posteriores.",
+  "cargos": [
+    {
+      "cargo": "Assistente Administrativo",
+      "grupo": "Ensino Médio e Ensino Médio/técnico",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 19
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Noções de Informática",
+          "assuntos": 13
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Administração Pública",
+          "assuntos": 22
+        }
+      ]
+    },
+    {
+      "cargo": "Fiscal de Atividades Urbanas",
+      "grupo": "Ensino Médio e Ensino Médio/técnico",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 19
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Noções de Informática",
+          "assuntos": 13
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Legislação urbanística e ambiental aplicável à Administração Pública Municipal",
+          "assuntos": 19
+        }
+      ]
+    },
+    {
+      "cargo": "Técnico em Segurança do Trabalho",
+      "grupo": "Ensino Médio e Ensino Médio/técnico",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 19
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Noções de Informática",
+          "assuntos": 13
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Conhecimentos específicos – Técnico em Segurança do Trabalho",
+          "assuntos": 18
+        }
+      ]
+    },
+    {
+      "cargo": "Analista de TI",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Conhecimentos específicos – Analista de TI",
+          "assuntos": 43
+        }
+      ]
+    },
+    {
+      "cargo": "Arquiteto",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Conhecimentos específicos – Arquiteto",
+          "assuntos": 56
+        }
+      ]
+    },
+    {
+      "cargo": "Arquivista",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Conhecimentos específicos – Arquivista",
+          "assuntos": 11
+        }
+      ]
+    },
+    {
+      "cargo": "Assistente Social",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Conhecimentos específicos – Assistente Social",
+          "assuntos": 26
+        }
+      ]
+    },
+    {
+      "cargo": "Auditor de Controle Interno - Ciências Contábeis",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Auditoria e Controle Interno",
+          "assuntos": 3
+        },
+        {
+          "nome": "Auditoria Interna e Externa",
+          "assuntos": 109
+        }
+      ]
+    },
+    {
+      "cargo": "Auditor de Controle Interno - Direito",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Auditoria e Controle Interno",
+          "assuntos": 3
+        },
+        {
+          "nome": "Auditoria Interna e Externa",
+          "assuntos": 154
+        }
+      ]
+    },
+    {
+      "cargo": "Auditor de Controle Interno - Engenharia Civil",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Auditoria e Controle Interno",
+          "assuntos": 3
+        },
+        {
+          "nome": "Auditoria Interna e Externa",
+          "assuntos": 94
+        }
+      ]
+    },
+    {
+      "cargo": "Auditor de Controle Interno - Tecnologia da Informação",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Auditoria e Controle Interno",
+          "assuntos": 3
+        },
+        {
+          "nome": "Auditoria Interna e Externa",
+          "assuntos": 206
+        }
+      ]
+    },
+    {
+      "cargo": "Biólogo",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Conhecimentos específicos – Biólogo",
+          "assuntos": 39
+        }
+      ]
+    },
+    {
+      "cargo": "Contador",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Contabilidade Aplicada ao Setor Público",
+          "assuntos": 7
+        },
+        {
+          "nome": "Contabilidade Aplicada ao Setor Público (MCASP)",
+          "assuntos": 21
+        },
+        {
+          "nome": "Legislação Municipal",
+          "assuntos": 3
+        }
+      ]
+    },
+    {
+      "cargo": "Economista",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Conhecimentos específicos – Economista",
+          "assuntos": 60
+        }
+      ]
+    },
+    {
+      "cargo": "Engenheiro Agrimensor",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Conhecimentos específicos – Engenheiro Agrimensor",
+          "assuntos": 80
+        }
+      ]
+    },
+    {
+      "cargo": "Engenheiro Agrônomo",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Conhecimentos específicos – Engenheiro Agrônomo",
+          "assuntos": 52
+        }
+      ]
+    },
+    {
+      "cargo": "Engenheiro Ambiental",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Conhecimentos específicos – Engenheiro Ambiental",
+          "assuntos": 58
+        }
+      ]
+    },
+    {
+      "cargo": "Engenheiro Cartográfico",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Conhecimentos específicos – Engenheiro Cartográfico",
+          "assuntos": 106
+        }
+      ]
+    },
+    {
+      "cargo": "Engenheiro Civil",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Conhecimentos específicos – Engenheiro Civil",
+          "assuntos": 71
+        }
+      ]
+    },
+    {
+      "cargo": "Engenheiro de Controle e Automação",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Conhecimentos específicos – Engenheiro de Controle e Automação",
+          "assuntos": 122
+        }
+      ]
+    },
+    {
+      "cargo": "Engenheiro Eletricista",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Conhecimentos específicos – Engenheiro Eletricista",
+          "assuntos": 88
+        }
+      ]
+    },
+    {
+      "cargo": "Engenheiro Florestal",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Conhecimentos específicos – Engenheiro Florestal",
+          "assuntos": 73
+        }
+      ]
+    },
+    {
+      "cargo": "Engenheiro Mecânico",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Conhecimentos específicos – Engenheiro Mecânico",
+          "assuntos": 126
+        }
+      ]
+    },
+    {
+      "cargo": "Engenheiro Químico",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Conhecimentos específicos – Engenheiro Químico",
+          "assuntos": 77
+        }
+      ]
+    },
+    {
+      "cargo": "Engenheiro Sanitarista",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Conhecimentos específicos – Engenheiro Sanitarista",
+          "assuntos": 52
+        }
+      ]
+    },
+    {
+      "cargo": "Geógrafo",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Geografia Física",
+          "assuntos": 74
+        },
+        {
+          "nome": "Legislação Aplicada",
+          "assuntos": 18
+        }
+      ]
+    },
+    {
+      "cargo": "Jornalista",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Conhecimentos específicos – Jornalista",
+          "assuntos": 17
+        }
+      ]
+    },
+    {
+      "cargo": "Psicólogo",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Conhecimentos específicos – Psicólogo",
+          "assuntos": 16
+        }
+      ]
+    },
+    {
+      "cargo": "Publicitário",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Conhecimentos específicos – Publicitário",
+          "assuntos": 26
+        }
+      ]
+    },
+    {
+      "cargo": "Relações Públicas",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Conhecimentos específicos – Relações Públicas",
+          "assuntos": 68
+        },
+        {
+          "nome": "Gestão de Crises",
+          "assuntos": 74
+        }
+      ]
+    },
+    {
+      "cargo": "Sociólogo",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Conhecimentos específicos – Sociólogo",
+          "assuntos": 5
+        }
+      ]
+    },
+    {
+      "cargo": "Técnico Superior em Gestão da Informação",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Conhecimentos específicos – Técnico Superior em Gestão da Informação",
+          "assuntos": 150
+        }
+      ]
+    },
+    {
+      "cargo": "Técnico Superior em Gestão Pública Municipal",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Conhecimentos específicos – Técnico Superior em Gestão Pública Municipal",
+          "assuntos": 22
+        }
+      ]
+    },
+    {
+      "cargo": "Engenheiro de Segurança do Trabalho",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Legislação de Segurança e Saúde no Trabalho",
+          "assuntos": 97
+        },
+        {
+          "nome": "Auditoria, Perícias e Avaliações",
+          "assuntos": 6
+        }
+      ]
+    },
+    {
+      "cargo": "Médico do Trabalho",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Conhecimentos específicos – Médico do Trabalho",
+          "assuntos": 17
+        }
+      ]
+    },
+    {
+      "cargo": "Engenheiro Geotécnico",
+      "grupo": "Ensino Superior e Ensino Superior com Especialização",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 18
+        },
+        {
+          "nome": "Raciocínio Lógico",
+          "assuntos": 22
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 10
+        },
+        {
+          "nome": "Conhecimentos específicos – Engenheiro Geotécnico",
+          "assuntos": 110
+        }
+      ]
+    }
+  ],
+  "disciplinas": null
+}

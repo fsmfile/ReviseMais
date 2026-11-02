@@ -254,6 +254,15 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
           </details>
         )}
         {erro && <p className="erro-texto">{erro}</p>}
+        {/\(revogad[oa]\)/i.test(texto) && (
+          <div className="aviso-edital" role="status">
+            <strong>⚠️ Este edital tem trechos revogados.</strong>
+            <p>
+              Na retificação, o texto revogado aparece riscado no PDF, e o app não consegue ver o risco. Os assuntos logo antes de “(Revogado)” estão
+              marcados com <strong>⚠ revogado</strong>: confira no PDF e remova o que não vale mais.
+            </p>
+          </div>
+        )}
         {semConteudo && (
           <div className="aviso-edital" role="status">
             <strong>⚠️ Este edital não traz a lista de assuntos.</strong>
