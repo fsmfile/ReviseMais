@@ -36,7 +36,14 @@ export default defineConfig({
           { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
         ],
       },
-      workbox: { maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, skipWaiting: true, clientsClaim: true, cleanupOutdatedCaches: true },
+      workbox: {
+        // inclui o worker do pdf.js (.mjs) no cache do app instalado
+        globPatterns: ['**/*.{js,mjs,css,html,svg,png,webmanifest}'],
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
+      },
     }),
   ],
 });
