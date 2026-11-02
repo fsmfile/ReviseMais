@@ -31,7 +31,7 @@ export function Hoje() {
   if (!dados.planos.length) {
     return (
       <section className="vazio">
-        <h1>Bem-vindo ao ReviseMais</h1>
+        <h1>Bem-vindo ao EstudeMais</h1>
         <p>Comece criando um plano de estudos — em branco ou a partir do PDF de um edital.</p>
         <a className="botao" href={href({ tela: 'novo' })}>
           + Criar meu primeiro plano

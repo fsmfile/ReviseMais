@@ -1,8 +1,9 @@
-# ReviseMais — instruções para o Claude
+# EstudeMais (repositório ReviseMais) — instruções para o Claude
 
-App (PWA) de estudos para concursos jurídicos: React + TypeScript + Vite, Supabase (login/dados), publicado na Vercel
+App (PWA) **EstudeMais** (antigo ReviseMais) de estudos para concursos jurídicos: React + TypeScript + Vite, Supabase (login/dados), publicado na Vercel
 (projeto `revisemaisconcursos`, https://revisemaisconcursos.vercel.app) a partir do ramo **`main`** deste repositório.
-Textos da interface e do código em português do Brasil.
+Textos da interface e do código em português do Brasil. O nome exibido é "EstudeMais" (ícone: M em destaque com selo "+");
+as chaves internas (`revisemais:*` no localStorage, UIDs do calendário) continuam com o nome antigo para não perder dados.
 
 ## Publicação
 

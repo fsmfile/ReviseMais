@@ -1,4 +1,6 @@
-# ReviseMais
+# EstudeMais
+
+(antigo ReviseMais — o repositório e o endereço na Vercel mantêm o nome antigo)
 
 App (PWA) para organizar os estudos para concursos jurídicos:
 

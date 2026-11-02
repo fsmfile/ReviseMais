@@ -35,7 +35,9 @@ export function Login() {
     <div className="tela-login">
       <form className="cartao" onSubmit={enviar}>
         <img src={`${import.meta.env.BASE_URL}icon.svg`} alt="" width={56} height={56} />
-        <h1>ReviseMais</h1>
+        <h1 className="nome-app">
+          Estude<span className="nome-mais">Mais</span>
+        </h1>
         <p className="suave">Seus estudos e revisões para concursos, sincronizados em todos os aparelhos.</p>
         <label>
           E-mail

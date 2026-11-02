@@ -44,7 +44,7 @@ function Estrutura({ email }: { email?: string }) {
   const pendHoje = dados.revisoes.filter((r) => !r.concluida_em && r.data_prevista <= hoje()).length;
 
   useEffect(() => {
-    document.title = pendHoje ? `(${pendHoje}) ReviseMais` : 'ReviseMais';
+    document.title = pendHoje ? `(${pendHoje}) EstudeMais` : 'EstudeMais';
   }, [pendHoje]);
 
   return (
@@ -53,7 +53,9 @@ function Estrutura({ email }: { email?: string }) {
         <div className="topo-linha">
           <a className="marca-app" href={href({ tela: 'hoje' })}>
             <img src={`${import.meta.env.BASE_URL}icon.svg`} alt="" width={28} height={28} />
-            ReviseMais
+            <span className="nome-app">
+              Estude<span className="nome-mais">Mais</span>
+            </span>
           </a>
           <a className="botao pequeno botao-estudar" href={href({ tela: 'estudar' })}>
             ▶ Estudar
@@ -125,7 +127,7 @@ function Estrutura({ email }: { email?: string }) {
       </main>
       {rota.tela !== 'estudar' && <BarraCronometro />}
       <footer className="rodape-versao">
-        ReviseMais · versão {__VERSAO__} · {__DATA_BUILD__} UTC
+        EstudeMais · versão {__VERSAO__} · {__DATA_BUILD__} UTC
       </footer>
     </>
   );

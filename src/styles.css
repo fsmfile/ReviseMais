@@ -434,3 +434,5 @@ main { padding-bottom: 6rem; }
 .alterna-forma button.ativa { background: var(--primaria); color: var(--primaria-texto); }
 .barras-h.so-legenda .barra { display: none; }
 .barras-h.so-legenda { gap: 0.35rem; }
+.nome-app { letter-spacing: -0.01em; }
+.nome-mais { color: var(--primaria); font-weight: 900; }

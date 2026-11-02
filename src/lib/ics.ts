@@ -50,10 +50,10 @@ export function gerarIcs(d: Dados, horaAlerta = 8, desde?: string): string {
   const linhas = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//ReviseMais//Revisoes//PT-BR',
+    'PRODID:-//EstudeMais//Revisoes//PT-BR',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
-    'X-WR-CALNAME:ReviseMais — Revisões',
+    'X-WR-CALNAME:EstudeMais — Revisões',
     'X-WR-TIMEZONE:America/Sao_Paulo',
   ];
   for (const dia of [...porDia.keys()].sort()) {
@@ -64,12 +64,12 @@ export function gerarIcs(d: Dados, horaAlerta = 8, desde?: string): string {
       `DTSTAMP:${agora}`,
       `DTSTART;VALUE=DATE:${compacta(dia)}`,
       `DTEND;VALUE=DATE:${compacta(somarDias(dia, 1))}`,
-      `SUMMARY:${escapar(`📚 ${itens.length} ${itens.length === 1 ? 'revisão' : 'revisões'} — ReviseMais`)}`,
+      `SUMMARY:${escapar(`📚 ${itens.length} ${itens.length === 1 ? 'revisão' : 'revisões'} — EstudeMais`)}`,
       `DESCRIPTION:${escapar(itens.join('\n'))}`,
       'TRANSP:TRANSPARENT',
       'BEGIN:VALARM',
       'ACTION:DISPLAY',
-      `DESCRIPTION:${escapar(`Hoje você tem ${itens.length} revisão(ões) no ReviseMais`)}`,
+      `DESCRIPTION:${escapar(`Hoje você tem ${itens.length} revisão(ões) no EstudeMais`)}`,
       `TRIGGER;RELATED=START:PT${horaAlerta}H`,
       'END:VALARM',
       'END:VEVENT',
