@@ -447,3 +447,41 @@ main { padding-bottom: 6rem; }
 .relogio-mini { font-size: 1.6rem; font-weight: 800; font-variant-numeric: tabular-nums; }
 .botao.desativado { opacity: 0.45; pointer-events: none; }
 .botoes-assinar { margin: 0.6rem 0; }
+
+/* Ícones SVG e botões de ícone com área de toque confortável (44px) */
+.icone-svg { display: block; flex: none; }
+.botao-icone { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 10px; color: var(--primaria); text-decoration: none; }
+.botao-icone:hover, .botao-icone:active { background: var(--superficie-2); }
+.acoes-assunto { gap: 0.25rem; }
+.linha-assunto > button.icone.mini { min-width: 36px; min-height: 36px; display: inline-grid; place-items: center; }
+
+/* Disciplina: só o nome (toque abre o menu) */
+.disciplina { scroll-margin-top: 130px; }
+.nome-disc { background: none; border: 0; padding: 0.25rem 0; color: var(--texto); text-align: left; white-space: normal; font-weight: inherit; min-height: 40px; }
+.nome-disc h2 { margin: 0; }
+.nome-disc:hover h2, .nome-disc:focus-visible h2 { text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 4px; }
+.nome-assunto[role='button'] { cursor: pointer; }
+.nome-assunto[role='button']:hover { text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px; }
+.bolinha-cor { width: 14px; height: 14px; border-radius: 50%; margin-left: auto; border: 1px solid var(--borda); flex: none; }
+
+/* Menu de ações (sobe de baixo) */
+.folha-fundo { display: flex; align-items: flex-end; justify-content: center; }
+.folha-acoes { position: relative; width: min(560px, 100%); background: var(--superficie); border-radius: 18px 18px 0 0; padding: 0.4rem 0.75rem calc(0.75rem + env(safe-area-inset-bottom)); max-height: 85vh; overflow-y: auto; box-shadow: 0 -10px 30px rgb(0 0 0 / 25%); animation: subir 0.18s ease-out; }
+@keyframes subir { from { transform: translateY(30px); opacity: 0.6; } }
+@media (prefers-reduced-motion: reduce) { .folha-acoes { animation: none; } }
+.folha-alca { width: 40px; height: 5px; border-radius: 99px; background: var(--borda); margin: 0.3rem auto 0.6rem; }
+.folha-titulo { margin: 0 0.5rem; font-weight: 700; font-size: 1.02rem; }
+.folha-sub { margin: 0.1rem 0.5rem 0; color: var(--texto-suave); font-size: 0.85rem; }
+.folha-item { display: flex; align-items: center; gap: 0.85rem; width: 100%; min-height: 52px; background: none; border: 0; border-bottom: 1px solid var(--grade); border-radius: 0; color: var(--texto); font-weight: 500; font-size: 1rem; padding: 0.6rem 0.5rem; text-align: left; white-space: normal; }
+.folha-item:hover, .folha-item:active { background: var(--superficie-2); }
+.folha-item .icone-svg { color: var(--primaria); }
+.folha-item.perigo, .folha-item.perigo .icone-svg { color: var(--vermelho); }
+.folha-item.cancelar { justify-content: center; border-bottom: 0; margin-top: 0.4rem; background: var(--superficie-2); border-radius: 12px; font-weight: 600; }
+
+/* Navegação flutuante entre disciplinas */
+.navega-secoes { position: fixed; right: 0.75rem; bottom: calc(6rem + env(safe-area-inset-bottom)); z-index: 35; display: flex; flex-direction: column; gap: 6px; opacity: 0.55; transition: opacity 0.15s; }
+.navega-secoes:hover, .navega-secoes:focus-within, .navega-secoes:active { opacity: 1; }
+.navega-secoes button { width: 46px; height: 46px; border-radius: 50%; padding: 0; justify-content: center; background: var(--superficie); color: var(--texto); border: 1px solid var(--borda); box-shadow: 0 4px 14px rgb(0 0 0 / 18%); }
+.navega-secoes button:disabled { opacity: 0.35; }
+.folha-item.perigo { background: none; }
+.folha-item.perigo:hover, .folha-item.perigo:active { background: var(--vermelho-fundo); }

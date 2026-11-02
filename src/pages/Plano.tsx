@@ -5,6 +5,9 @@ import { HistoricoAssunto } from '../components/HistoricoAssunto';
 import { Modal } from '../components/Modal';
 import { RegistrarEstudo } from '../components/RegistrarEstudo';
 import { SeletorCorMatriz } from '../components/SeletorCorMatriz';
+import { Icone } from '../components/Icone';
+import { MenuAcoes } from '../components/MenuAcoes';
+import { NavegaSecoes } from '../components/NavegaSecoes';
 import { StatusRevisoes, estadoRevisao } from '../components/StatusRevisoes';
 import { backend } from '../lib/backend';
 import { diasEntre, formatarData, hoje } from '../lib/datas';
@@ -27,6 +30,7 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
   const [novaDisc, setNovaDisc] = useState('');
   const [colorindo, setColorindo] = useState<{ tipo: 'disciplina' | 'assunto'; id: string } | null>(null);
   const [comSubitens, setComSubitens] = useState(true);
+  const [menu, setMenu] = useState<{ tipo: 'disciplina' | 'assunto'; id: string } | null>(null);
 
   useEffect(() => {
     if (!destaque) return;
@@ -190,7 +194,7 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
         const est = lista.filter((a) => estudosPorAssunto.get(a.id)?.length).length;
         const aberta = !fechadas.has(d.id);
         return (
-          <section key={d.id} className={`disciplina ${d.cor ? 'com-cor' : ''}`} style={d.cor ? { ['--cor-disc' as string]: d.cor } : undefined}>
+          <section key={d.id} id={`d-${d.id}`} className={`disciplina ${d.cor ? 'com-cor' : ''}`} style={d.cor ? { ['--cor-disc' as string]: d.cor } : undefined}>
             <header>
               <button
                 className="icone"
@@ -203,51 +207,15 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
               >
                 {aberta ? '▾' : '▸'}
               </button>
-              <button
-                className="botao-cor"
-                style={{ background: d.cor ?? 'transparent' }}
-                aria-label={`Cor da disciplina ${d.nome}`}
-                title="Escolher cor"
-                onClick={() => setColorindo({ tipo: 'disciplina', id: d.id })}
-              >
-                {d.cor ? '' : '🎨'}
+              <button className="nome-disc" onClick={() => setMenu({ tipo: 'disciplina', id: d.id })} aria-haspopup="dialog" title="Opções da disciplina">
+                <h2>{d.nome}</h2>
               </button>
-              <h2>{d.nome}</h2>
               <ChipsCorrelacao itens={correlacoes.disciplinas.get(d.id)} />
               <span className="progresso-disc">
                 {est}/{lista.length}
                 <span className="barra">
                   <span style={{ width: `${lista.length ? (est / lista.length) * 100 : 0}%`, ...(d.cor ? { background: d.cor } : {}) }} />
                 </span>
-              </span>
-              <span className="menu-disc">
-                <button
-                  className="link"
-                  onClick={() => {
-                    const nome = prompt('Novo assunto (pode começar com o número do edital, ex.: "4.2 Controle de constitucionalidade"):');
-                    const m = nome?.trim().match(/^(\d+(?:\.\d+)*)\.?\s+(.*)$/);
-                    if (nome?.trim()) executar(() => acoes.criarAssunto(d.id, m ? m[2] : nome.trim(), m ? m[1] : null));
-                  }}
-                >
-                  + assunto
-                </button>
-                <button
-                  className="link"
-                  onClick={() => {
-                    const nome = prompt('Nome da disciplina:', d.nome);
-                    if (nome?.trim()) executar(() => acoes.renomearDisciplina(d.id, nome.trim()));
-                  }}
-                >
-                  renomear
-                </button>
-                <button
-                  className="link perigo"
-                  onClick={() =>
-                    confirm(`Excluir "${d.nome}" com ${lista.length} assuntos e todo o histórico?`) && executar(() => acoes.excluirDisciplina(d.id))
-                  }
-                >
-                  excluir
-                </button>
               </span>
             </header>
             {aberta && (
@@ -271,7 +239,14 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
                         <span className={`marca ${ult ? 'ok' : ''}`} aria-label={ult ? 'estudado' : 'não estudado'}>
                           {ult ? '✓' : ''}
                         </span>
-                        <span className="nome-assunto">
+                        <span
+                          className="nome-assunto"
+                          role="button"
+                          tabIndex={0}
+                          aria-haspopup="dialog"
+                          onClick={(e) => (e.target as HTMLElement).closest('a') || setMenu({ tipo: 'assunto', id: a.id })}
+                          onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setMenu({ tipo: 'assunto', id: a.id })}
+                        >
                           {a.codigo && <span className="codigo">{a.codigo}</span>} {a.nome}
                           <ChipsCorrelacao itens={correlacoes.assuntos.get(a.id)} compacto />
                           {outro && (
@@ -289,44 +264,16 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
                           <button className="pequeno" onClick={() => setEstudando(a.id)}>
                             {ult ? 'Estudei de novo' : 'Estudei'}
                           </button>
-                          <a className="icone mini" href={href({ tela: 'estudar', assunto: a.id })} title="Cronometrar estudo deste assunto" aria-label="Cronometrar estudo deste assunto">
-                            ⏱
+                          <a className="botao-icone" href={href({ tela: 'estudar', assunto: a.id })} aria-label="Cronometrar estudo deste assunto" title="Cronometrar">
+                            <Icone nome="cronometro" tamanho={22} />
                           </a>
-                          <button
-                            className="icone mini botao-cor-mini"
-                            style={a.cor ? { background: a.cor } : undefined}
-                            title="Escolher cor"
-                            aria-label={`Cor do assunto ${a.nome.slice(0, 40)}`}
-                            onClick={() => setColorindo({ tipo: 'assunto', id: a.id })}
-                          >
-                            {a.cor ? '' : '🎨'}
-                          </button>
-                          <button
-                            className="icone mini"
-                            title="Editar"
-                            aria-label="Editar assunto"
-                            onClick={() => {
-                              const nome = prompt('Nome do assunto:', a.nome);
-                              if (nome?.trim()) executar(() => acoes.atualizarAssunto(a.id, { nome: nome.trim() }));
-                            }}
-                          >
-                            ✎
-                          </button>
-                          <button
-                            className="icone mini perigo"
-                            title="Excluir"
-                            aria-label="Excluir assunto"
-                            onClick={() => confirm(`Excluir "${a.nome}"?`) && executar(() => acoes.excluirAssunto(a.id))}
-                          >
-                            🗑
-                          </button>
                         </span>
                       </div>
                       {exp && <HistoricoAssunto assuntoId={a.id} />}
                     </li>
                   );
                 })}
-                {!lista.length && <li className="suave pequeno">Nenhum assunto. Use “+ assunto”.</li>}
+                {!lista.length && <li className="suave pequeno vazio-disc">Nenhum assunto. Toque no nome da disciplina para adicionar.</li>}
               </ul>
             )}
           </section>
@@ -343,6 +290,82 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
         <input placeholder="Nova disciplina (ex.: Direito Penal)" value={novaDisc} onChange={(e) => setNovaDisc(e.target.value)} />
         <button type="submit">+ Adicionar disciplina</button>
       </form>
+
+      <NavegaSecoes secoes={disciplinas.map((d) => ({ id: `d-${d.id}`, nome: d.nome }))} />
+
+      {menu?.tipo === 'disciplina' && (() => {
+        const d = disciplinas.find((x) => x.id === menu.id);
+        if (!d) return null;
+        const n = assuntosPorDisc.get(d.id)?.length ?? 0;
+        return (
+          <MenuAcoes
+            titulo={d.nome}
+            subtitulo={`${n} assuntos`}
+            aoFechar={() => setMenu(null)}
+            itens={[
+              {
+                icone: 'mais',
+                rotulo: 'Adicionar assunto',
+                acao: () => {
+                  const nome = prompt('Novo assunto (pode começar com o número do edital, ex.: "4.2 Controle de constitucionalidade"):');
+                  const m = nome?.trim().match(/^(\d+(?:\.\d+)*)\.?\s+(.*)$/);
+                  if (nome?.trim()) executar(() => acoes.criarAssunto(d.id, m ? m[2] : nome.trim(), m ? m[1] : null));
+                },
+              },
+              {
+                icone: 'cor',
+                rotulo: 'Alterar cor',
+                acao: () => setColorindo({ tipo: 'disciplina', id: d.id }),
+                extra: d.cor ? <span className="bolinha-cor" style={{ background: d.cor }} /> : undefined,
+              },
+              {
+                icone: 'editar',
+                rotulo: 'Renomear',
+                acao: () => {
+                  const nome = prompt('Nome da disciplina:', d.nome);
+                  if (nome?.trim()) executar(() => acoes.renomearDisciplina(d.id, nome.trim()));
+                },
+              },
+              {
+                icone: 'excluir',
+                rotulo: 'Excluir disciplina',
+                perigo: true,
+                acao: () => confirm(`Excluir "${d.nome}" com ${n} assuntos e todo o histórico?`) && executar(() => acoes.excluirDisciplina(d.id)),
+              },
+            ]}
+          />
+        );
+      })()}
+      {menu?.tipo === 'assunto' && (() => {
+        const a = dados.assuntos.find((x) => x.id === menu.id);
+        if (!a) return null;
+        return (
+          <MenuAcoes
+            titulo={`${a.codigo ? a.codigo + ' ' : ''}${a.nome.length > 90 ? a.nome.slice(0, 87) + '…' : a.nome}`}
+            aoFechar={() => setMenu(null)}
+            itens={[
+              { icone: 'estudo', rotulo: 'Registrar estudo', acao: () => setEstudando(a.id) },
+              { icone: 'cronometro', rotulo: 'Cronometrar estudo', acao: () => (location.hash = href({ tela: 'estudar', assunto: a.id })) },
+              { icone: 'historico', rotulo: expandido === a.id ? 'Ocultar histórico' : 'Ver histórico', acao: () => setExpandido(expandido === a.id ? null : a.id) },
+              {
+                icone: 'cor',
+                rotulo: 'Alterar cor',
+                acao: () => setColorindo({ tipo: 'assunto', id: a.id }),
+                extra: a.cor ? <span className="bolinha-cor" style={{ background: a.cor }} /> : undefined,
+              },
+              {
+                icone: 'editar',
+                rotulo: 'Renomear',
+                acao: () => {
+                  const nome = prompt('Nome do assunto:', a.nome);
+                  if (nome?.trim()) executar(() => acoes.atualizarAssunto(a.id, { nome: nome.trim() }));
+                },
+              },
+              { icone: 'excluir', rotulo: 'Excluir assunto', perigo: true, acao: () => confirm(`Excluir "${a.nome}"?`) && executar(() => acoes.excluirAssunto(a.id)) },
+            ]}
+          />
+        );
+      })()}
 
       {colorindo && (() => {
         if (colorindo.tipo === 'disciplina') {
