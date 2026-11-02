@@ -437,3 +437,11 @@ main { padding-bottom: 6rem; }
 .nome-app { letter-spacing: -0.01em; }
 .nome-mais { color: var(--primaria); font-weight: 900; }
 .dica-auto { font-size: 0.78rem; color: var(--primaria); }
+.botao-estudar.ativo { font-variant-numeric: tabular-nums; background: var(--vermelho-fundo); border-color: var(--vermelho); color: var(--texto); }
+.botao-estudar.ativo.pausado { background: var(--superficie-2); border-color: var(--borda); color: var(--texto); }
+.botao-estudar.pausado .ponto-vivo { background: var(--texto-suave); }
+.estudando-agora { margin-top: 0.8rem; display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; flex-wrap: wrap; padding: 0.7rem 0.8rem; border-radius: var(--raio); border: 1px solid var(--vermelho); background: var(--vermelho-fundo); }
+.estudando-agora.pausado { border-color: var(--borda); background: var(--superficie-2); }
+.estudando-info { display: flex; flex-direction: column; color: var(--texto); text-decoration: none; min-width: 0; }
+.estudando-info .kpi-rotulo { display: inline-flex; align-items: center; gap: 0.35rem; }
+.relogio-mini { font-size: 1.6rem; font-weight: 800; font-variant-numeric: tabular-nums; }

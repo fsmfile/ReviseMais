@@ -11,6 +11,8 @@ import { Hoje } from './pages/Hoje';
 import { Login } from './pages/Login';
 import { NovoPlano } from './pages/NovoPlano';
 import { BarraCronometro, Estudar } from './pages/Estudar';
+import { useCronometro, useDecorrido } from './lib/cronometro';
+import { relogio } from './lib/tempo';
 import { Historico } from './pages/Historico';
 import { Painel } from './pages/Painel';
 import { Tempo } from './pages/Tempo';
@@ -57,9 +59,7 @@ function Estrutura({ email }: { email?: string }) {
               Estude<span className="nome-mais">Mais</span>
             </span>
           </a>
-          <a className="botao pequeno botao-estudar" href={href({ tela: 'estudar' })}>
-            ▶ Estudar
-          </a>
+          <BotaoEstudar />
           <button className="icone botao-menu" aria-label="Abrir menu" aria-expanded={menuAberto} onClick={() => setMenuAberto(true)}>
             ☰
           </button>
@@ -204,5 +204,26 @@ function MenuLateral({ rota, email, aoFechar }: { rota: Rota; email?: string; ao
         )}
       </nav>
     </div>
+  );
+}
+
+/** Topo: "▶ Estudar" ou, com cronômetro ativo, o relógio correndo. */
+function BotaoEstudar() {
+  const crono = useCronometro();
+  const seg = useDecorrido(crono);
+  if (!crono)
+    return (
+      <a className="botao pequeno botao-estudar" href={href({ tela: 'estudar' })}>
+        ▶ Estudar
+      </a>
+    );
+  return (
+    <a
+      className={`botao pequeno botao-estudar ativo ${crono.rodandoDesde ? '' : 'pausado'}`}
+      href={href({ tela: 'estudar' })}
+      aria-label={`${crono.rodandoDesde ? 'Estudando' : 'Pausado'}: ${crono.materia}, ${relogio(seg)}`}
+    >
+      <span className={`ponto-vivo ${crono.rodandoDesde ? '' : 'pausado'}`} /> {relogio(seg)}
+    </a>
   );
 }

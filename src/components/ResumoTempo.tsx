@@ -5,6 +5,8 @@ import { href } from '../lib/rota';
 import { useDados } from '../lib/store';
 import { formatarDuracao, totalPor } from '../lib/tempo';
 import { useCorMateria } from '../lib/cores';
+import { cronometro, useCronometro, useDecorrido } from '../lib/cronometro';
+import { relogio } from '../lib/tempo';
 
 const DIAS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 
@@ -12,6 +14,8 @@ const DIAS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 export function ResumoTempo() {
   const { dados } = useDados();
   const corMateria = useCorMateria();
+  const crono = useCronometro();
+  const rodando = useDecorrido(crono); // segundos do cronômetro ativo (0 se não houver)
   const ref = hoje();
   const { dias, hojeSeg, semanaSeg, top } = useMemo(() => {
     const dias = Array.from({ length: 7 }, (_, i) => {
@@ -27,24 +31,54 @@ export function ResumoTempo() {
       top: totalPor(semana, (s) => s.materia).slice(0, 4),
     };
   }, [dados.sessoes, ref]);
+  // O tempo que está correndo agora já conta no dia de hoje.
+  const hojeTotal = hojeSeg + rodando;
+  const diasGrafico = rodando ? dias.map((d) => (d.d === ref ? { ...d, seg: d.seg + rodando, horas: Math.round(((d.seg + rodando) / 3600) * 100) / 100 } : d)) : dias;
 
   return (
     <section className="cartao resumo-tempo">
       <div className="resumo-tempo-topo">
         <div>
           <span className="kpi-rotulo">Estudo hoje</span>
-          <strong className="kpi-valor">{formatarDuracao(hojeSeg)}</strong>
-          <span className="kpi-sub">{formatarDuracao(semanaSeg)} nos últimos 7 dias</span>
+          <strong className="kpi-valor">{formatarDuracao(hojeTotal, !!crono)}</strong>
+          <span className="kpi-sub">{formatarDuracao(semanaSeg + rodando, !!crono)} nos últimos 7 dias</span>
         </div>
-        <a className="botao grande" href={href({ tela: 'estudar' })}>
-          ▶ Iniciar estudo
-        </a>
+        {!crono && (
+          <a className="botao grande" href={href({ tela: 'estudar' })}>
+            ▶ Iniciar estudo
+          </a>
+        )}
       </div>
-      {semanaSeg > 0 && (
+      {crono && (
+        <div className={`estudando-agora ${crono.rodandoDesde ? '' : 'pausado'}`} role="status">
+          <a href={href({ tela: 'estudar' })} className="estudando-info">
+            <span className="kpi-rotulo">
+              <span className={`ponto-vivo ${crono.rodandoDesde ? '' : 'pausado'}`} /> {crono.rodandoDesde ? 'Estudando agora' : 'Cronômetro pausado'}
+            </span>
+            <strong>{crono.materia}</strong>
+            <span className="relogio-mini">{relogio(rodando)}</span>
+          </a>
+          <div className="acoes">
+            {crono.rodandoDesde ? (
+              <button className="secundario" onClick={() => cronometro.pausar()}>
+                ⏸ Pausar
+              </button>
+            ) : (
+              <button className="secundario" onClick={() => cronometro.retomar()}>
+                ▶ Continuar
+              </button>
+            )}
+            <a className="botao" href={href({ tela: 'estudar' })}>
+              ■ Concluir
+            </a>
+          </div>
+        </div>
+      )}
+      {semanaSeg + rodando > 0 && (
         <>
           <div className="grafico">
             <ResponsiveContainer width="100%" height={110}>
-              <BarChart data={dias} margin={{ top: 6, right: 0, bottom: 0, left: 0 }} barCategoryGap={6}>
+              <BarChart data={diasGrafico} margin={{ top: 6, right: 0, bottom: 0, left: 0 }} barCategoryGap={6}>
                 <XAxis dataKey="rotulo" fontSize={11} stroke="var(--texto-suave)" tickLine={false} axisLine={false} />
                 <Tooltip
                   cursor={{ fill: 'var(--superficie-2)' }}
@@ -56,7 +90,7 @@ export function ResumoTempo() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <p className="kpi-rotulo">Matérias mais estudadas (7 dias)</p>
+          {top.length > 0 && <p className="kpi-rotulo">Matérias mais estudadas (7 dias)</p>}
           <ul className="barras-h compacto">
             {top.map(({ chave, seg }) => (
               <li key={chave}>
