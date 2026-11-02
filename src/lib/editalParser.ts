@@ -402,7 +402,7 @@ export function limparTexto(texto: string): string {
     .replace(/\n{3,}/g, '\n\n');
 }
 
-function ehMaiusculo(s: string): boolean {
+export function ehMaiusculo(s: string): boolean {
   const letras = s.match(/\p{L}/gu) ?? [];
   if (letras.length < 4) return false;
   const maius = letras.filter((c) => c === c.toUpperCase() && c !== c.toLowerCase()).length;

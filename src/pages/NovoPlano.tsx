@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { ChipsCorrelacao } from '../components/Correlacao';
 import { calcularCorrelacoes } from '../lib/correlacao';
 import {
@@ -12,6 +12,7 @@ import {
   type EditalSemConteudo,
   type OpcaoCargo,
 } from '../lib/editalParser';
+import { identificarEdital, nomeSugerido, orgaoBanca, type IdentificacaoEdital } from '../lib/identificacao';
 import { ir } from '../lib/rota';
 import { CORES, useDados } from '../lib/store';
 import type { Assunto, Disciplina, Plano } from '../lib/types';
@@ -37,18 +38,32 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
   const [buscaCargo, setBuscaCargo] = useState('');
   const [desmarcadas, setDesmarcadas] = useState<Set<number>>(new Set());
   const [nomeAuto, setNomeAuto] = useState('');
+  const [orgaoAuto, setOrgaoAuto] = useState('');
+  // Órgão/sigla/ano/banca lidos do edital (ref: usado na mesma chamada em que é calculado).
+  const ident = useRef<IdentificacaoEdital | null>(null);
+
+  /** Atualiza o nome da aba e o campo órgão, só se o usuário ainda não os editou. */
+  const sugerirNome = (cargo: string | null) => {
+    if (existente) return;
+    const id = ident.current;
+    const novo = id ? nomeSugerido(id, cargo) : cargo ?? '';
+    if (novo && (!nome || nome === nomeAuto)) {
+      setNome(novo);
+      setNomeAuto(novo);
+    }
+    const ob = id ? orgaoBanca(id) : '';
+    if (ob && (!orgao || orgao === orgaoAuto)) {
+      setOrgao(ob);
+      setOrgaoAuto(ob);
+    }
+  };
 
   const escolherCargo = (ops: OpcaoCargo[], i: number | null) => {
     setCargoSel(i);
     setDesmarcadas(new Set());
     setEstrutura(i == null ? null : interpretarCargo(ops[i]));
     // Se o nome da aba ainda é o sugerido pelo app, inclui o cargo nele.
-    if (i != null && !existente && (!nome || nome === nomeAuto)) {
-      const base = pdf ? pdf.name.replace(/\.pdf$/i, '').replace(/[_-]+/g, ' ').slice(0, 30) : '';
-      const novo = base ? `${base} – ${ops[i].cargo}` : ops[i].cargo;
-      setNome(novo);
-      setNomeAuto(novo);
-    }
+    if (i != null) sugerirNome(ops[i].cargo);
   };
 
   /** Detecta os cargos do edital; se houver mais de um, pede a escolha antes de montar a estrutura. */
@@ -59,6 +74,7 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
     const sem = editalSemConteudo(txt);
     setSemConteudo(sem);
     if (sem) {
+      sugerirNome(null);
       setCargos([]);
       setCargoSel(null);
       setDesmarcadas(new Set());
@@ -70,7 +86,9 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
     setBuscaCargo('');
     if (ops.length >= 2) {
       escolherCargo(ops, null);
+      sugerirNome(null);
     } else {
+      sugerirNome(null);
       setCargoSel(null);
       setDesmarcadas(new Set());
       setEstrutura(interpretarEdital(txt));
@@ -91,6 +109,7 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
         setProgresso(null);
         return;
       }
+      ident.current = identificarEdital(bruto);
       if (editalSemConteudo(bruto)) {
         setTexto(limparTexto(bruto));
         processar(bruto);
@@ -99,7 +118,8 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
         setTexto(recorte);
         processar(recorte);
       }
-      if (!nome && !existente) {
+      if (!nome && !existente && !ident.current.sigla && !ident.current.orgao) {
+        // Sem órgão identificado: usa o nome do arquivo.
         const n = f.name.replace(/\.pdf$/i, '').replace(/[_-]+/g, ' ').slice(0, 40);
         setNome(n);
         setNomeAuto(n);
@@ -169,6 +189,7 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
           <label>
             Nome da aba *
             <input placeholder="Ex.: TJSP Juiz 2026" value={nome} onChange={(e) => setNome(e.target.value)} autoFocus />
+            {nome && nome === nomeAuto && <span className="dica-auto">✨ Nome sugerido pelo edital — você pode editar</span>}
           </label>
           <div className="grade-form">
             <label>
@@ -222,7 +243,12 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
               placeholder={'DIREITO CONSTITUCIONAL: 1 Constituição. 1.1 Conceito... 2 Direitos e garantias fundamentais...\nDIREITO ADMINISTRATIVO: 1 ...'}
               onChange={(e) => setTexto(e.target.value)}
             />
-            <button className="secundario" onClick={() => processar(texto)} disabled={!texto.trim()}>
+            <button className="secundario" onClick={() => {
+                if (!pdf) ident.current = identificarEdital(texto);
+                processar(texto);
+              }}
+              disabled={!texto.trim()}
+            >
               Interpretar texto
             </button>
           </details>

@@ -7,6 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { analisar } from './analiseEdital';
+import { identificarEdital, nomeSugerido } from './identificacao';
 
 const RAIZ = path.resolve(__dirname, '../../editais');
 const ids = fs.existsSync(RAIZ) ? fs.readdirSync(RAIZ).filter((d) => fs.existsSync(path.join(RAIZ, d, 'texto.txt'))) : [];
@@ -14,7 +15,11 @@ const ids = fs.existsSync(RAIZ) ? fs.readdirSync(RAIZ).filter((d) => fs.existsSy
 describe.each(ids)('edital de referência: %s', (id) => {
   const ler = (f: string) => fs.readFileSync(path.join(RAIZ, id, f), 'utf8');
   const resultado = analisar(ler('texto.txt'));
-  const meta = JSON.parse(ler('meta.json')) as { conferido?: Record<string, Record<string, number>> };
+  const meta = JSON.parse(ler('meta.json')) as { conferido?: Record<string, Record<string, number>>; nomeSugerido?: string };
+
+  it('identifica o órgão e sugere o nome do plano', () => {
+    if (meta.nomeSugerido) expect(nomeSugerido(identificarEdital(ler('texto.txt')))).toBe(meta.nomeSugerido);
+  });
 
   it('cargos conferidos à mão continuam corretos', () => {
     for (const [cargo, disciplinas] of Object.entries(meta.conferido ?? {})) {

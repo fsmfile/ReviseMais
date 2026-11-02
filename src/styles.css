@@ -436,3 +436,4 @@ main { padding-bottom: 6rem; }
 .barras-h.so-legenda { gap: 0.35rem; }
 .nome-app { letter-spacing: -0.01em; }
 .nome-mais { color: var(--primaria); font-weight: 900; }
+.dica-auto { font-size: 0.78rem; color: var(--primaria); }

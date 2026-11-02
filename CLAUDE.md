@@ -31,7 +31,8 @@ O usuário vai enviar editais de formatos diferentes. Cada um deve virar parte p
 3. **Documentar o formato** em `editais/<id>/meta.json` (`formato`: onde fica o conteúdo, cabeçalhos, como os cargos
    e as disciplinas aparecem, numeração, armadilhas) e em `conferido` registrar, **conferido à mão contra o PDF**, o
    nº de assuntos de cada disciplina de ao menos um cargo (priorize os cargos jurídicos). Acrescente uma linha na
-   tabela de `editais/README.md`.
+   tabela de `editais/README.md`. Registre também `nomeSugerido` (nome do plano que o app deve sugerir: sigla do órgão + ano,
+   ou + programa quando não há cargo; ver `src/lib/identificacao.ts`).
 4. **Melhorar o leitor** (`src/lib/editalParser.ts`) até o novo edital sair correto. Prefira regras gerais a casos
    específicos de um órgão. Se um caso típico estiver faltando, acrescente um teste pequeno em `src/lib/logica.test.ts`.
 5. **Não quebrar os anteriores:** `npm test`. Se o `esperado.json` de um edital antigo mudou, confira se a mudança é
