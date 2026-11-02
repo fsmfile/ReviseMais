@@ -1,0 +1,21 @@
+{
+  "orgao": "Prefeitura Municipal de Saquarema – RJ (Educação)",
+  "banca": "não identificada no anexo",
+  "ano": 2026,
+  "edital": "Concurso Público – Edital nº 001/2026 – Anexo III – Conteúdos Programáticos das Provas Objetivas (Educação), 7 páginas",
+  "formato": [
+    "PDF só do anexo; cabeçalho em todas as páginas (Prefeitura, 'CONCURSO PÚBLICO - EDITAL N' / 'o' / '001/2026' quebrado em linhas, 'ANEXO III', 'CONTEÚDOS PROGRAMÁTICOS DAS PROVAS OBJETIVAS') — o título da seção é a 6ª linha da página.",
+    "Níveis marcados com '➢' ('➢ ENSINO SUPERIOR COMPLETO', '➢ CURSO NORMAL COMPLETO OU CURSO DE PEDAGOGIA ACRESCIDO DE' / 'HABILITAÇÃO ESPECÍFICA', '➢ ENSINO MÉDIO COMPLETO ...'), cada um com 'NÚCLEOS COMUNS'.",
+    "Disciplina comum em título 'Matéria para (todos) os cargos de ...', às vezes continuando na linha seguinte ('... Professor de Atendimento' / 'Educacional Especializado - AEE').",
+    "Cargo em maiúsculas depois de 'CONHECIMENTOS ESPECÍFICOS' ('PROFESSOR DOCENTE-2 CIÊNCIAS', 'AUXILIAR DE EDUCAÇÃO ESPECIAL'); 6 cargos.",
+    "Assuntos numerados '1. ... 2. ...' com links longos no meio; 'Conhecimentos Gerais do Município' mistura 'Parte 1.' (frases) e 'Parte 2.' (2.1, 2.2.1...) — divisão aproximada.",
+    "Armadilha: 'A legislação, para todos os cargos, deve...' (TRF3) é frase, não título 'X para todos os cargos'."
+  ],
+  "conferido": {
+    "Professor Docente-2 Ciências": {
+      "Português": 17,
+      "Legislação Educacional e suas atualizações": 16
+    }
+  },
+  "nomeSugerido": "Saquarema/RJ 2026"
+}

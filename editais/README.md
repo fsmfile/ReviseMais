@@ -17,6 +17,9 @@ Cada pasta tem:
 |---|---|---|---|
 | `cremerj-2026-consulplan` | CREMERJ · Consulplan · 2026 | Edital completo; conteúdo no Anexo I; 4 grupos (“Cargos/especialidades do QUADRO I–IV”) com Conhecimentos Básicos comuns e Específicos com título por cargo; numeração estilo Cebraspe | ✅ 22 cargos; jurídicos conferidos |
 | `seplag-rj-2026-fgv` | SEPLAG/RJ · FGV · 2026 | Edital completo; Anexo I começa com “COMUM PARA TODAS AS ÁREAS”; dois níveis “CARGO: …” → “ÁREA: …” (nome do cargo quebrado em 2 linhas); disciplinas em maiúsculas; assuntos sem numeração separados por “;” | ✅ 4 opções (cargo – área); comuns conferidas |
+| `trf3-2026-vunesp` | TRF3 (JFSP/JFMS) · Vunesp · 2026 | Edital completo, Anexo VI; grupos “Para os cargos de A, B e C:” com Conhecimentos Gerais/Específicos; título de cargo em letras mistas com “Especialidade:” quebrado em 2 linhas; “Direito Civil: assunto. assunto.” | ✅ 8 cargos; JFMS conferido |
+| `contagem-mg-2026-anexo-iv` | Município de Contagem/MG · IBGP · 2026 | Só o Anexo IV (retificação); níveis “ENSINO MÉDIO…”/“ENSINO SUPERIOR…” com comuns; cargo “301 - NOME”; trechos riscados + “(Revogado)” | ✅ 36 cargos; aviso de revogados |
+| `saquarema-rj-2026-educacao-anexo-iii` | Prefeitura de Saquarema/RJ · 2026 (Educação) | Só o Anexo III; níveis com “➢”; “Matéria para (todos) os cargos de …” em até 3 linhas; cargos em maiúsculas; itens “1. … 2. …” | ✅ 6 cargos |
 | `pge-rj-2026-residencia-juridica` | PGE-RJ · banca própria · 2026 (Residência Jurídica) | Páginas do Diário Oficial com outros atos; **sem conteúdo programático**: só cita “4 disciplinas avaliadas” e remete ao “programa anexo à Resolução PGE nº 5463” | ✅ plano nasce com as 4 disciplinas + aviso |
 | `pge-rj-2026-residencia-juridica-programa` | PGE-RJ · Resolução PGE nº 5463/2026 (Regulamento) | Diário Oficial; “ANEXO” / “PROGRAMA”; “1. DIREITO CONSTITUCIONAL”; **Ponto 1…10** com itens **a) b) c)**; fim na marca “Id: …” do ato | ✅ 4 disciplinas, 139 assuntos conferidos |
 
@@ -28,7 +31,7 @@ da banca, ele entra na tabela acima e confirma (ou corrige) a regra.
 | Banca | Padrão simulado |
 |---|---|
 | Cebraspe | Conteúdo dentro de um item do edital (“14 DOS CONHECIMENTOS A SEREM AVALIADOS”), terminando no item seguinte; subitens do edital (“14.2.1 Nas provas…”) ignorados; “CONHECIMENTOS BÁSICOS PARA TODOS OS CARGOS”; “CARGO 1: ANALISTA JUDICIÁRIO – ÁREA: JUDICIÁRIA”; “DISCIPLINA: 1 … 1.1 …” |
-| Vunesp | Disciplina em linha própria sem dois-pontos (“Língua Portuguesa”); assuntos em frases; cargos em maiúsculas (“ESCREVENTE TÉCNICO JUDICIÁRIO”) sem lista prévia |
+| Vunesp | (o edital real do TRF3 usa “Disciplina: …”; esta simulação cobre o outro formato comum) Disciplina em linha própria sem dois-pontos (“Língua Portuguesa”); assuntos em frases; cargos em maiúsculas (“ESCREVENTE TÉCNICO JUDICIÁRIO”) sem lista prévia |
 | FCC | “Disciplina: assunto. assunto.”; subitens em minúsculas após “Tópico:” e “;” mantidos no mesmo assunto; cargos em maiúsculas sem lista prévia |
 
 ## Formatos que o leitor já entende
@@ -47,6 +50,10 @@ da banca, ele entra na tabela acima e confirma (ou corrige) a regra.
   traz o programa; importar esse documento depois junta os assuntos nas disciplinas que já existem no plano.
 - **Diário Oficial:** “PROGRAMA” sozinho na linha também abre o conteúdo; a marca do ato (“Id: 2767243”) e a assinatura
   digital da página encerram.
+- **Grupos “Para os cargos de A, B e C:”**, níveis de ensino (“ENSINO …”, “➢ …”) e cargos com código (“301 - NOME”).
+- **Títulos “Matéria para (todos) os cargos de …”** (nome = antes de “para”), inclusive continuando na linha seguinte.
+- **Retificações:** “(Revogado)” marca o assunto anterior com “⚠ revogado” (o risco do PDF não vem no texto).
+- **Nome do plano:** órgão (sigla, ou Cidade/UF), ano do número do edital e cargo/programa — `src/lib/identificacao.ts`.
 - **Vários cargos:** blocos “Cargo(s)/especialidade(s) …” / “QUADRO …” / “CARGO N: …”; básicos do grupo + títulos de cargo nos
   específicos; sem blocos, títulos de cargo em maiúsculas (ANALISTA…, TÉCNICO…, ESCREVENTE…). Matérias antes do primeiro
   cargo (“para todos os cargos”) entram em todos.

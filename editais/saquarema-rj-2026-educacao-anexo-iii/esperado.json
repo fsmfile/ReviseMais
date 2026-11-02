@@ -1,0 +1,135 @@
+{
+  "inicioRecorte": "➢ ENSINO SUPERIOR COMPLETO\n\nNÚCLEOS COMUNS\n\nPortuguês para todos os cargos de En",
+  "fimRecorte": "\n\nem https://www.planalto.gov.br/ccivil_03/_ato2023-2026/2025/decreto/d12686.htm",
+  "cargos": [
+    {
+      "cargo": "Professor Docente-2 Ciências",
+      "grupo": "Ensino Superior Completo",
+      "disciplinas": [
+        {
+          "nome": "Português",
+          "assuntos": 17
+        },
+        {
+          "nome": "Legislação Educacional e suas atualizações",
+          "assuntos": 16
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 32
+        },
+        {
+          "nome": "Conhecimentos específicos – Professor Docente-2 Ciências",
+          "assuntos": 11
+        }
+      ]
+    },
+    {
+      "cargo": "Professor Docente-2 Estudos Turísticos",
+      "grupo": "Ensino Superior Completo",
+      "disciplinas": [
+        {
+          "nome": "Português",
+          "assuntos": 17
+        },
+        {
+          "nome": "Legislação Educacional e suas atualizações",
+          "assuntos": 16
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 32
+        },
+        {
+          "nome": "Conhecimentos específicos – Professor Docente-2 Estudos Turísticos",
+          "assuntos": 18
+        }
+      ]
+    },
+    {
+      "cargo": "Professor Docente-1",
+      "grupo": "Curso Normal Completo ou Curso de Pedagogia Acrescido de",
+      "disciplinas": [
+        {
+          "nome": "Português",
+          "assuntos": 17
+        },
+        {
+          "nome": "Legislação Educacional e suas atualizações",
+          "assuntos": 16
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 32
+        },
+        {
+          "nome": "Conhecimentos específicos – Professor Docente-1",
+          "assuntos": 28
+        }
+      ]
+    },
+    {
+      "cargo": "Professor de Atendimento Educacional Especializado - AEE",
+      "grupo": "Curso Normal Completo ou Curso de Pedagogia Acrescido de",
+      "disciplinas": [
+        {
+          "nome": "Português",
+          "assuntos": 17
+        },
+        {
+          "nome": "Legislação Educacional e suas atualizações",
+          "assuntos": 16
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 32
+        },
+        {
+          "nome": "Conhecimentos específicos – Professor de Atendimento Educacional Especializado - AEE",
+          "assuntos": 14
+        }
+      ]
+    },
+    {
+      "cargo": "Auxiliar de Educação Especial",
+      "grupo": "Ensino Médio Completo e Ensino Médio com Habilitação Específica na",
+      "disciplinas": [
+        {
+          "nome": "Português",
+          "assuntos": 17
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 32
+        },
+        {
+          "nome": "Conhecimentos específicos – Auxiliar de Educação Especial",
+          "assuntos": 15
+        }
+      ]
+    },
+    {
+      "cargo": "Profissional de Apoio ao Estudante com Deficiência",
+      "grupo": "Ensino Médio Completo e Ensino Médio com Habilitação Específica na",
+      "disciplinas": [
+        {
+          "nome": "Português",
+          "assuntos": 17
+        },
+        {
+          "nome": "Conhecimentos Gerais do Município",
+          "assuntos": 32
+        },
+        {
+          "nome": "Conhecimentos específicos – Profissional de Apoio ao Estudante com Deficiência",
+          "assuntos": 8
+        },
+        {
+          "nome": "Legislação atualizada",
+          "assuntos": 2
+        }
+      ]
+    }
+  ],
+  "disciplinas": null
+}

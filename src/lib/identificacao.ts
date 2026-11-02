@@ -48,6 +48,8 @@ const BANCAS: [string, RegExp][] = [
   ['Objetiva', /\bObjetiva Concursos\b/gi],
 ];
 
+const UFS = new Set('AC AL AP AM BA CE DF ES GO MA MT MS MG PA PB PR PE PI RJ RN RS RO RR SC SP SE TO'.split(' '));
+
 const PEQUENAS = new Set(['de', 'da', 'do', 'das', 'dos', 'e', 'em', 'a', 'o']);
 
 function titulo(s: string): string {
@@ -102,7 +104,12 @@ export function identificarEdital(texto: string): IdentificacaoEdital {
   if (linhaOrgao) {
     // "SECRETARIA DE ... – SEPLAG/RJ"
     const m = /^(.*?)\s*[–—-]\s*([A-ZÀ-Ý]{2,12}(?:[/-][A-Z]{2})?)\s*$/.exec(linhaOrgao);
-    if (m) {
+    if (m && UFS.has(m[2])) {
+      // "PREFEITURA MUNICIPAL DE SAQUAREMA-RJ": o sufixo é a UF, não a sigla
+      orgao = `${titulo(m[1])}/${m[2]}`;
+      const cidade = /\bDE\s+(.+)$/i.exec(m[1])?.[1];
+      if (/^(PREFEITURA|MUNIC|C[AÂ]MARA)/i.test(m[1]) && cidade) sigla = `${titulo(cidade)}/${m[2]}`;
+    } else if (m) {
       orgao = titulo(m[1]);
       sigla = m[2];
     } else orgao = titulo(linhaOrgao.replace(/[,.;:]+$/, ''));
@@ -153,7 +160,9 @@ export function identificarEdital(texto: string): IdentificacaoEdital {
     }
   }
 
-  const doAto = iAto >= 0 ? /\b(20\d{2})\b/.exec(linhas.slice(iAto, iAto + 3).join(' '))?.[1] : undefined;
+  // Ano do número do edital ("EDITAL Nº 001/2026", mesmo quebrado em linhas) ou do título do ato.
+  const doNumero = /EDITAL\b.{0,30}?\d{1,4}\s*\/\s*(20\d{2})\b/i.exec(corpo.slice(0, 2500))?.[1];
+  const doAto = doNumero ?? (iAto >= 0 ? /\b(20\d{2})\b/.exec(linhas.slice(iAto, iAto + 3).join(' '))?.[1] : undefined);
   const anos = new Map<string, number>();
   for (const m of corpo.slice(0, 6000).matchAll(/\b(20[2-4]\d)\b/g)) anos.set(m[1], (anos.get(m[1]) ?? 0) + 1);
   const ano = doAto ?? [...anos.entries()].sort((a, b) => b[1] - a[1] || b[0].localeCompare(a[0]))[0]?.[0] ?? null;
