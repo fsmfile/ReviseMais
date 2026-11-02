@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { baixarArquivo, gerarIcs } from '../lib/ics';
-import { modoLocal, supabase, supabaseUrl } from '../lib/backend';
+import { modoLocal, supabase } from '../lib/backend';
 import { hoje } from '../lib/datas';
 import { useDados } from '../lib/store';
 
@@ -21,7 +21,25 @@ export function Calendario() {
     })();
   }, []);
 
-  const link = token ? `${supabaseUrl}/functions/v1/calendario?token=${token}&hora=${hora}` : '';
+  // Calendário gerado pela própria Vercel (rota /api/calendario), sem Edge Function no Supabase.
+  const caminho = token ? `${location.host}/api/calendario?token=${token}&hora=${hora}` : '';
+  const link = caminho ? `https://${caminho}` : '';
+  const webcal = caminho ? `webcal://${caminho}` : '';
+  const google = webcal ? `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcal)}` : '';
+
+  // Verifica se o link responde (e se a migração 0003 já foi rodada no Supabase).
+  const [status, setStatus] = useState<'testando' | 'ok' | 'falta-sql' | 'erro' | null>(null);
+  useEffect(() => {
+    if (!link) return;
+    setStatus('testando');
+    fetch(link, { cache: 'no-store' })
+      .then(async (r) => {
+        const corpo = await r.text();
+        if (r.ok && corpo.startsWith('BEGIN:VCALENDAR')) setStatus('ok');
+        else setStatus(r.status === 503 || /0003_calendario/.test(corpo) ? 'falta-sql' : 'erro');
+      })
+      .catch(() => setStatus('erro'));
+  }, [link]);
 
   return (
     <div className="pagina-calendario">
@@ -45,6 +63,28 @@ export function Calendario() {
         <section className="cartao destaque-borda">
           <h2>⭐ Opção recomendada: assinar o calendário</h2>
           <p>O calendário se atualiza sozinho quando você registra estudos ou conclui revisões.</p>
+          {status === 'ok' && <p className="ok-texto">✅ Seu calendário está funcionando.</p>}
+          {status === 'testando' && <p className="suave pequeno">Verificando o link…</p>}
+          {status === 'falta-sql' && (
+            <div className="aviso-edital" role="status">
+              <strong>Falta um passo no Supabase.</strong>
+              <p>
+                Rode o arquivo <code>supabase/migrations/0003_calendario.sql</code> no Supabase (SQL Editor → New query → colar → Run). Depois volte a esta
+                tela.
+              </p>
+            </div>
+          )}
+          {status === 'erro' && <p className="erro-texto">Não consegui acessar o link do calendário agora. Tente de novo em alguns minutos.</p>}
+          {token && (
+            <div className="acoes botoes-assinar">
+              <a className={`botao ${status === 'ok' ? '' : 'desativado'}`} href={webcal}>
+                📱 Assinar no iPhone / Mac
+              </a>
+              <a className={`botao secundario ${status === 'ok' ? '' : 'desativado'}`} href={google} target="_blank" rel="noreferrer">
+                Google Agenda
+              </a>
+            </div>
+          )}
           {token ? (
             <div className="copiar">
               <input readOnly value={link} onFocus={(e) => e.target.select()} aria-label="Link do calendário" />
@@ -63,11 +103,12 @@ export function Calendario() {
           )}
           <ul className="pequeno">
             <li>
-              <strong>Google Agenda (computador):</strong> Outras agendas → “+” → “Do URL” → cole o link. O Google atualiza a cada algumas horas; para receber
-              notificação, abra as configurações dessa agenda e defina uma “notificação padrão para eventos de dia inteiro”.
+              <strong>iPhone / Mac:</strong> toque em “Assinar no iPhone / Mac” e confirme. (Ou: Ajustes → Calendário → Contas → Adicionar Conta → Outra →
+              Adicionar Calendário Assinado → cole o link.) Deixe “Remover Alertas” <strong>desligado</strong> para receber o lembrete.
             </li>
             <li>
-              <strong>iPhone:</strong> Ajustes → Calendário → Contas → Adicionar Conta → Outra → Adicionar Calendário Assinado.
+              <strong>Google Agenda:</strong> toque em “Google Agenda” (ou, no computador: Outras agendas → “+” → “Do URL” → cole o link). O Google atualiza a
+              cada algumas horas; para receber notificação, defina nas configurações dessa agenda uma “notificação padrão para eventos de dia inteiro”.
             </li>
             <li>
               <strong>Outlook:</strong> Adicionar calendário → Assinar da Web.

@@ -28,7 +28,8 @@ Sem configurar nada, o app abre em **modo local** (dados só no navegador) — b
 1. Crie uma conta e um projeto gratuito em <https://supabase.com>.
 2. No projeto: **SQL Editor → New query**, cole o conteúdo de `supabase/migrations/0001_init.sql` e clique em **Run**.
    Isso cria as tabelas, as regras de segurança (cada usuário só vê os próprios dados) e o armazenamento dos PDFs.
-   Depois rode também `supabase/migrations/0002_sessoes_e_cores.sql` (cronômetro, tempo de estudo e cores personalizadas).
+   Depois rode também `supabase/migrations/0002_sessoes_e_cores.sql` (cronômetro, tempo de estudo e cores personalizadas)
+   e `supabase/migrations/0003_calendario.sql` (calendário assinável).
 3. Em **Project Settings → API**, copie a *Project URL* e a chave *anon public*.
 4. Copie `.env.example` para `.env` e preencha:
    ```
@@ -37,18 +38,11 @@ Sem configurar nada, o app abre em **modo local** (dados só no navegador) — b
    ```
 5. Em **Authentication → URL Configuration**, coloque o endereço onde o app ficará publicado em *Site URL* (para os e-mails de confirmação funcionarem).
 
-### Calendário que se atualiza sozinho (opcional, recomendado)
+### Calendário que se atualiza sozinho
 
-Publica uma função que entrega suas revisões pendentes em formato de calendário:
-
-```bash
-npx supabase login
-npx supabase link --project-ref SEU-PROJECT-REF
-npx supabase functions deploy calendario --no-verify-jwt
-```
-
-Depois, no app, vá em **🔔 Calendário**, copie o link e assine no Google Agenda (“Outras agendas → Do URL”), no iPhone ou no Outlook.
-Sem a função, use o botão **Baixar .ics**.
+Rode também `supabase/migrations/0003_calendario.sql` no SQL Editor. O calendário (.ics) é gerado pela rota
+`/api/calendario` da própria Vercel (pasta `api/`), publicada junto com o app — não precisa de linha de comando.
+No app, vá em **🔔 Calendário** e toque em “Assinar no iPhone / Mac” ou “Google Agenda”.
 
 ## Publicar
 
@@ -67,5 +61,6 @@ src/lib/store.tsx         estado e ações (criar plano, registrar estudo, concl
 src/lib/backend.ts        Supabase ou modo local
 src/lib/ics.ts            geração do calendário
 src/pages/                telas (Hoje, Plano, Novo plano, Evolução, Comparar, Calendário, Login)
-supabase/                 banco de dados e função do calendário
+supabase/                 banco de dados (migrações SQL)
+api/calendario.ts         calendário assinável (.ics), rota da Vercel
 ```

@@ -445,3 +445,5 @@ main { padding-bottom: 6rem; }
 .estudando-info { display: flex; flex-direction: column; color: var(--texto); text-decoration: none; min-width: 0; }
 .estudando-info .kpi-rotulo { display: inline-flex; align-items: center; gap: 0.35rem; }
 .relogio-mini { font-size: 1.6rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.botao.desativado { opacity: 0.45; pointer-events: none; }
+.botoes-assinar { margin: 0.6rem 0; }
