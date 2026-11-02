@@ -315,6 +315,8 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
                 <button
                   className="link perigo"
                   onClick={() => {
+                    const n = d.assuntos.length;
+                    if (!confirm(`Remover a disciplina "${d.nome}"${n ? ` e os ${n} assuntos dela` : ''} desta importação?`)) return;
                     alterar((c) => c.splice(i, 1));
                     setDesmarcadas(new Set([...desmarcadas].filter((x) => x !== i).map((x) => (x > i ? x - 1 : x))));
                   }}
@@ -330,7 +332,7 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
                       {a.codigo && <span className="codigo">{a.codigo}</span>}
                       <input value={a.nome} onChange={(e) => alterar((c) => (c[i].assuntos[j] = { ...a, nome: e.target.value }))} aria-label="Assunto" />
                       <ChipsCorrelacao itens={prev?.assuntos.get(`__a${i}_${j}`)} compacto />
-                      <button className="icone mini perigo" aria-label="Remover assunto" onClick={() => alterar((c) => c[i].assuntos.splice(j, 1))}>
+                      <button className="icone mini perigo" aria-label="Remover assunto" onClick={() => confirm(`Remover o assunto "${a.nome.slice(0, 80)}"?`) && alterar((c) => c[i].assuntos.splice(j, 1))}>
                         ×
                       </button>
                     </li>
