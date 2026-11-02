@@ -328,3 +328,7 @@ button.icone:hover { background: var(--superficie-2); }
 .bloco-cargo.sel { border-color: var(--primaria); background: color-mix(in srgb, var(--primaria) 8%, var(--superficie)); }
 .bloco-cargo input, .marcar-disc { width: auto; margin-top: 0.2rem; flex: none; }
 .prev-disc.desmarcada { opacity: 0.5; }
+.busca-cargo { margin-bottom: 0.6rem; }
+.grupo-cargo { margin: 0.6rem 0 0.3rem; font-weight: 600; }
+.blocos-cargo > div:first-child .grupo-cargo { margin-top: 0; }
+.bloco-cargo { margin-bottom: 0.4rem; }

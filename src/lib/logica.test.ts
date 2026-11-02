@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dividirBlocos, interpretarEdital, limparTexto, recortarConteudo } from './editalParser';
+import { dividirBlocos, interpretarCargo, interpretarEdital, limparTexto, listarCargos, recortarConteudo } from './editalParser';
 import { REVISOES, somarMeses } from './datas';
 import { calcularCorrelacoes, normalizar } from './correlacao';
 import type { Assunto, Disciplina, Plano } from './types';
@@ -64,7 +64,8 @@ describe('edital completo com vários cargos', () => {
   const pdf = [
     pg('Anexos:\na) Anexo I - CONTEÚDO PROGRAMÁTICO DAS PROVAS;\nb) Anexo II - ATRIBUIÇÕES;\n1. DAS DISPOSIÇÕES PRELIMINARES\n1.1 O concurso será regido por este edital.', 1),
     pg('2. DAS INSCRIÇÕES\n2.1 As inscrições serão feitas pela internet. 2.2 A taxa é de R$ 100.', 2),
-    pg('ANEXO I\nCONTEÚDO PROGRAMÁTICO DAS PROVAS OBJETIVAS\nCargos/especialidades do QUADRO I\nAnalista Contábil; Jornalista\nI. Conhecimentos Básicos\n' + LP + '\nCONTABILIDADE GERAL\n1 Patrimônio. 2 Balanço.', 3),
+    pg('ANEXO I\nCONTEÚDO PROGRAMÁTICO DAS PROVAS OBJETIVAS\nCargos/especialidades do QUADRO I\nAnalista Contábil; Analista de Comunicação e Jornalista\nI. Conhecimentos Básicos\n' + LP +
+      '\nII. Conhecimentos Específicos\nANALISTA CONTÁBIL\nCONTABILIDADE GERAL\n1 Patrimônio. 2 Balanço.\nANALISTA DE COMUNICAÇÃO\n1 Teorias da comunicação. 2 Mídias digitais.\nJORNALISTA\nTÉCNICAS DE REPORTAGEM: 1 Entrevista. 2 Apuração.', 3),
     pg('Cargos/especialidades do QUADRO II\nAdvogado e Analista Jurídico\nI. Conhecimentos Básicos\n' + LP + '\nII. Conhecimentos Específicos\nCONHECIMENTOS DO CARGO\nDIREITO CONSTITUCIONAL\nDireito Constitucional: 1 Constituição. 2 Poder constituinte.', 4),
     pg('ANEXO II\nATRIBUIÇÕES DOS CARGOS\nADVOGADO\nAtuar em processos judiciais.', 5),
   ].join('\n\f\n');
@@ -75,13 +76,23 @@ describe('edital completo com vários cargos', () => {
     expect(recorte).not.toContain('ATRIBUIÇÕES');
     const blocos = dividirBlocos(recorte);
     expect(blocos.map((b) => b.titulo)).toEqual([
-      'Cargos/especialidades do QUADRO I — Analista Contábil; Jornalista',
+      'Cargos/especialidades do QUADRO I — Analista Contábil; Analista de Comunicação e Jornalista',
       'Cargos/especialidades do QUADRO II — Advogado e Analista Jurídico',
     ]);
     const jur = interpretarEdital(blocos[1].texto);
     expect(jur.map((d) => d.nome)).toEqual(['Língua Portuguesa', 'Direito Constitucional']);
     expect(jur[0].assuntos.map((a) => a.nome)).toEqual(['Compreensão de textos', 'Ortografia oficial']);
     expect(jur[1].assuntos.map((a) => a.nome)).toEqual(['Constituição', 'Poder constituinte']);
+  });
+
+  it('lista cada cargo com os básicos do grupo + os específicos dele', () => {
+    const ops = listarCargos(recortarConteudo(limparTexto(pdf)));
+    expect(ops.map((o) => o.cargo)).toEqual(['Analista Contábil', 'Analista de Comunicação', 'Jornalista', 'Advogado', 'Analista Jurídico']);
+    const nomes = (i: number) => interpretarCargo(ops[i]).map((d) => `${d.nome}:${d.assuntos.length}`);
+    expect(nomes(0)).toEqual(['Língua Portuguesa:2', 'Contabilidade Geral:2']);
+    expect(nomes(1)).toEqual(['Língua Portuguesa:2', 'Conhecimentos específicos – Analista de Comunicação:2']);
+    expect(nomes(2)).toEqual(['Língua Portuguesa:2', 'Técnicas de Reportagem:2']);
+    expect(nomes(3)).toEqual(['Língua Portuguesa:2', 'Direito Constitucional:2']);
   });
 });
 

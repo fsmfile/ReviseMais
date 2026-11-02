@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { ChipsCorrelacao } from '../components/Correlacao';
 import { calcularCorrelacoes } from '../lib/correlacao';
-import { dividirBlocos, interpretarEdital, limparTexto, recortarConteudo, type BlocoCargo, type DisciplinaExtraida } from '../lib/editalParser';
+import { interpretarCargo, interpretarEdital, limparTexto, listarCargos, recortarConteudo, type DisciplinaExtraida, type OpcaoCargo } from '../lib/editalParser';
 import { ir } from '../lib/rota';
 import { CORES, useDados } from '../lib/store';
 import type { Assunto, Disciplina, Plano } from '../lib/types';
@@ -22,29 +22,34 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
   const [texto, setTexto] = useState('');
   const [progresso, setProgresso] = useState<number | null>(null);
   const [estrutura, setEstrutura] = useState<DisciplinaExtraida[] | null>(null);
-  const [blocos, setBlocos] = useState<BlocoCargo[]>([]);
-  const [blocosSel, setBlocosSel] = useState<Set<number>>(new Set());
+  const [cargos, setCargos] = useState<OpcaoCargo[]>([]);
+  const [cargoSel, setCargoSel] = useState<number | null>(null);
+  const [buscaCargo, setBuscaCargo] = useState('');
   const [desmarcadas, setDesmarcadas] = useState<Set<number>>(new Set());
+  const [nomeAuto, setNomeAuto] = useState('');
 
-  const aplicarBlocos = (bl: BlocoCargo[], sel: Set<number>) => {
-    setBlocosSel(sel);
+  const escolherCargo = (ops: OpcaoCargo[], i: number | null) => {
+    setCargoSel(i);
     setDesmarcadas(new Set());
-    setEstrutura(sel.size ? interpretarEdital(bl.filter((_, i) => sel.has(i)).map((b) => b.texto).join('\n')) : null);
+    setEstrutura(i == null ? null : interpretarCargo(ops[i]));
+    // Se o nome da aba ainda é o sugerido pelo app, inclui o cargo nele.
+    if (i != null && !existente && (!nome || nome === nomeAuto)) {
+      const base = pdf ? pdf.name.replace(/\.pdf$/i, '').replace(/[_-]+/g, ' ').slice(0, 30) : '';
+      const novo = base ? `${base} – ${ops[i].cargo}` : ops[i].cargo;
+      setNome(novo);
+      setNomeAuto(novo);
+    }
   };
 
-  /** Detecta blocos por cargo; se houver, pede a escolha antes de montar a estrutura. */
+  /** Detecta os cargos do edital; se houver mais de um, pede a escolha antes de montar a estrutura. */
   const processar = (txt: string) => {
-    const bl = dividirBlocos(txt);
-    setBlocos(bl);
-    if (bl.length) {
-      // Sugere o bloco jurídico (o app é para concursos jurídicos).
-      // Ignora "(exceto Advogado, ...)" para não sugerir o bloco errado.
-      const jur = bl.findIndex((b) =>
-        /advogad|jur[ií]dic|procurador|juiz|promotor|defensor|delegad|magistrat/i.test(b.titulo.replace(/\(?\s*exceto[^)/—]*\)?/gi, '')),
-      );
-      aplicarBlocos(bl, new Set(jur >= 0 ? [jur] : []));
+    const ops = listarCargos(txt);
+    setCargos(ops);
+    setBuscaCargo('');
+    if (ops.length >= 2) {
+      escolherCargo(ops, null);
     } else {
-      setBlocosSel(new Set());
+      setCargoSel(null);
       setDesmarcadas(new Set());
       setEstrutura(interpretarEdital(txt));
     }
@@ -67,7 +72,11 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
       const recorte = recortarConteudo(limparTexto(bruto));
       setTexto(recorte);
       processar(recorte);
-      if (!nome && !existente) setNome(f.name.replace(/\.pdf$/i, '').replace(/[_-]+/g, ' ').slice(0, 40));
+      if (!nome && !existente) {
+        const n = f.name.replace(/\.pdf$/i, '').replace(/[_-]+/g, ' ').slice(0, 40);
+        setNome(n);
+        setNomeAuto(n);
+      }
     } catch (e) {
       setErro(`Não consegui ler o PDF: ${(e as Error).message}`);
     }
@@ -194,35 +203,39 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
         {erro && <p className="erro-texto">{erro}</p>}
       </section>
 
-      {blocos.length > 0 && origem !== 'branco' && (
+      {cargos.length > 0 && origem !== 'branco' && (
         <section className="cartao">
           <h2>{existente ? '2.' : '3.'} Escolha o seu cargo</h2>
           <p className="suave">
-            Este edital tem conteúdo programático diferente para cada grupo de cargos. Marque o(s) que você vai prestar — só eles serão importados.
+            Encontrei {cargos.length} cargos neste edital. Escolha o seu: serão importados os conhecimentos básicos do grupo dele e os específicos do cargo.
           </p>
-          <div className="blocos-cargo">
-            {blocos.map((b, i) => (
-              <label key={i} className={`bloco-cargo ${blocosSel.has(i) ? 'sel' : ''}`}>
-                <input
-                  type="checkbox"
-                  checked={blocosSel.has(i)}
-                  onChange={(e) => {
-                    const n = new Set(blocosSel);
-                    e.target.checked ? n.add(i) : n.delete(i);
-                    aplicarBlocos(blocos, n);
-                  }}
-                />
-                <span>{b.titulo}</span>
-              </label>
-            ))}
+          {cargos.length > 6 && (
+            <input type="search" className="busca-cargo" placeholder="Buscar cargo (ex.: advogado)" value={buscaCargo} onChange={(e) => setBuscaCargo(e.target.value)} />
+          )}
+          <div className="blocos-cargo" role="radiogroup" aria-label="Cargo">
+            {cargos.map((c, i) => {
+              const termo = buscaCargo.trim().toLowerCase();
+              if (termo && !c.cargo.toLowerCase().includes(termo) && cargoSel !== i) return null;
+              const novoGrupo = i === 0 || cargos[i - 1].grupo !== c.grupo;
+              return (
+                <div key={i}>
+                  {novoGrupo && !termo && <p className="grupo-cargo pequeno suave">{c.grupo}</p>}
+                  <label className={`bloco-cargo ${cargoSel === i ? 'sel' : ''}`}>
+                    <input type="radio" name="cargo" checked={cargoSel === i} onChange={() => escolherCargo(cargos, i)} />
+                    <span>{c.cargo}</span>
+                  </label>
+                </div>
+              );
+            })}
           </div>
+          {cargoSel == null && <p className="pequeno suave">Selecione um cargo para ver as disciplinas.</p>}
         </section>
       )}
 
       {estrutura && origem !== 'branco' && (
         <section className="cartao">
           <h2>
-            {(existente ? 2 : 3) + (blocos.length ? 1 : 0)}. Revise o edital verticalizado
+            {(existente ? 2 : 3) + (cargos.length ? 1 : 0)}. Revise o edital verticalizado
           </h2>
           <p className="suave">
             {estrutura.length - desmarcadas.size} de {estrutura.length} disciplinas marcadas · {total} assuntos. Desmarque o que não cai para você e
@@ -290,7 +303,7 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
         <button className="secundario" onClick={() => history.back()}>
           Cancelar
         </button>
-        <button onClick={salvar} disabled={salvando || (!!existente && !estrutura?.length) || (blocos.length > 0 && !blocosSel.size && origem !== 'branco')}>
+        <button onClick={salvar} disabled={salvando || (!!existente && !estrutura?.length) || (cargos.length > 0 && cargoSel == null && origem !== 'branco')}>
           {salvando ? 'Salvando…' : existente ? 'Adicionar ao plano' : 'Criar plano'}
         </button>
       </footer>

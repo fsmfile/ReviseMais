@@ -19,7 +19,7 @@ const NAO_DISCIPLINA =
   /^(anexo|conteudo programatico|conhecimentos (basicos|gerais|especificos|complementares|do cargo|da area)|cargo|cargos|edital|prova|provas|nivel|para todos|objetos? de avaliacao|habilidades|observac|obs\b|grupo|bloco|modulo|parte|area|especialidade|todos os cargos|disciplinas?\b|materias?\b)/;
 
 const DISCIPLINAS_TITULO =
-  /(^|\n)[ \t]*((?:No[cç][oõ]es(?: B[aá]sicas)? de |Conhecimentos de )?(?:Direito|L[ií]ngua|Legisla[cç][aã]o|Racioc[ií]nio|Inform[aá]tica|Matem[aá]tica|[EÉ]tica|Portugu[eê]s|Criminologia|Medicina Legal|Filosofia|Sociologia|Economia|Contabilidade|Administra[cç][aã]o|Arquivologia|Estatuto|Atualidades|Human[ií]stica|Teoria Geral|Psicologia|Hist[oó]ria|Geografia|Realidade|Gest[aã]o|Auditoria|Finan[cç]as|Estat[ií]stica)[^\n:.;]{0,80})[ \t]*:/g;
+  /(^|\n)[ \t]*(?:[IVX]+[ \t]*[-–.][ \t]*)?((?:No[cç][oõ]es(?: B[aá]sicas)? de |Conhecimentos de )?(?:Direito|L[ií]ngua|Legisla[cç][aã]o|Racioc[ií]nio|Inform[aá]tica|Matem[aá]tica|[EÉ]tica|Portugu[eê]s|Criminologia|Medicina Legal|Filosofia|Sociologia|Economia|Contabilidade|Administra[cç][aã]o|Arquivologia|Estatuto|Atualidades|Human[ií]stica|Teoria Geral|Psicologia|Hist[oó]ria|Geografia|Realidade|Gest[aã]o|Auditoria|Finan[cç]as|Estat[ií]stica)[^\n:.;]{0,80})[ \t]*:/g;
 
 const MAIUSCULAS_COM_DOIS_PONTOS =
   /((?:[A-ZÀ-ÖØ-Þ0-9ºª()/,–-]+[ \t]+){0,12}[A-ZÀ-ÖØ-Þ(]{2,}[A-ZÀ-ÖØ-Þ()ºª/-]*)[ \t]*:/g;
@@ -117,6 +117,90 @@ export function dividirBlocos(texto: string): BlocoCargo[] {
   if (pendente && blocos.length) blocos[blocos.length - 1].texto += '\n' + pendente.texto;
   // Texto antes do primeiro bloco com matérias comuns a todos (raro) é ignorado; 1 bloco só não precisa de escolha.
   return blocos.length >= 2 ? blocos : [];
+}
+
+export interface OpcaoCargo {
+  cargo: string;
+  /** Nome do grupo/quadro a que o cargo pertence. */
+  grupo: string;
+  /** Conhecimentos básicos do grupo (comuns a todos os cargos dele). */
+  basicos: string;
+  /** Conhecimentos específicos só deste cargo (null quando o grupo inteiro tem o mesmo conteúdo). */
+  especificos: string | null;
+}
+
+const normCargo = (s: string) => ` ${semAcentos(s.toLowerCase()).replace(/[^a-z0-9]+/g, ' ').trim()} `;
+const LINHA_ESPECIFICOS = /^\s*II\s*[.\-–)]\s*conhecimentos\s+espec/i;
+const LINHA_BASICOS = /^\s*I\s*[.\-–)]\s*conhecimentos\b/i;
+
+function nomeCargo(linha: string): string {
+  // "ANALISTA DE BANCO DE DADOS (DBA)" -> "Analista de Banco de Dados (DBA)"
+  const t = tituloDisciplina(linha.trim());
+  return t.replace(/\(([^)]{1,6})\)/g, (m, x) => (x === x.toLowerCase() && /^[a-z/.]+$/i.test(x) ? `(${x.toUpperCase()})` : m));
+}
+
+/**
+ * Lista os cargos do edital, cada um com os básicos do seu grupo e os específicos do cargo.
+ * Os títulos de cargo dentro dos "Conhecimentos Específicos" são reconhecidos por aparecerem
+ * na lista de cargos do cabeçalho do grupo (ex.: "Analista Contábil; ...; Contador e Jornalista").
+ */
+export function listarCargos(texto: string): OpcaoCargo[] {
+  const opcoes: OpcaoCargo[] = [];
+  for (const bloco of dividirBlocos(texto)) {
+    const linhas = bloco.texto.split('\n');
+    const grupo = (bloco.titulo.split(/ — | \/ /)[0] || bloco.titulo).trim();
+    // Cabeçalho do grupo = linhas antes de "I. Conhecimentos..." ou do primeiro título de matéria.
+    let fimCab = linhas.findIndex((l) => LINHA_BASICOS.test(l) || LINHA_ESPECIFICOS.test(l));
+    if (fimCab < 0) {
+      const primeiro = encontrarCabecalhos(bloco.texto)[0];
+      fimCab = primeiro ? bloco.texto.slice(0, primeiro.inicio).split('\n').length - 1 : 0;
+    }
+    const cabecalho = linhas.slice(0, fimCab);
+    const listaCargos = cabecalho.filter((l) => l.trim() && !INICIO_BLOCO.test(l)).join(' ');
+    const alvo = normCargo(listaCargos);
+
+    const iEsp = linhas.findIndex((l) => LINHA_ESPECIFICOS.test(l));
+    const inicioEsp = iEsp >= 0 ? iEsp + 1 : fimCab;
+    // Títulos de cargo: linha inteira em maiúsculas que está na lista de cargos do cabeçalho.
+    const titulos: number[] = [];
+    for (let i = inicioEsp; i < linhas.length; i++) {
+      const t = linhas[i].trim();
+      if (!t || t.includes(':') || t.length > 120 || !ehMaiusculo(t)) continue;
+      const n = normCargo(t);
+      if (n.trim().length >= 4 && alvo.includes(n)) titulos.push(i);
+    }
+
+    if (titulos.length) {
+      const basicos = linhas.slice(fimCab, iEsp >= 0 ? iEsp : titulos[0]).join('\n');
+      titulos.forEach((ini, k) => {
+        opcoes.push({
+          cargo: nomeCargo(linhas[ini]),
+          grupo,
+          basicos,
+          especificos: linhas.slice(ini + 1, titulos[k + 1] ?? linhas.length).join('\n'),
+        });
+      });
+    } else {
+      // Mesmo conteúdo para todos os cargos do grupo (ex.: "Advogado e Analista Jurídico").
+      const nomes = listaCargos
+        .split(/;|,|\s+e\s+(?=\p{Lu})/u)
+        .map((x) => x.replace(/[.:]+$/, '').trim())
+        .filter((x) => x.length >= 3 && x.length <= 80);
+      const conteudo = linhas.slice(fimCab).join('\n');
+      for (const cargo of nomes.length ? nomes : [grupo]) opcoes.push({ cargo, grupo, basicos: conteudo, especificos: null });
+    }
+  }
+  return opcoes;
+}
+
+/** Monta as disciplinas de um cargo: básicos do grupo + específicos do cargo. */
+export function interpretarCargo(op: OpcaoCargo): DisciplinaExtraida[] {
+  const basicos = interpretarEdital(op.basicos);
+  if (!op.especificos) return basicos;
+  const esp = interpretarEdital(op.especificos).map((d) =>
+    d.nome === 'Conteúdo do edital' ? { ...d, nome: `Conhecimentos específicos – ${op.cargo}` } : d,
+  );
+  return [...basicos, ...esp];
 }
 
 /** Separador de páginas inserido na extração do PDF. */
@@ -219,6 +303,9 @@ function encontrarCabecalhos(texto: string): Cabecalho[] {
     const nome = limparNome(m[1]);
     if (ehMaiusculo(nome) && nomeValido(nome)) {
       const inicio = m.index! + m[0].indexOf(m[1]);
+      // Só vale como título no início da linha ou depois do fim de uma frase (evita "linguagem SQL: ...").
+      const antes = texto.slice(Math.max(0, inicio - 3), inicio);
+      if (inicio > 0 && !/(^|[\n.;])\s*$/.test(antes) && !/[.;]\s*\d*\s*$/.test(texto.slice(Math.max(0, inicio - 12), inicio))) continue;
       achados.push({ inicio, fim: m.index! + m[0].length, nome });
     }
   }
@@ -328,6 +415,9 @@ export function interpretarEdital(texto: string): DisciplinaExtraida[] {
           nome: tituloDisciplina(c.nome),
           corpo: limpo.slice(c.fim, cabecalhos[i + 1]?.inicio ?? limpo.length),
         }));
+  // Conteúdo antes do primeiro título (ex.: específicos de um cargo que começam direto nos assuntos).
+  const preambulo = cabecalhos.length ? limpo.slice(0, cabecalhos[0].inicio).trim() : '';
+  if (preambulo.length > 80) blocos.unshift({ nome: 'Conteúdo do edital', corpo: preambulo });
 
   const porNome = new Map<string, DisciplinaExtraida>();
   for (const b of blocos) {
