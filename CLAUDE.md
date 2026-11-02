@@ -29,3 +29,7 @@ O usuário vai enviar editais de formatos diferentes. Cada um deve virar parte p
 6. **Testar no app** (Playwright, tela de celular 390px) importando o PDF por “+ Novo plano”, e depois commit + push.
 
 Os PDFs recebidos ficam fora do repositório; guarde só o `texto.txt` extraído.
+
+Formatos de banca ainda sem edital real estão **simulados** em `src/lib/formatos.test.ts` (Cebraspe, Vunesp, FCC).
+Quando chegar um edital real dessas bancas, ele tem prioridade: se divergir da simulação, ajuste a simulação.
+Para comparar o resultado novo com o guardado de um edital antigo, liste as diferenças por cargo antes de rodar `--atualizar`.

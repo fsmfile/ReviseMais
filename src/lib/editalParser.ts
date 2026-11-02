@@ -12,14 +12,19 @@ export interface DisciplinaExtraida {
 }
 
 const INICIO_CONTEUDO =
-  /conte[uú]do\s+program[aá]tico|objetos?\s+de\s+avalia[cç][aã]o|programa\s+das\s+(disciplinas|provas|mat[eé]rias)|rela[cç][aã]o\s+de\s+mat[eé]rias/i;
+  /conte[uú]do\s+program[aá]tico|conhecimentos\s+a\s+serem\s+avaliados|objetos?\s+de\s+avalia[cç][aã]o|programa\s+das\s+(disciplinas|provas|mat[eé]rias)|rela[cç][aã]o\s+de\s+mat[eé]rias/i;
 
 /** Nomes que aparecem em maiúsculas no edital mas não são disciplinas. */
 const NAO_DISCIPLINA =
-  /^(anexo|conteudo programatico|conhecimentos (basicos|gerais|especificos|complementares|do cargo|da area)|cargo|cargos|edital|prova|provas|nivel|para todos|objetos? de avaliacao|habilidades|observac|obs\b|grupo|bloco|modulo|parte|area|especialidade|todos os cargos|disciplinas?\b|materias?\b)/;
+  /^(anexo|conteudo programatico|conhecimentos (basicos|gerais|especificos|complementares|do cargo|da area)|cargo|cargos|edital|prova|provas|nivel|para todos|objetos? de avaliacao|conhecimentos$|habilidades|observac|obs\b|grupo|bloco|modulo|parte|area|especialidade|todos os cargos|disciplinas?\b|materias?\b)/;
 
-const DISCIPLINAS_TITULO =
-  /(^|\n)[ \t]*(?:[IVX]+[ \t]*[-–.][ \t]*)?((?:No[cç][oõ]es(?: B[aá]sicas)? de |Conhecimentos de )?(?:Direito|L[ií]ngua|Legisla[cç][aã]o|Racioc[ií]nio|Inform[aá]tica|Matem[aá]tica|[EÉ]tica|Portugu[eê]s|Criminologia|Medicina Legal|Filosofia|Sociologia|Economia|Contabilidade|Administra[cç][aã]o|Arquivologia|Estatuto|Atualidades|Human[ií]stica|Teoria Geral|Psicologia|Hist[oó]ria|Geografia|Realidade|Gest[aã]o|Auditoria|Finan[cç]as|Estat[ií]stica)[^\n:.;]{0,80})[ \t]*:/g;
+/** Início de nome de disciplina comum em editais (usado quando o nome não está em maiúsculas). */
+const NOME_DISCIPLINA =
+  '(?:No[cç][oõ]es(?: B[aá]sicas)? de |Conhecimentos de )?(?:Direito|L[ií]ngua|Legisla[cç][aã]o|Racioc[ií]nio|Inform[aá]tica|Matem[aá]tica|[EÉ]tica|Portugu[eê]s|Criminologia|Medicina Legal|Filosofia|Sociologia|Economia|Contabilidade|Administra[cç][aã]o|Arquivologia|Estatuto|Atualidades|Human[ií]stica|Teoria Geral|Psicologia|Hist[oó]ria|Geografia|Realidade|Gest[aã]o|Auditoria|Finan[cç]as|Estat[ií]stica)';
+
+const DISCIPLINAS_TITULO = new RegExp(`(^|\\n)[ \\t]*(?:[IVX]+[ \\t]*[-–.][ \\t]*)?(${NOME_DISCIPLINA}[^\\n:.;]{0,80})[ \\t]*:`, 'g');
+/** Disciplina sozinha na linha, sem dois-pontos (ex.: Vunesp: "Língua Portuguesa"). */
+const DISCIPLINA_LINHA = new RegExp(`^(?:[IVX]+\\s*[-–.]\\s*)?(${NOME_DISCIPLINA}[^:.;,]{0,60})$`);
 
 const MAIUSCULAS_COM_DOIS_PONTOS =
   /((?:[A-ZÀ-ÖØ-Þ0-9ºª()/,–-]+[ \t]+){0,12}[A-ZÀ-ÖØ-Þ(]{2,}[A-ZÀ-ÖØ-Þ()ºª/-]*)[ \t]*:/g;
@@ -60,16 +65,38 @@ export function recortarConteudo(texto: string): string {
     const m = INICIO_CONTEUDO.exec(texto)!;
     return texto.slice(m.index);
   }
-  // Termina no próximo "ANEXO ..." em linha própria.
+  // Conteúdo dentro de um item do edital (Cebraspe: "14 DOS CONHECIMENTOS A SEREM AVALIADOS"):
+  // termina no item seguinte ("15 DAS DISPOSIÇÕES FINAIS").
+  const item = /^\s*(\d+)\s/.exec(linhas[inicioLinha])?.[1];
+  const proximoItem = item ? new RegExp(`^\\s*${Number(item) + 1}\\.?\\s+D[AO]S?\\s+\\p{Lu}`, 'u') : null;
+  // Termina no próximo "ANEXO ..." em linha própria (ou no item seguinte).
   let fimLinha = linhas.length;
   for (let i = inicioLinha + 1; i < linhas.length; i++) {
-    if (LINHA_ANEXO.test(linhas[i]) && linhas[i].trim().length < 60) {
+    if ((LINHA_ANEXO.test(linhas[i]) && linhas[i].trim().length < 60) || proximoItem?.test(linhas[i])) {
       fimLinha = i;
       break;
     }
   }
   // O conteúdo começa logo depois da linha de título.
-  return linhas.slice(inicioLinha + 1, fimLinha).join('\n');
+  const corpo = linhas.slice(inicioLinha + 1, fimLinha);
+  if (!item) return corpo.join('\n');
+  // Subitens do edital ("14.2.1 Nas provas, serão avaliados...") não são matéria: some com eles e com a continuação
+  // da frase; se o subitem for só um título em maiúsculas ("14.2.1.1 CONHECIMENTOS BÁSICOS"), fica o título.
+  const subitem = new RegExp(`^\\s*${item}(\\.\\d+)+\\.?\\s+(.*)$`);
+  const saida: string[] = [];
+  let pulando = false;
+  for (const l of corpo) {
+    const m = subitem.exec(l);
+    if (m) {
+      pulando = !ehMaiusculo(m[2]);
+      if (!pulando) saida.push(m[2]);
+      continue;
+    }
+    if (pulando && (!l.trim() || /^\s*\p{Ll}/u.test(l))) continue;
+    pulando = false;
+    saida.push(l);
+  }
+  return saida.join('\n');
 }
 
 export interface BlocoCargo {
@@ -98,7 +125,8 @@ export function dividirBlocos(texto: string): BlocoCargo[] {
     // Título = linha do bloco + a linha seguinte se for a lista de cargos (texto comum, não cabeçalho de matéria).
     let titulo = naoVazias[0] ?? '';
     const seg = naoVazias[1];
-    if (seg && !ehMaiusculo(seg) && !/^[IVX]+\.\s/.test(seg) && seg.length < 400) titulo += ' — ' + seg;
+    if (seg && !ehMaiusculo(seg) && !/^[IVX]+\.\s/.test(seg) && !/^\d/.test(seg) && seg.length < 400 && !encontrarCabecalhos(seg).length)
+      titulo += ' — ' + seg;
     return { titulo, texto: corpo.join('\n'), temMaterias: encontrarCabecalhos(corpo.join('\n')).length > 0 };
   });
 
@@ -145,8 +173,28 @@ function nomeCargo(linha: string): string {
  * na lista de cargos do cabeçalho do grupo (ex.: "Analista Contábil; ...; Contador e Jornalista").
  */
 export function listarCargos(texto: string): OpcaoCargo[] {
-  const opcoes: OpcaoCargo[] = [];
-  for (const bloco of dividirBlocos(texto)) {
+  const limpo = limparTexto(texto);
+  const blocosFortes = dividirBlocos(limpo);
+  const opcoes = blocosFortes.length ? cargosPorBlocos(blocosFortes) : cargosPorTitulos(limpo);
+  if (!opcoes.length) return opcoes;
+  // Matérias antes do primeiro cargo ("CONHECIMENTOS BÁSICOS PARA TODOS OS CARGOS") valem para todos.
+  const primeiro = blocosFortes.length ? limpo.indexOf(blocosFortes[0].texto) : limpo.indexOf(opcoes[0].inicioTexto ?? '\u0000');
+  const comum = primeiro > 0 ? limpo.slice(0, primeiro) : '';
+  const temMaterias = comum && interpretarEdital(comum).some((d) => d.nome !== 'Conteúdo do edital');
+  return opcoes.map(({ inicioTexto: _, ...o }) => (temMaterias ? { ...o, basicos: `${comum}\n${o.basicos}` } : o));
+}
+
+type OpcaoInterna = OpcaoCargo & { inicioTexto?: string };
+
+/** "CARGO 1: ANALISTA JUDICIÁRIO – ÁREA: JUDICIÁRIA" -> "Analista Judiciário – Área: Judiciária" */
+function cargoDoTitulo(titulo: string): string {
+  return nomeCargo(titulo.replace(/^\s*cargos?\s*(\/\s*especialidades?)?\s*\d*\s*[:–-]\s*/i, ''));
+}
+
+/** Cargos dentro de blocos "Cargos/especialidades ..." / "QUADRO ..." / "CARGO N: ...". */
+function cargosPorBlocos(blocos: BlocoCargo[]): OpcaoInterna[] {
+  const opcoes: OpcaoInterna[] = [];
+  for (const bloco of blocos) {
     const linhas = bloco.texto.split('\n');
     const grupo = (bloco.titulo.split(/ — | \/ /)[0] || bloco.titulo).trim();
     // Cabeçalho do grupo = linhas antes de "I. Conhecimentos..." ou do primeiro título de matéria.
@@ -187,15 +235,42 @@ export function listarCargos(texto: string): OpcaoCargo[] {
         .map((x) => x.replace(/[.:]+$/, '').trim())
         .filter((x) => x.length >= 3 && x.length <= 80);
       const conteudo = linhas.slice(fimCab).join('\n');
-      for (const cargo of nomes.length ? nomes : [grupo]) opcoes.push({ cargo, grupo, basicos: conteudo, especificos: null });
+      for (const cargo of nomes.length ? nomes : [cargoDoTitulo(grupo)]) opcoes.push({ cargo, grupo, basicos: conteudo, especificos: null });
     }
   }
   return opcoes;
 }
 
+const PALAVRA_CARGO =
+  /^(analista|t[eé]cnico|escrevente|oficial|juiz|promotor|procurador|defensor|delegado|auditor|assistente|agente|escriv[aã]o|inspetor|perito|advogado|assessor|investigador|papiloscopista|auxiliar|tabeli[aã]o|registrador|not[aá]rio|titular|consultor|especialista|fiscal|contador|administrador|economista|engenheiro|m[eé]dico|psic[oó]logo|assistente social|bibliotec[aá]rio|arquivista)\b/i;
+
+/** Sem blocos "Cargo ...": títulos de cargo em maiúsculas em linha própria (FCC, Vunesp). */
+function cargosPorTitulos(limpo: string): OpcaoInterna[] {
+  const linhas = limpo.split('\n');
+  const titulos = linhas
+    .map((l, i) => ({ t: l.trim(), i }))
+    .filter(
+      ({ t }) =>
+        t.length >= 6 &&
+        t.length <= 110 &&
+        ehMaiusculo(t) &&
+        PALAVRA_CARGO.test(semAcentos(t)) &&
+        !/[.;:,]$/.test(t) &&
+        !/\b(direito|legisla|nocoes|conhecimentos|lingua)\b/i.test(semAcentos(t)),
+    );
+  if (titulos.length < 2) return [];
+  return titulos.map(({ t, i }, k) => ({
+    cargo: nomeCargo(t),
+    grupo: 'Cargos',
+    basicos: '',
+    especificos: linhas.slice(i + 1, titulos[k + 1]?.i ?? linhas.length).join('\n'),
+    inicioTexto: k === 0 ? linhas[i] : undefined,
+  }));
+}
+
 /** Monta as disciplinas de um cargo: básicos do grupo + específicos do cargo. */
 export function interpretarCargo(op: OpcaoCargo): DisciplinaExtraida[] {
-  const basicos = interpretarEdital(op.basicos);
+  const basicos = op.basicos.trim() ? interpretarEdital(op.basicos) : [];
   if (!op.especificos) return basicos;
   const esp = interpretarEdital(op.especificos).map((d) =>
     d.nome === 'Conteúdo do edital' ? { ...d, nome: `Conhecimentos específicos – ${op.cargo}` } : d,
@@ -318,6 +393,27 @@ function encontrarCabecalhos(texto: string): Cabecalho[] {
     }
   }
 
+  // Disciplina conhecida sozinha na linha, sem dois-pontos (Vunesp), logo após o fim de uma frase ou de um título.
+  {
+    let p = 0;
+    let anterior = '';
+    for (const linha of texto.split('\n')) {
+      const t = linha.trim();
+      if (t) {
+        const m = DISCIPLINA_LINHA.exec(t);
+        if (m && t.split(/\s+/).length <= 9 && (!anterior || /[.:;]$/.test(anterior) || ehMaiusculo(anterior))) {
+          const nome = limparNome(m[1]);
+          if (nomeValido(nome)) {
+            const inicio = p + linha.indexOf(t);
+            achados.push({ inicio, fim: inicio + t.length, nome });
+          }
+        }
+        anterior = t;
+      }
+      p += linha.length + 1;
+    }
+  }
+
   // Linha inteira em maiúsculas, sem dois-pontos (ex.: "DIREITO PENAL" seguido de "1 Aplicação...").
   let pos = 0;
   for (const linha of texto.split('\n')) {
@@ -390,7 +486,7 @@ function dividirSemNumero(corpo: string): AssuntoExtraido[] {
   return corpo
     .replace(/\n\s*[•▪●◦·\-–]\s*/g, '\u0000') // marcadores de lista viram separadores
     .replace(/\s*\n\s*/g, ' ') // quebras de linha do PDF não separam assuntos
-    .split(/\u0000|;\s+|\.\s+(?=["“(]?\p{Lu})/u)
+    .split(/\u0000|;\s+(?=["“(]?\p{Lu})|\.\s+(?=["“(]?\p{Lu})/u)
     .map(limparNome)
     .filter((s) => s.length >= 3)
     .map((nome) => ({ codigo: null, nome, nivel: 1 }));

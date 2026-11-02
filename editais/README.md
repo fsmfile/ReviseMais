@@ -17,6 +17,17 @@ Cada pasta tem:
 |---|---|---|---|
 | `cremerj-2026-consulplan` | CREMERJ · Consulplan · 2026 | Edital completo; conteúdo no Anexo I; 4 grupos (“Cargos/especialidades do QUADRO I–IV”) com Conhecimentos Básicos comuns e Específicos com título por cargo; numeração estilo Cebraspe | ✅ 22 cargos; jurídicos conferidos |
 
+### Formatos simulados (sem edital real ainda)
+
+Montados a partir da estrutura usual de cada banca, em `src/lib/formatos.test.ts`. Quando chegar um edital real
+da banca, ele entra na tabela acima e confirma (ou corrige) a regra.
+
+| Banca | Padrão simulado |
+|---|---|
+| Cebraspe | Conteúdo dentro de um item do edital (“14 DOS CONHECIMENTOS A SEREM AVALIADOS”), terminando no item seguinte; subitens do edital (“14.2.1 Nas provas…”) ignorados; “CONHECIMENTOS BÁSICOS PARA TODOS OS CARGOS”; “CARGO 1: ANALISTA JUDICIÁRIO – ÁREA: JUDICIÁRIA”; “DISCIPLINA: 1 … 1.1 …” |
+| Vunesp | Disciplina em linha própria sem dois-pontos (“Língua Portuguesa”); assuntos em frases; cargos em maiúsculas (“ESCREVENTE TÉCNICO JUDICIÁRIO”) sem lista prévia |
+| FCC | “Disciplina: assunto. assunto.”; subitens em minúsculas após “;” mantidos no mesmo assunto; cargos em maiúsculas sem lista prévia |
+
 ## Formatos que o leitor já entende
 
 - **Onde começa o conteúdo:** título “Conteúdo Programático”, “Objetos de Avaliação”, “Programa das Provas”… em linha própria
@@ -25,7 +36,10 @@ Cada pasta tem:
 - **Disciplinas:** maiúsculas com dois-pontos (`DIREITO PENAL: 1 ...`), maiúsculas em linha própria, ou nome conhecido em
   formato título (`Direito Penal: ...`, `I - Conhecimentos de Direito Administrativo: ...`).
 - **Assuntos:** numerados (1, 1.1, 1.1.1 — valida a sequência para não confundir com “Lei nº 8.112”) ou frases separadas por ponto/ponto e vírgula.
-- **Vários cargos:** blocos “Cargo(s)/especialidade(s) …” / “QUADRO …”; básicos do grupo + títulos de cargo nos específicos.
+- **Vários cargos:** blocos “Cargo(s)/especialidade(s) …” / “QUADRO …” / “CARGO N: …”; básicos do grupo + títulos de cargo nos
+  específicos; sem blocos, títulos de cargo em maiúsculas (ANALISTA…, TÉCNICO…, ESCREVENTE…). Matérias antes do primeiro
+  cargo (“para todos os cargos”) entram em todos.
+- **Disciplinas sem dois-pontos** em linha própria quando o nome é de disciplina conhecida (Direito…, Língua…, Noções de…).
 
 ## Como ensinar um edital novo
 
