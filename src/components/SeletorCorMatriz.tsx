@@ -9,12 +9,17 @@ import { Modal } from './Modal';
 export function SeletorCorMatriz({
   titulo,
   valor,
+  sugerida,
+  aviso,
   extra,
   aoEscolher,
   aoFechar,
 }: {
   titulo: string;
   valor: string | null | undefined;
+  /** Cor que o app usa quando nada foi escolhido. */
+  sugerida?: string;
+  aviso?: string;
   /** Opções extras (ex.: "aplicar também aos subitens"). */
   extra?: React.ReactNode;
   aoEscolher: (cor: string | null) => void;
@@ -23,6 +28,16 @@ export function SeletorCorMatriz({
   const [cor, setCor] = useState<string | null>(valor ?? null);
   return (
     <Modal titulo={titulo} aoFechar={aoFechar}>
+      {aviso && <p className="pequeno suave">{aviso}</p>}
+      {sugerida && (
+        <button type="button" className={`cor-sugerida ${!cor ? 'sel' : ''}`} onClick={() => setCor(null)} aria-pressed={!cor}>
+          <span className="previa-cor" style={{ background: sugerida }} aria-hidden />
+          <span>
+            <strong>Cor sugerida</strong>
+            <span className="pequeno suave"> — usada quando você não escolhe</span>
+          </span>
+        </button>
+      )}
       <div className="matriz-cores" role="radiogroup" aria-label="Cores">
         {MATRIZ_CORES.map((linha, i) => (
           <div className="matriz-linha" key={i}>
@@ -47,19 +62,19 @@ export function SeletorCorMatriz({
           <input type="color" value={cor ?? '#2f6fdf'} onChange={(e) => setCor(e.target.value)} aria-label="Cor personalizada" />
           Cor personalizada
         </label>
-        <span className="previa-cor" style={{ background: cor ?? 'transparent' }} aria-hidden />
-        <span className="pequeno suave">{cor ?? 'padrão'}</span>
+        <span className="previa-cor" style={{ background: cor ?? sugerida ?? 'transparent' }} aria-hidden />
+        <span className="pequeno suave">{cor ?? (sugerida ? 'sugerida' : 'padrão')}</span>
       </div>
       {extra}
       <footer>
         <button className="secundario" onClick={() => aoEscolher(null)}>
-          Usar cor padrão
+          {sugerida ? 'Usar cor sugerida' : 'Usar cor padrão'}
         </button>
         <span className="espaco" />
         <button className="secundario" onClick={aoFechar}>
           Cancelar
         </button>
-        <button onClick={() => aoEscolher(cor)} disabled={!cor}>
+        <button onClick={() => aoEscolher(cor)} disabled={!cor && !sugerida}>
           Aplicar
         </button>
       </footer>

@@ -485,3 +485,5 @@ main { padding-bottom: 6rem; }
 .navega-secoes button:disabled { opacity: 0.35; }
 .folha-item.perigo { background: none; }
 .folha-item.perigo:hover, .folha-item.perigo:active { background: var(--vermelho-fundo); }
+.cor-sugerida { display: flex; align-items: center; gap: 0.6rem; width: 100%; background: var(--superficie-2); color: var(--texto); border: 2px solid transparent; border-radius: 10px; padding: 0.5rem 0.6rem; margin-bottom: 0.8rem; font-weight: 400; text-align: left; white-space: normal; }
+.cor-sugerida.sel { border-color: var(--primaria); }

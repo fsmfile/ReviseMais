@@ -5,6 +5,8 @@ import { HistoricoAssunto } from '../components/HistoricoAssunto';
 import { Modal } from '../components/Modal';
 import { RegistrarEstudo } from '../components/RegistrarEstudo';
 import { SeletorCorMatriz } from '../components/SeletorCorMatriz';
+import { corSugerida, useCorMateria } from '../lib/cores';
+import { normalizar } from '../lib/correlacao';
 import { Icone } from '../components/Icone';
 import { MenuAcoes } from '../components/MenuAcoes';
 import { NavegaSecoes } from '../components/NavegaSecoes';
@@ -30,6 +32,7 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
   const [novaDisc, setNovaDisc] = useState('');
   const [colorindo, setColorindo] = useState<{ tipo: 'disciplina' | 'assunto'; id: string } | null>(null);
   const [comSubitens, setComSubitens] = useState(true);
+  const corMateria = useCorMateria();
   const [menu, setMenu] = useState<{ tipo: 'disciplina' | 'assunto'; id: string } | null>(null);
 
   useEffect(() => {
@@ -194,7 +197,7 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
         const est = lista.filter((a) => estudosPorAssunto.get(a.id)?.length).length;
         const aberta = !fechadas.has(d.id);
         return (
-          <section key={d.id} id={`d-${d.id}`} className={`disciplina ${d.cor ? 'com-cor' : ''}`} style={d.cor ? { ['--cor-disc' as string]: d.cor } : undefined}>
+          <section key={d.id} id={`d-${d.id}`} className="disciplina com-cor" style={{ ['--cor-disc' as string]: d.cor ?? corMateria(d.nome) }}>
             <header>
               <button
                 className="icone"
@@ -214,7 +217,7 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
               <span className="progresso-disc">
                 {est}/{lista.length}
                 <span className="barra">
-                  <span style={{ width: `${lista.length ? (est / lista.length) * 100 : 0}%`, ...(d.cor ? { background: d.cor } : {}) }} />
+                  <span style={{ width: `${lista.length ? (est / lista.length) * 100 : 0}%`, background: d.cor ?? corMateria(d.nome) }} />
                 </span>
               </span>
             </header>
@@ -316,7 +319,7 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
                 icone: 'cor',
                 rotulo: 'Alterar cor',
                 acao: () => setColorindo({ tipo: 'disciplina', id: d.id }),
-                extra: d.cor ? <span className="bolinha-cor" style={{ background: d.cor }} /> : undefined,
+                extra: <span className="bolinha-cor" style={{ background: d.cor ?? corMateria(d.nome) }} />,
               },
               {
                 icone: 'editar',
@@ -375,9 +378,16 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
             <SeletorCorMatriz
               titulo={`Cor de ${d.nome}`}
               valor={d.cor}
+              sugerida={corSugerida(d.nome)}
+              aviso={`A cor vale para ${d.nome} em todos os seus planos.`}
               aoFechar={() => setColorindo(null)}
               aoEscolher={(cor) => {
-                executar(() => acoes.atualizarDisciplina(d.id, { cor }));
+                // A mesma matéria em todos os planos (mesmo nome, ignorando "Noções de"...) e as equivalentes.
+                const k = normalizar(d.nome);
+                const ids = new Set(dados.disciplinas.filter((x) => normalizar(x.nome) === k).map((x) => x.id));
+                for (const c of correlacoes.disciplinas.get(d.id) ?? []) ids.add(c.disciplina.id);
+                ids.add(d.id);
+                executar(() => acoes.colorirDisciplinas([...ids], cor));
                 setColorindo(null);
               }}
             />

@@ -19,6 +19,12 @@ export interface NovoEstudo {
 
 function useAcoes(dados: Dados, setDados: (f: (d: Dados) => Dados) => void) {
   return useMemo(() => {
+    // Cor já escolhida para a mesma matéria em outro plano (mesmo nome normalizado).
+    const corHerdada = (nome: string): { cor?: string } => {
+      const k = normalizar(nome);
+      const c = dados.disciplinas.find((x) => x.cor && normalizar(x.nome) === k)?.cor;
+      return c ? { cor: c } : {};
+    };
     const filhosDoPlano = (planoId: string) => {
       const discs = dados.disciplinas.filter((d) => d.plano_id === planoId).map((d) => d.id);
       return { discs, ...filhosDasDisciplinas(discs) };
@@ -76,7 +82,7 @@ function useAcoes(dados: Dados, setDados: (f: (d: Dados) => Dados) => void) {
         const disciplinas: Disciplina[] = [];
         const assuntos: Assunto[] = [];
         estrutura.forEach((de, i) => {
-          const disc: Disciplina = { id: novoId(), plano_id: plano.id, nome: de.nome, ordem: i };
+          const disc: Disciplina = { id: novoId(), plano_id: plano.id, nome: de.nome, ordem: i, ...corHerdada(de.nome) };
           disciplinas.push(disc);
           de.assuntos.forEach((a, j) =>
             assuntos.push({ id: novoId(), disciplina_id: disc.id, codigo: a.codigo, nome: a.nome, nivel: a.nivel, ordem: j }),
@@ -136,7 +142,7 @@ function useAcoes(dados: Dados, setDados: (f: (d: Dados) => Dados) => void) {
           );
           let j = disc ? Math.max(-1, ...dados.assuntos.filter((a) => a.disciplina_id === disc!.id).map((a) => a.ordem)) + 1 : 0;
           if (!disc) {
-            disc = { id: novoId(), plano_id: planoId, nome: de.nome, ordem: ordem++ };
+            disc = { id: novoId(), plano_id: planoId, nome: de.nome, ordem: ordem++, ...corHerdada(de.nome) };
             disciplinas.push(disc);
             porNome.set(normalizar(de.nome), disc);
           }
@@ -158,6 +164,7 @@ function useAcoes(dados: Dados, setDados: (f: (d: Dados) => Dados) => void) {
           plano_id: planoId,
           nome,
           ordem: dados.disciplinas.filter((d) => d.plano_id === planoId).length,
+          ...corHerdada(nome),
         };
         await backend.inserir('disciplinas', [disc as never]);
         setDados((d) => ({ ...d, disciplinas: [...d.disciplinas, disc] }));
@@ -165,6 +172,12 @@ function useAcoes(dados: Dados, setDados: (f: (d: Dados) => Dados) => void) {
       async atualizarDisciplina(id: string, patch: Partial<Disciplina>) {
         await backend.atualizar('disciplinas', id, patch);
         setDados((d) => ({ ...d, disciplinas: d.disciplinas.map((x) => (x.id === id ? { ...x, ...patch } : x)) }));
+      },
+      /** A cor de uma matéria vale em todos os planos: aplica às disciplinas equivalentes de uma vez. */
+      async colorirDisciplinas(ids: string[], cor: string | null) {
+        for (const id of ids) await backend.atualizar('disciplinas', id, { cor });
+        const alvo = new Set(ids);
+        setDados((d) => ({ ...d, disciplinas: d.disciplinas.map((x) => (alvo.has(x.id) ? { ...x, cor } : x)) }));
       },
       /** Muda a cor de vários assuntos de uma vez (ex.: um ponto e seus subitens). */
       async colorirAssuntos(ids: string[], cor: string | null) {

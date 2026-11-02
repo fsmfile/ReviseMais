@@ -121,6 +121,18 @@ describe('data da prova', () => {
   });
 });
 
+describe('cores sugeridas das matérias', () => {
+  it('são fixas por matéria, iguais entre variações do nome e distintas entre matérias comuns', async () => {
+    const { corSugerida } = await import('./cores');
+    expect(corSugerida('Direito Constitucional')).toBe(corSugerida('Noções de Direito Constitucional'));
+    expect(corSugerida('DIREITO PROCESSUAL CIVIL')).toBe(corSugerida('Direito Processual Civil'));
+    const comuns = ['Direito Constitucional', 'Direito Administrativo', 'Direito Civil', 'Direito Processual Civil', 'Direito Penal',
+      'Direito Processual Penal', 'Direito Tributário', 'Direito do Trabalho', 'Língua Portuguesa', 'Raciocínio Lógico'];
+    expect(new Set(comuns.map(corSugerida)).size).toBe(comuns.length);
+    expect(corSugerida('Matéria Inventada Qualquer')).toMatch(/^#[0-9a-f]{6}$/);
+  });
+});
+
 describe('correlação entre editais', () => {
   const planos: Plano[] = [
     { id: 'p1', nome: 'TJ', orgao: null, cor: '#f00', ordem: 0, pdf_path: null, data_prova: null },
