@@ -1,0 +1,703 @@
+{
+  "inicioRecorte": "Cargos/especialidades do QUADRO I do item 5.1.1\n\nCargos/especialidades de NÍVEL ",
+  "fimRecorte": ".709, de 14 de\n\nagosto de 2018 (Lei Geral de Proteção de Dados Pessoais - LGPD).",
+  "cargos": [
+    {
+      "cargo": "Analista Contábil",
+      "grupo": "Cargos/especialidades do QUADRO I do item 5.1.1",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 27
+        },
+        {
+          "nome": "Raciocínio Lógico-matemático",
+          "assuntos": 17
+        },
+        {
+          "nome": "Informática",
+          "assuntos": 14
+        },
+        {
+          "nome": "Legislação do Cremerj e do Cfm",
+          "assuntos": 7
+        },
+        {
+          "nome": "Direito Constitucional",
+          "assuntos": 12
+        },
+        {
+          "nome": "Direito Administrativo",
+          "assuntos": 45
+        },
+        {
+          "nome": "Contabilidade Aplicada ao Setor Público (CASP)",
+          "assuntos": 39
+        }
+      ]
+    },
+    {
+      "cargo": "Analista de Comunicação Audiovisual",
+      "grupo": "Cargos/especialidades do QUADRO I do item 5.1.1",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 27
+        },
+        {
+          "nome": "Raciocínio Lógico-matemático",
+          "assuntos": 17
+        },
+        {
+          "nome": "Informática",
+          "assuntos": 14
+        },
+        {
+          "nome": "Legislação do Cremerj e do Cfm",
+          "assuntos": 7
+        },
+        {
+          "nome": "Conhecimentos específicos – Analista de Comunicação Audiovisual",
+          "assuntos": 103
+        }
+      ]
+    },
+    {
+      "cargo": "Analista de Controle Interno",
+      "grupo": "Cargos/especialidades do QUADRO I do item 5.1.1",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 27
+        },
+        {
+          "nome": "Raciocínio Lógico-matemático",
+          "assuntos": 17
+        },
+        {
+          "nome": "Informática",
+          "assuntos": 14
+        },
+        {
+          "nome": "Legislação do Cremerj e do Cfm",
+          "assuntos": 7
+        },
+        {
+          "nome": "Direito Constitucional",
+          "assuntos": 12
+        },
+        {
+          "nome": "Direito Administrativo",
+          "assuntos": 25
+        },
+        {
+          "nome": "Direito Financeiro",
+          "assuntos": 10
+        },
+        {
+          "nome": "Contabilidade Geral",
+          "assuntos": 5
+        },
+        {
+          "nome": "Contabilidade Pública",
+          "assuntos": 14
+        },
+        {
+          "nome": "Controle da Administração Pública",
+          "assuntos": 15
+        },
+        {
+          "nome": "Noções de Auditoria",
+          "assuntos": 6
+        }
+      ]
+    },
+    {
+      "cargo": "Analista de Departamento Pessoal",
+      "grupo": "Cargos/especialidades do QUADRO I do item 5.1.1",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 27
+        },
+        {
+          "nome": "Raciocínio Lógico-matemático",
+          "assuntos": 17
+        },
+        {
+          "nome": "Informática",
+          "assuntos": 14
+        },
+        {
+          "nome": "Legislação do Cremerj e do Cfm",
+          "assuntos": 7
+        },
+        {
+          "nome": "Direito Constitucional",
+          "assuntos": 12
+        },
+        {
+          "nome": "Direito Administrativo",
+          "assuntos": 34
+        },
+        {
+          "nome": "Legislação do Ministério do Trabalho e Previdência",
+          "assuntos": 30
+        },
+        {
+          "nome": "Cipa",
+          "assuntos": 10
+        }
+      ]
+    },
+    {
+      "cargo": "Analista de Execução Fiscal",
+      "grupo": "Cargos/especialidades do QUADRO I do item 5.1.1",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 27
+        },
+        {
+          "nome": "Raciocínio Lógico-matemático",
+          "assuntos": 17
+        },
+        {
+          "nome": "Informática",
+          "assuntos": 14
+        },
+        {
+          "nome": "Legislação do Cremerj e do Cfm",
+          "assuntos": 7
+        },
+        {
+          "nome": "Direito Constitucional",
+          "assuntos": 12
+        },
+        {
+          "nome": "Direito Administrativo",
+          "assuntos": 23
+        }
+      ]
+    },
+    {
+      "cargo": "Analista de Operações",
+      "grupo": "Cargos/especialidades do QUADRO I do item 5.1.1",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 27
+        },
+        {
+          "nome": "Raciocínio Lógico-matemático",
+          "assuntos": 17
+        },
+        {
+          "nome": "Informática",
+          "assuntos": 14
+        },
+        {
+          "nome": "Legislação do Cremerj e do Cfm",
+          "assuntos": 7
+        },
+        {
+          "nome": "Direito Constitucional",
+          "assuntos": 12
+        },
+        {
+          "nome": "Direito Administrativo",
+          "assuntos": 22
+        }
+      ]
+    },
+    {
+      "cargo": "Analista de Processos, Consultas e Resoluções",
+      "grupo": "Cargos/especialidades do QUADRO I do item 5.1.1",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 27
+        },
+        {
+          "nome": "Raciocínio Lógico-matemático",
+          "assuntos": 17
+        },
+        {
+          "nome": "Informática",
+          "assuntos": 14
+        },
+        {
+          "nome": "Legislação do Cremerj e do Cfm",
+          "assuntos": 7
+        },
+        {
+          "nome": "Direito Constitucional",
+          "assuntos": 21
+        },
+        {
+          "nome": "709/2018 - Lgpd)",
+          "assuntos": 5
+        }
+      ]
+    },
+    {
+      "cargo": "Analista de Procedimentos Éticos",
+      "grupo": "Cargos/especialidades do QUADRO I do item 5.1.1",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 27
+        },
+        {
+          "nome": "Raciocínio Lógico-matemático",
+          "assuntos": 17
+        },
+        {
+          "nome": "Informática",
+          "assuntos": 14
+        },
+        {
+          "nome": "Legislação do Cremerj e do Cfm",
+          "assuntos": 7
+        },
+        {
+          "nome": "Conhecimentos específicos – Analista de Procedimentos Éticos",
+          "assuntos": 4
+        }
+      ]
+    },
+    {
+      "cargo": "Analista de Recursos Humanos",
+      "grupo": "Cargos/especialidades do QUADRO I do item 5.1.1",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 27
+        },
+        {
+          "nome": "Raciocínio Lógico-matemático",
+          "assuntos": 17
+        },
+        {
+          "nome": "Informática",
+          "assuntos": 14
+        },
+        {
+          "nome": "Legislação do Cremerj e do Cfm",
+          "assuntos": 7
+        },
+        {
+          "nome": "Direito Constitucional",
+          "assuntos": 12
+        },
+        {
+          "nome": "Direito Administrativo",
+          "assuntos": 21
+        }
+      ]
+    },
+    {
+      "cargo": "Analista Financeiro",
+      "grupo": "Cargos/especialidades do QUADRO I do item 5.1.1",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 27
+        },
+        {
+          "nome": "Raciocínio Lógico-matemático",
+          "assuntos": 17
+        },
+        {
+          "nome": "Informática",
+          "assuntos": 14
+        },
+        {
+          "nome": "Legislação do Cremerj e do Cfm",
+          "assuntos": 7
+        },
+        {
+          "nome": "Direito Constitucional",
+          "assuntos": 12
+        },
+        {
+          "nome": "Direito Administrativo",
+          "assuntos": 4
+        },
+        {
+          "nome": "Gestão de Processos - Gestão de processos administrativos e financeiros",
+          "assuntos": 6
+        }
+      ]
+    },
+    {
+      "cargo": "Contador",
+      "grupo": "Cargos/especialidades do QUADRO I do item 5.1.1",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 27
+        },
+        {
+          "nome": "Raciocínio Lógico-matemático",
+          "assuntos": 17
+        },
+        {
+          "nome": "Informática",
+          "assuntos": 14
+        },
+        {
+          "nome": "Legislação do Cremerj e do Cfm",
+          "assuntos": 7
+        },
+        {
+          "nome": "Direito Constitucional",
+          "assuntos": 12
+        },
+        {
+          "nome": "Direito Administrativo",
+          "assuntos": 106
+        }
+      ]
+    },
+    {
+      "cargo": "Jornalista",
+      "grupo": "Cargos/especialidades do QUADRO I do item 5.1.1",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 27
+        },
+        {
+          "nome": "Raciocínio Lógico-matemático",
+          "assuntos": 17
+        },
+        {
+          "nome": "Informática",
+          "assuntos": 14
+        },
+        {
+          "nome": "Legislação do Cremerj e do Cfm",
+          "assuntos": 7
+        },
+        {
+          "nome": "Conhecimentos específicos – Jornalista",
+          "assuntos": 45
+        }
+      ]
+    },
+    {
+      "cargo": "Assistente de Operações",
+      "grupo": "Cargos/especialidades do QUADRO I do item 5.1.1",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 27
+        },
+        {
+          "nome": "Raciocínio Lógico-matemático",
+          "assuntos": 17
+        },
+        {
+          "nome": "Informática",
+          "assuntos": 14
+        },
+        {
+          "nome": "Legislação do Cremerj e do Cfm",
+          "assuntos": 7
+        },
+        {
+          "nome": "Conhecimentos de Direito Administrativo",
+          "assuntos": 11
+        },
+        {
+          "nome": "Conhecimentos de Direito e Administração Pública - Direito Constitucional",
+          "assuntos": 1
+        },
+        {
+          "nome": "Direito Administrativo",
+          "assuntos": 4
+        },
+        {
+          "nome": "Noções de Administração e Gestão Pública",
+          "assuntos": 3
+        }
+      ]
+    },
+    {
+      "cargo": "Técnico de Apoio ao Usuário (técnico de Informática)",
+      "grupo": "Cargos/especialidades do QUADRO I do item 5.1.1",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 27
+        },
+        {
+          "nome": "Raciocínio Lógico-matemático",
+          "assuntos": 17
+        },
+        {
+          "nome": "Informática",
+          "assuntos": 14
+        },
+        {
+          "nome": "Legislação do Cremerj e do Cfm",
+          "assuntos": 7
+        },
+        {
+          "nome": "Conhecimentos específicos – Técnico de Apoio ao Usuário (técnico de Informática)",
+          "assuntos": 43
+        }
+      ]
+    },
+    {
+      "cargo": "Web Designer",
+      "grupo": "Cargos/especialidades do QUADRO I do item 5.1.1",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 27
+        },
+        {
+          "nome": "Raciocínio Lógico-matemático",
+          "assuntos": 17
+        },
+        {
+          "nome": "Informática",
+          "assuntos": 14
+        },
+        {
+          "nome": "Legislação do Cremerj e do Cfm",
+          "assuntos": 7
+        },
+        {
+          "nome": "Conhecimentos específicos – Web Designer",
+          "assuntos": 20
+        }
+      ]
+    },
+    {
+      "cargo": "Advogado",
+      "grupo": "Cargos/especialidades do QUADRO II do item 5.1.1",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 27
+        },
+        {
+          "nome": "Direito Constitucional",
+          "assuntos": 60
+        },
+        {
+          "nome": "Direito Administrativo",
+          "assuntos": 90
+        },
+        {
+          "nome": "Direito Processual Civil",
+          "assuntos": 22
+        },
+        {
+          "nome": "Direito do Trabalho",
+          "assuntos": 59
+        },
+        {
+          "nome": "Direito Tributário",
+          "assuntos": 4
+        },
+        {
+          "nome": "Direito Civil",
+          "assuntos": 74
+        },
+        {
+          "nome": "Direito Financeiro e Orçamentário",
+          "assuntos": 14
+        },
+        {
+          "nome": "Legislação do Cremerj e do Cfm",
+          "assuntos": 7
+        },
+        {
+          "nome": "Administração Pública",
+          "assuntos": 6
+        }
+      ]
+    },
+    {
+      "cargo": "Analista Jurídico",
+      "grupo": "Cargos/especialidades do QUADRO II do item 5.1.1",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 27
+        },
+        {
+          "nome": "Direito Constitucional",
+          "assuntos": 60
+        },
+        {
+          "nome": "Direito Administrativo",
+          "assuntos": 90
+        },
+        {
+          "nome": "Direito Processual Civil",
+          "assuntos": 22
+        },
+        {
+          "nome": "Direito do Trabalho",
+          "assuntos": 59
+        },
+        {
+          "nome": "Direito Tributário",
+          "assuntos": 4
+        },
+        {
+          "nome": "Direito Civil",
+          "assuntos": 74
+        },
+        {
+          "nome": "Direito Financeiro e Orçamentário",
+          "assuntos": 14
+        },
+        {
+          "nome": "Legislação do Cremerj e do Cfm",
+          "assuntos": 7
+        },
+        {
+          "nome": "Administração Pública",
+          "assuntos": 6
+        }
+      ]
+    },
+    {
+      "cargo": "Auditor",
+      "grupo": "Cargo/especialidade do QUADRO III do item 5.1.1",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 27
+        },
+        {
+          "nome": "Direito Constitucional",
+          "assuntos": 60
+        },
+        {
+          "nome": "Direito Tributário",
+          "assuntos": 4
+        },
+        {
+          "nome": "Direito Financeiro e Orçamentário",
+          "assuntos": 14
+        },
+        {
+          "nome": "Legislação do Cremerj e do Cfm",
+          "assuntos": 7
+        },
+        {
+          "nome": "Auditoria Governamental, Gestão de Riscos e Compliance",
+          "assuntos": 4
+        },
+        {
+          "nome": "Contabilidade Geral e Aplicada ao Setor Público (casp)",
+          "assuntos": 2
+        },
+        {
+          "nome": "Direito Administrativo e Licitações",
+          "assuntos": 79
+        }
+      ]
+    },
+    {
+      "cargo": "Analista de Banco de Dados (DBA)",
+      "grupo": "Cargos/especialidades do QUADRO IV do item 5.1.1",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 27
+        },
+        {
+          "nome": "Raciocínio Lógico-matemático",
+          "assuntos": 17
+        },
+        {
+          "nome": "Legislação do Cremerj e do Cfm",
+          "assuntos": 7
+        },
+        {
+          "nome": "Conhecimentos específicos – Analista de Banco de Dados (DBA)",
+          "assuntos": 23
+        }
+      ]
+    },
+    {
+      "cargo": "Analista de Ciência e Análise de Dados",
+      "grupo": "Cargos/especialidades do QUADRO IV do item 5.1.1",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 27
+        },
+        {
+          "nome": "Raciocínio Lógico-matemático",
+          "assuntos": 17
+        },
+        {
+          "nome": "Legislação do Cremerj e do Cfm",
+          "assuntos": 7
+        },
+        {
+          "nome": "Estatística",
+          "assuntos": 46
+        }
+      ]
+    },
+    {
+      "cargo": "Analista de Desenvolvimento de Sistemas",
+      "grupo": "Cargos/especialidades do QUADRO IV do item 5.1.1",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 27
+        },
+        {
+          "nome": "Raciocínio Lógico-matemático",
+          "assuntos": 17
+        },
+        {
+          "nome": "Legislação do Cremerj e do Cfm",
+          "assuntos": 7
+        },
+        {
+          "nome": "Conhecimentos específicos – Analista de Desenvolvimento de Sistemas",
+          "assuntos": 59
+        },
+        {
+          "nome": "Sql (ansi)",
+          "assuntos": 30
+        }
+      ]
+    },
+    {
+      "cargo": "Analista de Suporte",
+      "grupo": "Cargos/especialidades do QUADRO IV do item 5.1.1",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 27
+        },
+        {
+          "nome": "Raciocínio Lógico-matemático",
+          "assuntos": 17
+        },
+        {
+          "nome": "Legislação do Cremerj e do Cfm",
+          "assuntos": 7
+        },
+        {
+          "nome": "Conhecimentos específicos – Analista de Suporte",
+          "assuntos": 52
+        }
+      ]
+    }
+  ],
+  "disciplinas": null
+}

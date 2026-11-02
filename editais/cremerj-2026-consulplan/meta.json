@@ -1,0 +1,40 @@
+{
+  "orgao": "Conselho Regional de Medicina do Rio de Janeiro (CREMERJ)",
+  "banca": "Instituto Consulplan",
+  "ano": 2026,
+  "edital": "Edital de Concurso Público nº 1/2026 (atualizado pelas Retificações I e II), 60 páginas",
+  "formato": [
+    "Edital completo (regras + anexos). O conteúdo está no 'ANEXO I – CONTEÚDO PROGRAMÁTICO DAS PROVAS OBJETIVAS E DISCURSIVAS' (pág. 31–45); o Anexo II começa na pág. 46.",
+    "A expressão 'Conteúdo Programático' aparece antes no índice de anexos da pág. 1 ('a) Anexo I – CONTEÚDO PROGRAMÁTICO...;') — não pode ser usada como início.",
+    "Cabeçalho e rodapé em todas as páginas: nome do órgão, 'EDITAL DE CONCURSO PÚBLICO Nº 1/2026', 'Página X de 60'.",
+    "4 grupos: linhas 'Cargos/especialidades do QUADRO I..IV do item 5.1.1' seguidas da lista de cargos ('Analista Contábil; ...; Contador e Jornalista').",
+    "Dentro do grupo: 'I. Conhecimentos Básicos' (comuns ao grupo) e 'II. Conhecimentos Específicos'. Nos grupos I e IV os específicos têm um título por cargo em maiúsculas (ex.: 'ANALISTA CONTÁBIL'); nos grupos II e III o conteúdo é o mesmo para todos os cargos do grupo.",
+    "Disciplinas em linha própria em maiúsculas ('DIREITO CONSTITUCIONAL'), às vezes repetidas em seguida com dois-pontos ('Direito Constitucional: 1 Constituição...').",
+    "Assuntos numerados no estilo Cebraspe (1, 1.1, 1.2, 2 ...) em texto corrido; algumas matérias sem numeração (separadas por ponto final).",
+    "Matérias básicas idênticas se repetem em cada grupo (ex.: Língua Portuguesa) — não podem ser tratadas como cabeçalho repetido."
+  ],
+  "conferido": {
+    "Advogado": {
+      "Língua Portuguesa": 27,
+      "Direito Constitucional": 60,
+      "Direito Administrativo": 90,
+      "Direito Processual Civil": 22,
+      "Direito do Trabalho": 59,
+      "Direito Tributário": 4,
+      "Direito Civil": 74,
+      "Direito Financeiro e Orçamentário": 14,
+      "Legislação do Cremerj e do Cfm": 7,
+      "Administração Pública": 6
+    },
+    "Analista Jurídico": {
+      "Língua Portuguesa": 27,
+      "Direito Constitucional": 60
+    },
+    "Analista Contábil": {
+      "Língua Portuguesa": 27,
+      "Raciocínio Lógico-matemático": 17,
+      "Informática": 14,
+      "Legislação do Cremerj e do Cfm": 7
+    }
+  }
+}
