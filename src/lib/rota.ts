@@ -3,6 +3,9 @@ import { useEffect, useState } from 'react';
 export type Rota =
   | { tela: 'hoje' }
   | { tela: 'painel' }
+  | { tela: 'estudar'; assunto?: string }
+  | { tela: 'historico' }
+  | { tela: 'tempo' }
   | { tela: 'plano'; id: string; assunto?: string }
   | { tela: 'novo' }
   | { tela: 'importar'; id: string }
@@ -20,6 +23,12 @@ function ler(): Rota {
     }
     case 'importar':
       return id ? { tela, id } : { tela: 'hoje' };
+    case 'estudar': {
+      const assunto = new URLSearchParams(busca).get('a') ?? undefined;
+      return { tela, assunto };
+    }
+    case 'historico':
+    case 'tempo':
     case 'painel':
     case 'novo':
     case 'desempenho':
@@ -32,6 +41,7 @@ function ler(): Rota {
 }
 
 export function href(r: Rota): string {
+  if (r.tela === 'estudar') return `#/estudar${r.assunto ? `?a=${r.assunto}` : ''}`;
   if (r.tela === 'plano') return `#/plano/${r.id}${r.assunto ? `?a=${r.assunto}` : ''}`;
   return 'id' in r ? `#/${r.tela}/${r.id}` : `#/${r.tela}`;
 }

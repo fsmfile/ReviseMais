@@ -4,6 +4,7 @@ import { ChipsCorrelacao } from '../components/Correlacao';
 import { HistoricoAssunto } from '../components/HistoricoAssunto';
 import { Modal } from '../components/Modal';
 import { RegistrarEstudo } from '../components/RegistrarEstudo';
+import { SeletorCorMatriz } from '../components/SeletorCorMatriz';
 import { StatusRevisoes, estadoRevisao } from '../components/StatusRevisoes';
 import { backend } from '../lib/backend';
 import { diasEntre, formatarData, hoje } from '../lib/datas';
@@ -24,6 +25,8 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
   const [estudando, setEstudando] = useState<string | null>(null);
   const [editando, setEditando] = useState(false);
   const [novaDisc, setNovaDisc] = useState('');
+  const [colorindo, setColorindo] = useState<{ tipo: 'disciplina' | 'assunto'; id: string } | null>(null);
+  const [comSubitens, setComSubitens] = useState(true);
 
   useEffect(() => {
     if (!destaque) return;
@@ -187,7 +190,7 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
         const est = lista.filter((a) => estudosPorAssunto.get(a.id)?.length).length;
         const aberta = !fechadas.has(d.id);
         return (
-          <section key={d.id} className="disciplina">
+          <section key={d.id} className={`disciplina ${d.cor ? 'com-cor' : ''}`} style={d.cor ? { ['--cor-disc' as string]: d.cor } : undefined}>
             <header>
               <button
                 className="icone"
@@ -199,6 +202,15 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
                 }}
               >
                 {aberta ? '▾' : '▸'}
+              </button>
+              <button
+                className="botao-cor"
+                style={{ background: d.cor ?? 'transparent' }}
+                aria-label={`Cor da disciplina ${d.nome}`}
+                title="Escolher cor"
+                onClick={() => setColorindo({ tipo: 'disciplina', id: d.id })}
+              >
+                {d.cor ? '' : '🎨'}
               </button>
               <h2>{d.nome}</h2>
               <ChipsCorrelacao itens={correlacoes.disciplinas.get(d.id)} />
@@ -246,7 +258,12 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
                   const outro = !ult ? estudadoEmOutro(a.id) : undefined;
                   const exp = expandido === a.id;
                   return (
-                    <li key={a.id} id={`a-${a.id}`} className={`assunto ${ult ? "estudado" : ""} ${destaque === a.id ? "destacado" : ""} ${/^Ponto \d+$/.test(a.nome) ? "titulo-ponto" : ""}`}>
+                    <li
+                      key={a.id}
+                      id={`a-${a.id}`}
+                      className={`assunto ${ult ? 'estudado' : ''} ${destaque === a.id ? 'destacado' : ''} ${/^Ponto \d+$/.test(a.nome) ? 'titulo-ponto' : ''} ${a.cor ? 'com-cor' : ''}`}
+                      style={a.cor ? { ['--cor-assunto' as string]: a.cor } : undefined}
+                    >
                       <div className="linha-assunto" style={{ paddingLeft: `${(a.nivel - 1) * 1.25}rem` }}>
                         <button className="icone mini" aria-expanded={exp} aria-label="Histórico" onClick={() => setExpandido(exp ? null : a.id)}>
                           {exp ? '▾' : '▸'}
@@ -271,6 +288,18 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
                         <span className="acoes-assunto">
                           <button className="pequeno" onClick={() => setEstudando(a.id)}>
                             {ult ? 'Estudei de novo' : 'Estudei'}
+                          </button>
+                          <a className="icone mini" href={href({ tela: 'estudar', assunto: a.id })} title="Cronometrar estudo deste assunto" aria-label="Cronometrar estudo deste assunto">
+                            ⏱
+                          </a>
+                          <button
+                            className="icone mini botao-cor-mini"
+                            style={a.cor ? { background: a.cor } : undefined}
+                            title="Escolher cor"
+                            aria-label={`Cor do assunto ${a.nome.slice(0, 40)}`}
+                            onClick={() => setColorindo({ tipo: 'assunto', id: a.id })}
+                          >
+                            {a.cor ? '' : '🎨'}
                           </button>
                           <button
                             className="icone mini"
@@ -315,6 +344,49 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
         <button type="submit">+ Adicionar disciplina</button>
       </form>
 
+      {colorindo && (() => {
+        if (colorindo.tipo === 'disciplina') {
+          const d = disciplinas.find((x) => x.id === colorindo.id);
+          if (!d) return null;
+          return (
+            <SeletorCorMatriz
+              titulo={`Cor de ${d.nome}`}
+              valor={d.cor}
+              aoFechar={() => setColorindo(null)}
+              aoEscolher={(cor) => {
+                executar(() => acoes.atualizarDisciplina(d.id, { cor }));
+                setColorindo(null);
+              }}
+            />
+          );
+        }
+        const a = dados.assuntos.find((x) => x.id === colorindo.id);
+        if (!a) return null;
+        // Subitens: assuntos seguintes da mesma disciplina com nível maior (ex.: itens a, b, c de um Ponto).
+        const irmaos = assuntosPorDisc.get(a.disciplina_id) ?? [];
+        const i = irmaos.findIndex((x) => x.id === a.id);
+        const subitens: string[] = [];
+        for (let j = i + 1; j < irmaos.length && irmaos[j].nivel > a.nivel; j++) subitens.push(irmaos[j].id);
+        return (
+          <SeletorCorMatriz
+            titulo="Cor do assunto"
+            valor={a.cor}
+            aoFechar={() => setColorindo(null)}
+            extra={
+              subitens.length > 0 && (
+                <label className="check">
+                  <input type="checkbox" checked={comSubitens} onChange={(e) => setComSubitens(e.target.checked)} />
+                  Aplicar também aos {subitens.length} subitens
+                </label>
+              )
+            }
+            aoEscolher={(cor) => {
+              executar(() => acoes.colorirAssuntos([a.id, ...(comSubitens ? subitens : [])], cor));
+              setColorindo(null);
+            }}
+          />
+        );
+      })()}
       {estudando && <RegistrarEstudo assuntoId={estudando} aoFechar={() => setEstudando(null)} />}
       {editando && <EditarPlano plano={plano} aoFechar={() => setEditando(false)} />}
     </div>

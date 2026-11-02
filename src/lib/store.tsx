@@ -3,9 +3,9 @@ import { backend, novoId } from './backend';
 import { REVISOES } from './datas';
 import { calcularCorrelacoes, normalizar, type MapaCorrelacoes } from './correlacao';
 import type { DisciplinaExtraida } from './editalParser';
-import type { Assunto, Dados, Disciplina, Estudo, Plano, Revisao } from './types';
+import type { Assunto, Dados, Disciplina, Estudo, Plano, Revisao, Sessao } from './types';
 
-const VAZIO: Dados = { planos: [], disciplinas: [], assuntos: [], estudos: [], revisoes: [] };
+const VAZIO: Dados = { planos: [], disciplinas: [], assuntos: [], estudos: [], revisoes: [], sessoes: [] };
 export const CORES = ['#2f6fdf', '#d9480f', '#2b8a3e', '#9c36b5', '#c2255c', '#0b7285', '#e67700', '#5c7cfa', '#495057'];
 
 export interface NovoEstudo {
@@ -44,7 +44,18 @@ function useAcoes(dados: Dados, setDados: (f: (d: Dados) => Dados) => void) {
       if (ids.planos?.length) await backend.excluir('planos', ids.planos);
       const fora = (l: string[] | undefined) => new Set(l ?? []);
       const [r, e, a, di, p] = [fora(ids.rev), fora(ids.est), fora(ids.ass), fora(ids.discs), fora(ids.planos)];
+      // Sessões de estudo ficam no histórico (com o nome da matéria), só perdem o vínculo.
       setDados((d) => ({
+        sessoes: d.sessoes.map((x) =>
+          (x.disciplina_id && di.has(x.disciplina_id)) || (x.assunto_id && a.has(x.assunto_id)) || (x.plano_id && p.has(x.plano_id))
+            ? {
+                ...x,
+                disciplina_id: x.disciplina_id && di.has(x.disciplina_id) ? null : x.disciplina_id,
+                assunto_id: x.assunto_id && a.has(x.assunto_id) ? null : x.assunto_id,
+                plano_id: x.plano_id && p.has(x.plano_id) ? null : x.plano_id,
+              }
+            : x,
+        ),
         revisoes: d.revisoes.filter((x) => !r.has(x.id)),
         estudos: d.estudos.filter((x) => !e.has(x.id)),
         assuntos: d.assuntos.filter((x) => !a.has(x.id)),
@@ -151,6 +162,16 @@ function useAcoes(dados: Dados, setDados: (f: (d: Dados) => Dados) => void) {
         await backend.inserir('disciplinas', [disc as never]);
         setDados((d) => ({ ...d, disciplinas: [...d.disciplinas, disc] }));
       },
+      async atualizarDisciplina(id: string, patch: Partial<Disciplina>) {
+        await backend.atualizar('disciplinas', id, patch);
+        setDados((d) => ({ ...d, disciplinas: d.disciplinas.map((x) => (x.id === id ? { ...x, ...patch } : x)) }));
+      },
+      /** Muda a cor de vários assuntos de uma vez (ex.: um ponto e seus subitens). */
+      async colorirAssuntos(ids: string[], cor: string | null) {
+        for (const id of ids) await backend.atualizar('assuntos', id, { cor });
+        const s = new Set(ids);
+        setDados((d) => ({ ...d, assuntos: d.assuntos.map((x) => (s.has(x.id) ? { ...x, cor } : x)) }));
+      },
       async renomearDisciplina(id: string, nome: string) {
         await backend.atualizar('disciplinas', id, { nome });
         setDados((d) => ({ ...d, disciplinas: d.disciplinas.map((x) => (x.id === id ? { ...x, nome } : x)) }));
@@ -224,6 +245,20 @@ function useAcoes(dados: Dados, setDados: (f: (d: Dados) => Dados) => void) {
       async concluirRevisao(id: string, patch: Pick<Revisao, 'concluida_em' | 'percentual' | 'questoes'>) {
         await backend.atualizar('revisoes', id, patch);
         setDados((d) => ({ ...d, revisoes: d.revisoes.map((x) => (x.id === id ? { ...x, ...patch } : x)) }));
+      },
+      async criarSessao(nova: Omit<Sessao, 'id'>) {
+        const sessao: Sessao = { id: novoId(), ...nova };
+        await backend.inserir('sessoes', [sessao as never]);
+        setDados((d) => ({ ...d, sessoes: [...d.sessoes, sessao] }));
+        return sessao;
+      },
+      async atualizarSessao(id: string, patch: Partial<Sessao>) {
+        await backend.atualizar('sessoes', id, patch);
+        setDados((d) => ({ ...d, sessoes: d.sessoes.map((x) => (x.id === id ? { ...x, ...patch } : x)) }));
+      },
+      async excluirSessao(id: string) {
+        await backend.excluir('sessoes', [id]);
+        setDados((d) => ({ ...d, sessoes: d.sessoes.filter((x) => x.id !== id) }));
       },
       async reagendarRevisao(id: string, data_prevista: string) {
         await backend.atualizar('revisoes', id, { data_prevista });

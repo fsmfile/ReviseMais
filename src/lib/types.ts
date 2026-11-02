@@ -16,6 +16,8 @@ export interface Disciplina {
   plano_id: string;
   nome: string;
   ordem: number;
+  /** Cor escolhida pelo usuário (null/ausente = padrão). */
+  cor?: string | null;
 }
 
 export interface Assunto {
@@ -25,6 +27,7 @@ export interface Assunto {
   nome: string;
   nivel: number;
   ordem: number;
+  cor?: string | null;
 }
 
 export interface Estudo {
@@ -47,12 +50,31 @@ export interface Revisao {
   questoes: number | null;
 }
 
+export type TipoEstudo = 'teoria' | 'questoes' | 'revisao' | 'lei_seca' | 'videoaula' | 'resumo' | 'simulado' | 'outro';
+
+/** Uma sessão de estudo cronometrada (ou lançada à mão). */
+export interface Sessao {
+  id: string;
+  plano_id: string | null;
+  disciplina_id: string | null;
+  assunto_id: string | null;
+  materia: string;
+  tipo: TipoEstudo;
+  data: string; // YYYY-MM-DD
+  inicio: string | null;
+  duracao_seg: number;
+  questoes: number | null;
+  acertos: number | null;
+  observacao: string | null;
+}
+
 export interface Dados {
   planos: Plano[];
   disciplinas: Disciplina[];
   assuntos: Assunto[];
   estudos: Estudo[];
   revisoes: Revisao[];
+  sessoes: Sessao[];
 }
 
 export type Tabela = keyof Dados;

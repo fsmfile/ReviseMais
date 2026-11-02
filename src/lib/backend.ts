@@ -20,7 +20,11 @@ export interface Backend {
   excluirPdf(caminho: string): Promise<void>;
 }
 
-const TABELAS: Tabela[] = ['planos', 'disciplinas', 'assuntos', 'estudos', 'revisoes'];
+const TABELAS: Tabela[] = ['planos', 'disciplinas', 'assuntos', 'estudos', 'revisoes', 'sessoes'];
+
+/** Tabelas criadas em migrações posteriores: se ainda não existirem no Supabase, o app funciona sem elas. */
+const OPCIONAIS = new Set<Tabela>(['sessoes']);
+export const tabelasFaltando = new Set<Tabela>();
 const LOTE = 500;
 
 function lotes<T>(l: T[], n = LOTE): T[][] {
@@ -50,6 +54,10 @@ function backendSupabase(sb: SupabaseClient): Backend {
         // O Supabase devolve no máximo 1000 linhas por consulta: pagina.
         for (let de = 0; ; de += 1000) {
           const { data, error } = await sb.from(t).select('*').order('created_at').range(de, de + 999);
+          if (error && OPCIONAIS.has(t)) {
+            tabelasFaltando.add(t);
+            break;
+          }
           falhou(error);
           todas.push(...(data ?? []));
           if (!data || data.length < 1000) break;
@@ -91,11 +99,11 @@ function backendLocal(): Backend {
   const ler = (): Dados => {
     try {
       const j = JSON.parse(localStorage.getItem(CHAVE) ?? 'null');
-      if (j) return j;
+      if (j) return { sessoes: [], ...j };
     } catch {
       /* ignora */
     }
-    return { planos: [], disciplinas: [], assuntos: [], estudos: [], revisoes: [] };
+    return { planos: [], disciplinas: [], assuntos: [], estudos: [], revisoes: [], sessoes: [] };
   };
   const gravar = (d: Dados) => localStorage.setItem(CHAVE, JSON.stringify(d));
   const pdfs = new Map<string, string>();

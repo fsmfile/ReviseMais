@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { ConcluirRevisao } from '../components/ConcluirRevisao';
 import { Percentual } from '../components/Campos';
+import { ResumoTempo } from '../components/ResumoTempo';
 import { descreverPrazo, formatarCurto, hoje, rotuloRevisao, somarDias } from '../lib/datas';
 import { href } from '../lib/rota';
 import { useDados, useIndices } from '../lib/store';
@@ -70,6 +71,7 @@ export function Hoje() {
 
   return (
     <div className="pagina-hoje">
+      <ResumoTempo />
       <div className="resumo">
         <div className={`cartao-num ${atrasadas.length ? 'alerta' : ''}`}>
           <strong>{atrasadas.length}</strong>

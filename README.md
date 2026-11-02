@@ -26,6 +26,7 @@ Sem configurar nada, o app abre em **modo local** (dados só no navegador) — b
 1. Crie uma conta e um projeto gratuito em <https://supabase.com>.
 2. No projeto: **SQL Editor → New query**, cole o conteúdo de `supabase/migrations/0001_init.sql` e clique em **Run**.
    Isso cria as tabelas, as regras de segurança (cada usuário só vê os próprios dados) e o armazenamento dos PDFs.
+   Depois rode também `supabase/migrations/0002_sessoes_e_cores.sql` (cronômetro, tempo de estudo e cores personalizadas).
 3. Em **Project Settings → API**, copie a *Project URL* e a chave *anon public*.
 4. Copie `.env.example` para `.env` e preencha:
    ```
