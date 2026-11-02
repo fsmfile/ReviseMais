@@ -16,7 +16,7 @@
         },
         {
           "nome": "Informática",
-          "assuntos": 10
+          "assuntos": 11
         },
         {
           "nome": "Legislação do Cremerj e do Cfm",
@@ -28,11 +28,11 @@
         },
         {
           "nome": "Direito Administrativo",
-          "assuntos": 42
+          "assuntos": 45
         },
         {
           "nome": "Contabilidade Aplicada ao Setor Público (CASP)",
-          "assuntos": 20
+          "assuntos": 39
         }
       ]
     },
@@ -50,7 +50,7 @@
         },
         {
           "nome": "Informática",
-          "assuntos": 10
+          "assuntos": 11
         },
         {
           "nome": "Legislação do Cremerj e do Cfm",
@@ -76,7 +76,7 @@
         },
         {
           "nome": "Informática",
-          "assuntos": 10
+          "assuntos": 11
         },
         {
           "nome": "Legislação do Cremerj e do Cfm",
@@ -88,7 +88,7 @@
         },
         {
           "nome": "Direito Administrativo",
-          "assuntos": 22
+          "assuntos": 25
         },
         {
           "nome": "Direito Financeiro",
@@ -108,7 +108,7 @@
         },
         {
           "nome": "Noções de Auditoria",
-          "assuntos": 3
+          "assuntos": 6
         }
       ]
     },
@@ -126,7 +126,7 @@
         },
         {
           "nome": "Informática",
-          "assuntos": 10
+          "assuntos": 11
         },
         {
           "nome": "Legislação do Cremerj e do Cfm",
@@ -138,7 +138,7 @@
         },
         {
           "nome": "Direito Administrativo",
-          "assuntos": 31
+          "assuntos": 34
         },
         {
           "nome": "Legislação do Ministério do Trabalho e Previdência",
@@ -164,7 +164,7 @@
         },
         {
           "nome": "Informática",
-          "assuntos": 10
+          "assuntos": 11
         },
         {
           "nome": "Legislação do Cremerj e do Cfm",
@@ -194,7 +194,7 @@
         },
         {
           "nome": "Informática",
-          "assuntos": 10
+          "assuntos": 11
         },
         {
           "nome": "Legislação do Cremerj e do Cfm",
@@ -224,7 +224,7 @@
         },
         {
           "nome": "Informática",
-          "assuntos": 10
+          "assuntos": 11
         },
         {
           "nome": "Legislação do Cremerj e do Cfm",
@@ -254,7 +254,7 @@
         },
         {
           "nome": "Informática",
-          "assuntos": 10
+          "assuntos": 11
         },
         {
           "nome": "Legislação do Cremerj e do Cfm",
@@ -280,7 +280,7 @@
         },
         {
           "nome": "Informática",
-          "assuntos": 10
+          "assuntos": 11
         },
         {
           "nome": "Legislação do Cremerj e do Cfm",
@@ -310,7 +310,7 @@
         },
         {
           "nome": "Informática",
-          "assuntos": 10
+          "assuntos": 11
         },
         {
           "nome": "Legislação do Cremerj e do Cfm",
@@ -344,7 +344,7 @@
         },
         {
           "nome": "Informática",
-          "assuntos": 10
+          "assuntos": 11
         },
         {
           "nome": "Legislação do Cremerj e do Cfm",
@@ -374,7 +374,7 @@
         },
         {
           "nome": "Informática",
-          "assuntos": 10
+          "assuntos": 11
         },
         {
           "nome": "Legislação do Cremerj e do Cfm",
@@ -382,7 +382,7 @@
         },
         {
           "nome": "Conhecimentos específicos – Jornalista",
-          "assuntos": 42
+          "assuntos": 43
         }
       ]
     },
@@ -400,7 +400,7 @@
         },
         {
           "nome": "Informática",
-          "assuntos": 10
+          "assuntos": 11
         },
         {
           "nome": "Legislação do Cremerj e do Cfm",
@@ -438,7 +438,7 @@
         },
         {
           "nome": "Informática",
-          "assuntos": 10
+          "assuntos": 11
         },
         {
           "nome": "Legislação do Cremerj e do Cfm",
@@ -446,7 +446,7 @@
         },
         {
           "nome": "Conhecimentos específicos – Técnico de Apoio ao Usuário (técnico de Informática)",
-          "assuntos": 39
+          "assuntos": 42
         }
       ]
     },
@@ -464,7 +464,7 @@
         },
         {
           "nome": "Informática",
-          "assuntos": 10
+          "assuntos": 11
         },
         {
           "nome": "Legislação do Cremerj e do Cfm",
@@ -646,7 +646,7 @@
         },
         {
           "nome": "Estatística",
-          "assuntos": 20
+          "assuntos": 26
         }
       ]
     },

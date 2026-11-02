@@ -16,7 +16,7 @@ const INICIO_CONTEUDO =
 
 /** Nomes que aparecem em maiúsculas no edital mas não são disciplinas. */
 const NAO_DISCIPLINA =
-  /^(anexo|conteudo programatico|conhecimentos (basicos|gerais|especificos|complementares|do cargo|da area)|cargo|cargos|edital|prova|provas|nivel|para todos|objetos? de avaliacao|conhecimentos$|habilidades|observac|obs\b|grupo|bloco|modulo|parte|area|especialidade|todos os cargos|disciplinas?\b|materias?\b)/;
+  /^(anexo|conteudo programatico|conhecimentos (basicos|gerais|especificos|complementares|do cargo|da area)|cargo|cargos|edital|prova|provas|nivel|para todos|objetos? de avaliacao|conhecimentos$|comum\\b|habilidades|observac|obs\b|grupo|bloco|modulo|parte|area|especialidade|todos os cargos|disciplinas?\b|materias?\b)/;
 
 /** Início de nome de disciplina comum em editais (usado quando o nome não está em maiúsculas). */
 const NOME_DISCIPLINA =
@@ -102,6 +102,8 @@ export function recortarConteudo(texto: string): string {
 export interface BlocoCargo {
   titulo: string;
   texto: string;
+  /** Linha original onde o bloco começa no texto (para achar o conteúdo comum antes dele). */
+  primeiraLinha?: string;
 }
 
 const INICIO_BLOCO = /^\s*(cargos?\s*(\/\s*especialidades?)?\b|quadro\s+[ivxlc\d]+\b|cargo\s*[:–-])/i;
@@ -121,25 +123,41 @@ export function dividirBlocos(texto: string): BlocoCargo[] {
   const brutos = inicios.map((ini, k) => {
     const fim = inicios[k + 1] ?? linhas.length;
     const corpo = linhas.slice(ini, fim);
+    const primeiraLinha = corpo[0];
     const naoVazias = corpo.map((l) => l.trim()).filter(Boolean);
     // Título = linha do bloco + a linha seguinte se for a lista de cargos (texto comum, não cabeçalho de matéria).
     let titulo = naoVazias[0] ?? '';
-    const seg = naoVazias[1];
+    let seg = naoVazias[1];
+    // Nome do cargo que continua na linha seguinte ("CARGO: ESPECIALISTA EM ... E GESTÃO" / "GOVERNAMENTAL").
+    if (seg && ehMaiusculo(titulo) && ehMaiusculo(seg) && seg.split(/\s+/).length <= 3 && !/[.:;,]$/.test(titulo) &&
+        !seg.includes(':') && (!naoVazias[2] || ehMaiusculo(naoVazias[2])) && !DISCIPLINA_LINHA.test(tituloDisciplina(seg))) {
+      titulo += ' ' + seg;
+      const i = corpo.findIndex((l, j) => j > 0 && l.trim() === seg);
+      corpo.splice(i, 1);
+      corpo[0] = titulo;
+      seg = naoVazias[2];
+    }
     if (seg && !ehMaiusculo(seg) && !/^[IVX]+\.\s/.test(seg) && !/^\d/.test(seg) && seg.length < 400 && !encontrarCabecalhos(seg).length)
       titulo += ' — ' + seg;
-    return { titulo, texto: corpo.join('\n'), temMaterias: encontrarCabecalhos(corpo.join('\n')).length > 0 };
+    return { titulo, texto: corpo.join('\n'), primeiraLinha, temMaterias: encontrarCabecalhos(corpo.join('\n')).length > 0 };
   });
 
   // Blocos sem nenhuma matéria (só títulos/lista de cargos) se juntam ao seguinte.
   const blocos: BlocoCargo[] = [];
-  let pendente: { titulo: string; texto: string } | null = null;
+  let pendente: { titulo: string; texto: string; primeiraLinha?: string } | null = null;
   for (const b of brutos) {
     if (!b.temMaterias) {
-      pendente = pendente ? { titulo: `${pendente.titulo} / ${b.titulo}`, texto: pendente.texto + '\n' + b.texto } : b;
+      pendente = pendente
+        ? { titulo: `${pendente.titulo} / ${b.titulo}`, texto: pendente.texto + "\n" + b.texto, primeiraLinha: pendente.primeiraLinha }
+        : b;
       continue;
     }
     const titulo = pendente ? `${pendente.titulo} / ${b.titulo}` : b.titulo;
-    blocos.push({ titulo: titulo.length > 260 ? titulo.slice(0, 257) + '…' : titulo, texto: (pendente ? pendente.texto + '\n' : '') + b.texto });
+    blocos.push({
+      titulo: titulo.length > 260 ? titulo.slice(0, 257) + '…' : titulo,
+      texto: (pendente ? pendente.texto + '\n' : '') + b.texto,
+      primeiraLinha: (pendente ?? b).primeiraLinha,
+    });
     pendente = null;
   }
   if (pendente && blocos.length) blocos[blocos.length - 1].texto += '\n' + pendente.texto;
@@ -178,7 +196,8 @@ export function listarCargos(texto: string): OpcaoCargo[] {
   const opcoes = blocosFortes.length ? cargosPorBlocos(blocosFortes) : cargosPorTitulos(limpo);
   if (!opcoes.length) return opcoes;
   // Matérias antes do primeiro cargo ("CONHECIMENTOS BÁSICOS PARA TODOS OS CARGOS") valem para todos.
-  const primeiro = blocosFortes.length ? limpo.indexOf(blocosFortes[0].texto) : limpo.indexOf(opcoes[0].inicioTexto ?? '\u0000');
+  const marco = blocosFortes.length ? (blocosFortes[0].primeiraLinha ?? blocosFortes[0].texto) : (opcoes[0].inicioTexto ?? '\u0000');
+  const primeiro = limpo.indexOf(marco);
   const comum = primeiro > 0 ? limpo.slice(0, primeiro) : '';
   const temMaterias = comum && interpretarEdital(comum).some((d) => d.nome !== 'Conteúdo do edital');
   return opcoes.map(({ inicioTexto: _, ...o }) => (temMaterias ? { ...o, basicos: `${comum}\n${o.basicos}` } : o));
@@ -197,6 +216,17 @@ function cargosPorBlocos(blocos: BlocoCargo[]): OpcaoInterna[] {
   for (const bloco of blocos) {
     const linhas = bloco.texto.split('\n');
     const grupo = (bloco.titulo.split(/ — | \/ /)[0] || bloco.titulo).trim();
+    // Cargo dividido em áreas/especialidades ("CARGO: X" / "ÁREA: Y"): cada área é uma opção.
+    const areas = linhas.map((l, i) => (LINHA_AREA.test(l) ? i : -1)).filter((i) => i >= 0);
+    if (areas.length) {
+      const cargo = cargoDoTitulo(grupo);
+      const basicos = linhas.slice(0, areas[0]).join('\n');
+      areas.forEach((ini, k) => {
+        const area = nomeCargo(linhas[ini].replace(LINHA_AREA, '$1'));
+        opcoes.push({ cargo: `${cargo} – ${area}`, grupo, basicos, especificos: linhas.slice(ini + 1, areas[k + 1] ?? linhas.length).join('\n') });
+      });
+      continue;
+    }
     // Cabeçalho do grupo = linhas antes de "I. Conhecimentos..." ou do primeiro título de matéria.
     let fimCab = linhas.findIndex((l) => LINHA_BASICOS.test(l) || LINHA_ESPECIFICOS.test(l));
     if (fimCab < 0) {
@@ -240,6 +270,8 @@ function cargosPorBlocos(blocos: BlocoCargo[]): OpcaoInterna[] {
   }
   return opcoes;
 }
+
+const LINHA_AREA = /^\s*(?:[ÁA]REA|ESPECIALIDADE|[ÊE]NFASE|PERFIL)\s*[:–-]\s*(\S.{1,100})$/i;
 
 const PALAVRA_CARGO =
   /^(analista|t[eé]cnico|escrevente|oficial|juiz|promotor|procurador|defensor|delegado|auditor|assistente|agente|escriv[aã]o|inspetor|perito|advogado|assessor|investigador|papiloscopista|auxiliar|tabeli[aã]o|registrador|not[aá]rio|titular|consultor|especialista|fiscal|contador|administrador|economista|engenheiro|m[eé]dico|psic[oó]logo|assistente social|bibliotec[aá]rio|arquivista)\b/i;
@@ -483,13 +515,39 @@ function dividirNumerado(corpo: string): AssuntoExtraido[] | null {
 }
 
 function dividirSemNumero(corpo: string): AssuntoExtraido[] {
-  return corpo
+  const frases = corpo
     .replace(/\n\s*[•▪●◦·\-–]\s*/g, '\u0000') // marcadores de lista viram separadores
     .replace(/\s*\n\s*/g, ' ') // quebras de linha do PDF não separam assuntos
-    .split(/\u0000|;\s+(?=["“(]?\p{Lu})|\.\s+(?=["“(]?\p{Lu})/u)
+    .split(/\u0000|\.\s+(?=["“(]?\p{Lu})/u);
+  // ";" separa assuntos ("Interpretação de textos; coesão e coerência; ..."), exceto quando lista subitens
+  // de um tópico com dois-pontos em minúsculas: "Segurança da informação: noções de X; noções de Y" fica junto,
+  // mas em "Drive: compartilhamento; criar arquivos; Google Agenda" o "Google Agenda" é assunto novo, e
+  // "Contabilidade Pública: Fundamentos; Planejamento: PPA; Ciclo Orçamentário" são assuntos separados.
+  const caixa = (t: string) => {
+    const l = /\p{L}/u.exec(t)?.[0];
+    return l ? (l === l.toUpperCase() ? 'M' : 'm') : null;
+  };
+  const caixaAposDoisPontos = (t: string) => (t.includes(':') ? caixa(t.slice(t.indexOf(':') + 1)) : null);
+  const partes = frases.flatMap((f) => {
+    const saida: string[] = [];
+    let atual: string | null = null;
+    let subitem: 'M' | 'm' | null = null;
+    for (const seg of f.split(/;\s+(?!\d)/)) { // "artigos 293 a 305; 307; 308" não separa
+      if (atual !== null && subitem === 'm' && caixa(seg) === 'm') {
+        atual += '; ' + seg;
+        continue;
+      }
+      if (atual !== null) saida.push(atual);
+      atual = seg;
+      subitem = caixaAposDoisPontos(seg);
+    }
+    if (atual !== null) saida.push(atual);
+    return saida;
+  });
+  return partes
     .map(limparNome)
     .filter((s) => s.length >= 3)
-    .map((nome) => ({ codigo: null, nome, nivel: 1 }));
+    .map((nome) => ({ codigo: null, nome: nome.charAt(0).toUpperCase() + nome.slice(1), nivel: 1 }));
 }
 
 /** Transforma o texto do edital em disciplinas e assuntos (o usuário revisa antes de salvar). */

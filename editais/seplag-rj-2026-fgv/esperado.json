@@ -1,0 +1,175 @@
+{
+  "inicioRecorte": "COMUM PARA TODAS AS ÁREAS\n\nLÍNGUA PORTUGUESA\n\nInterpretação, compreensão e organ",
+  "fimRecorte": " viés algorítmico, fairness e responsabilidade na supervisão de\n\nsoluções de IA.",
+  "cargos": [
+    {
+      "cargo": "Especialista em Políticas Públicas e Gestão Governamental – Gestão e Governança Pública",
+      "grupo": "CARGO: ESPECIALISTA EM POLÍTICAS PÚBLICAS E GESTÃO GOVERNAMENTAL",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 23
+        },
+        {
+          "nome": "Língua Inglesa",
+          "assuntos": 7
+        },
+        {
+          "nome": "Raciocínio Lógico-matemático",
+          "assuntos": 16
+        },
+        {
+          "nome": "Atualidades",
+          "assuntos": 9
+        },
+        {
+          "nome": "Direito Público",
+          "assuntos": 45
+        },
+        {
+          "nome": "Estado, Governo e Administração Pública",
+          "assuntos": 52
+        },
+        {
+          "nome": "Administração Financeira e Orçamentária",
+          "assuntos": 37
+        },
+        {
+          "nome": "Gestão Governamental",
+          "assuntos": 59
+        },
+        {
+          "nome": "Governança Pública",
+          "assuntos": 40
+        }
+      ]
+    },
+    {
+      "cargo": "Especialista em Políticas Públicas e Gestão Governamental – Políticas Públicas",
+      "grupo": "CARGO: ESPECIALISTA EM POLÍTICAS PÚBLICAS E GESTÃO GOVERNAMENTAL",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 23
+        },
+        {
+          "nome": "Língua Inglesa",
+          "assuntos": 7
+        },
+        {
+          "nome": "Raciocínio Lógico-matemático",
+          "assuntos": 16
+        },
+        {
+          "nome": "Atualidades",
+          "assuntos": 9
+        },
+        {
+          "nome": "Direito Público",
+          "assuntos": 45
+        },
+        {
+          "nome": "Estado, Governo e Administração Pública",
+          "assuntos": 52
+        },
+        {
+          "nome": "Administração Financeira e Orçamentária",
+          "assuntos": 37
+        },
+        {
+          "nome": "Ciencia Política",
+          "assuntos": 58
+        },
+        {
+          "nome": "Políticas Públicas",
+          "assuntos": 55
+        }
+      ]
+    },
+    {
+      "cargo": "Analista de Planejamento e Orçamento – Planejamento e Orçamento",
+      "grupo": "CARGO: ANALISTA DE PLANEJAMENTO E ORÇAMENTO",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 23
+        },
+        {
+          "nome": "Língua Inglesa",
+          "assuntos": 7
+        },
+        {
+          "nome": "Raciocínio Lógico-matemático",
+          "assuntos": 16
+        },
+        {
+          "nome": "Atualidades",
+          "assuntos": 9
+        },
+        {
+          "nome": "Direito Público",
+          "assuntos": 45
+        },
+        {
+          "nome": "Estado, Governo e Administração Pública",
+          "assuntos": 52
+        },
+        {
+          "nome": "Administração Financeira e Orçamentária",
+          "assuntos": 37
+        },
+        {
+          "nome": "Economia",
+          "assuntos": 69
+        },
+        {
+          "nome": "Finanças Públicas e Planejamento Governamental",
+          "assuntos": 64
+        }
+      ]
+    },
+    {
+      "cargo": "Analista de Planejamento e Orçamento – Tecnologia da Informação",
+      "grupo": "CARGO: ANALISTA DE PLANEJAMENTO E ORÇAMENTO",
+      "disciplinas": [
+        {
+          "nome": "Língua Portuguesa",
+          "assuntos": 23
+        },
+        {
+          "nome": "Língua Inglesa",
+          "assuntos": 7
+        },
+        {
+          "nome": "Raciocínio Lógico-matemático",
+          "assuntos": 16
+        },
+        {
+          "nome": "Atualidades",
+          "assuntos": 9
+        },
+        {
+          "nome": "Direito Público",
+          "assuntos": 45
+        },
+        {
+          "nome": "Estado, Governo e Administração Pública",
+          "assuntos": 52
+        },
+        {
+          "nome": "Administração Financeira e Orçamentária",
+          "assuntos": 37
+        },
+        {
+          "nome": "Governança e Gestão de Tecnologia da Informação e Comunicação",
+          "assuntos": 48
+        },
+        {
+          "nome": "Dados e Inteligência Analítica na Administração Pública",
+          "assuntos": 45
+        }
+      ]
+    }
+  ],
+  "disciplinas": null
+}

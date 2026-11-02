@@ -1,0 +1,26 @@
+{
+  "orgao": "Secretaria de Estado de Planejamento e Gestão do Rio de Janeiro (SEPLAG/RJ)",
+  "banca": "FGV",
+  "ano": 2026,
+  "edital": "V Concurso Público – Especialista em Políticas Públicas e Gestão Governamental e Analista de Planejamento e Orçamento (edital de 09/09/2026), 46 páginas",
+  "formato": [
+    "Edital completo; conteúdo no 'ANEXO I - CONTEÚDO PROGRAMÁTICO' (pág. 35–43); termina no 'ANEXO II - ATRIBUIÇÕES DO CARGO'.",
+    "Cabeçalho em todas as páginas: 'SECRETARIA DE ESTADO DE PLANEJAMENTO E GESTÃO – SEPLAG/RJ' + número da página sozinho.",
+    "Começa com 'COMUM PARA TODAS AS ÁREAS' (matérias comuns a todos os cargos/áreas) antes do primeiro cargo.",
+    "Dois níveis: 'CARGO: ...' e, dentro dele, 'ÁREA: ...'; cada área é uma opção de escolha (4 no total). O nome do cargo quebra em duas linhas ('... E GESTÃO' / 'GOVERNAMENTAL').",
+    "Disciplinas em maiúsculas em linha própria, sem dois-pontos ('LÍNGUA PORTUGUESA').",
+    "Assuntos SEM numeração, em parágrafo corrido separados por ';' com o item seguinte em minúscula (padrão FGV); às vezes frases separadas por ponto. Subtítulos dentro da matéria como frase curta ('Direito Constitucional. Constituição...').",
+    "As regras do edital também têm 'Área: ...' (quadro de provas, pág. 20–22), mas ficam fora do recorte do Anexo I."
+  ],
+  "conferido": {
+    "Especialista em Políticas Públicas e Gestão Governamental – Gestão e Governança Pública": {
+      "Língua Portuguesa": 23,
+      "Língua Inglesa": 7,
+      "Atualidades": 9
+    },
+    "Analista de Planejamento e Orçamento – Tecnologia da Informação": {
+      "Língua Portuguesa": 23,
+      "Atualidades": 9
+    }
+  }
+}
