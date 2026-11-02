@@ -3,12 +3,22 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
 // BASE_PATH permite publicar em subpasta (ex.: GitHub Pages: /revisemais/)
+// Versão exibida no app: commit publicado pela Vercel (ou "dev") + data do build.
+const versao = (process.env.VERCEL_GIT_COMMIT_SHA ?? 'dev').slice(0, 7);
+const dataBuild = new Date().toISOString().slice(0, 16).replace('T', ' ');
+
 export default defineConfig({
   base: process.env.BASE_PATH ?? '/',
+  define: {
+    __VERSAO__: JSON.stringify(versao),
+    __DATA_BUILD__: JSON.stringify(dataBuild),
+  },
   plugins: [
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // O registro é feito em src/main.tsx (recarrega o app sozinho quando sai versão nova).
+      injectRegister: false,
       includeAssets: ['icon.svg'],
       manifest: {
         name: 'ReviseMais — Estudos para Concursos',
@@ -21,7 +31,7 @@ export default defineConfig({
         start_url: '.',
         icons: [{ src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' }],
       },
-      workbox: { maximumFileSizeToCacheInBytes: 5 * 1024 * 1024 },
+      workbox: { maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, skipWaiting: true, clientsClaim: true, cleanupOutdatedCaches: true },
     }),
   ],
 });

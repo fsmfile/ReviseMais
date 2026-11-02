@@ -336,3 +336,4 @@ button.icone:hover { background: var(--superficie-2); }
 .aviso-edital p { margin: 0.4rem 0 0; }
 .assunto.titulo-ponto { background: var(--superficie-2); }
 .assunto.titulo-ponto .nome-assunto { font-weight: 700; }
+.rodape-versao { text-align: center; font-size: 0.75rem; color: var(--texto-suave); padding: 0 1rem 1.5rem; }

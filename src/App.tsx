@@ -116,6 +116,9 @@ function Estrutura({ email }: { email?: string }) {
           <Hoje />
         )}
       </main>
+      <footer className="rodape-versao">
+        ReviseMais · versão {__VERSAO__} · {__DATA_BUILD__} UTC
+      </footer>
     </>
   );
 }
