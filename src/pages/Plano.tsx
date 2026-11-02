@@ -217,7 +217,7 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
               <span className="progresso-disc">
                 {est}/{lista.length}
                 <span className="barra">
-                  <span style={{ width: `${lista.length ? (est / lista.length) * 100 : 0}%` }} />
+                  <span style={{ width: `${lista.length ? (est / lista.length) * 100 : 0}%`, ...(d.cor ? { background: d.cor } : {}) }} />
                 </span>
               </span>
               <span className="menu-disc">

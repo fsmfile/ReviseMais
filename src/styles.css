@@ -341,12 +341,12 @@ button.icone:hover { background: var(--superficie-2); }
 /* Paleta categórica dos gráficos (validada para daltonismo nos pares vizinhos) */
 :root {
   --serie-1: #2a78d6; --serie-2: #eb6834; --serie-3: #1baf7a; --serie-4: #eda100;
-  --serie-5: #e87ba4; --serie-6: #008300; --serie-7: #6250d6; --serie-outras: #9a9a9a;
+  --serie-5: #e87ba4; --serie-6: #008300; --serie-7: #6250d6; --serie-8: #e34948;
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --serie-1: #3987e5; --serie-2: #d95926; --serie-3: #199e70; --serie-4: #c98500;
-    --serie-5: #d55181; --serie-6: #008300; --serie-7: #9085e9; --serie-outras: #6f6f6f;
+    --serie-5: #d55181; --serie-6: #008300; --serie-7: #9085e9; --serie-8: #e66767;
   }
 }
 
@@ -429,3 +429,8 @@ main { padding-bottom: 6rem; }
   .matriz-linha { gap: 3px; }
   .botao-estudar { padding: 0.35rem 0.7rem; }
 }
+.alterna-forma { display: inline-flex; background: var(--superficie-2); border-radius: 99px; padding: 2px; }
+.alterna-forma button { background: transparent; color: var(--texto); border: 0; border-radius: 99px; padding: 0.25rem 0.75rem; font-size: 0.85rem; }
+.alterna-forma button.ativa { background: var(--primaria); color: var(--primaria-texto); }
+.barras-h.so-legenda .barra { display: none; }
+.barras-h.so-legenda { gap: 0.35rem; }

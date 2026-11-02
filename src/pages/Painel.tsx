@@ -3,6 +3,7 @@ import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Too
 import { Percentual } from '../components/Campos';
 import { deISO, diasEntre, formatarCurto, formatarData, hoje, paraISO, somarDias } from '../lib/datas';
 import { href } from '../lib/rota';
+import { useCorMateria } from '../lib/cores';
 import { useDados, useIndices } from '../lib/store';
 
 const media = (l: number[]) => (l.length ? Math.round((l.reduce((s, x) => s + x, 0) / l.length) * 10) / 10 : null);
@@ -23,6 +24,7 @@ const estiloTooltip = {
 export function Painel() {
   const { dados } = useDados();
   const { contexto } = useIndices();
+  const corMateria = useCorMateria();
   const [planoId, setPlanoId] = useState('');
   const [diaSel, setDiaSel] = useState<string | null>(null);
   const [todasDisc, setTodasDisc] = useState(false);
@@ -363,13 +365,13 @@ export function Painel() {
                 <li key={d.id}>
                   <div className="barras-h-rotulo">
                     <span>
-                      {!planoId && <span className="bolinha" style={{ ['--cor' as string]: d.plano.cor }} />} {d.nome}
+                      <span className="quad" style={{ background: corMateria(d.nome) }} /> {d.nome}
                       {!planoId && <span className="suave pequeno"> · {d.plano.nome}</span>}
                     </span>
                     <Percentual valor={d.media} />
                   </div>
                   <span className="barra grossa">
-                    <span style={{ width: `${d.media}%` }} />
+                    <span style={{ width: `${d.media}%`, background: corMateria(d.nome) }} />
                   </span>
                 </li>
               ))}

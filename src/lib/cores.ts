@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { normalizar } from './correlacao';
 import { useDados } from './store';
-import { COR_OUTRAS, coresPorMateria } from './tempo';
+import { CORES_SERIE, corGerada, coresPorMateria } from './tempo';
 
 function hslParaHex(h: number, s: number, l: number): string {
   s /= 100;
@@ -39,15 +39,29 @@ export const MATRIZ_CORES: { cor: string; nome: string }[][] = INTENSIDADES.map(
 ]);
 
 /**
- * Cor de uma matéria nos gráficos: a cor escolhida para a disciplina (se houver) tem prioridade;
- * senão, a cor automática da paleta; senão, cinza ("outras").
+ * Cor de uma disciplina/matéria em qualquer gráfico: a cor escolhida pelo usuário tem prioridade;
+ * sem escolha, cada matéria recebe uma cor automática só dela (sem limite de quantidade).
  */
 export function useCorMateria(): (materia: string) => string {
   const { dados } = useDados();
   return useMemo(() => {
     const escolhidas = new Map<string, string>();
     for (const d of dados.disciplinas) if (d.cor) escolhidas.set(normalizar(d.nome), d.cor);
+    // Automáticas: primeiro as matérias com tempo de estudo, depois as demais disciplinas (ordem dos planos).
     const auto = coresPorMateria(dados.sessoes);
-    return (m: string) => escolhidas.get(normalizar(m)) ?? auto.get(m) ?? COR_OUTRAS;
-  }, [dados.disciplinas, dados.sessoes]);
+    const autoNome = new Map<string, string>();
+    for (const [m, c] of auto) autoNome.set(normalizar(m), c);
+    const slot = (i: number) => CORES_SERIE[i] ?? corGerada(i - CORES_SERIE.length);
+    let proximo = auto.size;
+    const planoOrdem = new Map(dados.planos.map((p) => [p.id, p.ordem]));
+    const discs = [...dados.disciplinas].sort((a, b) => (planoOrdem.get(a.plano_id) ?? 0) - (planoOrdem.get(b.plano_id) ?? 0) || a.ordem - b.ordem);
+    for (const d of discs) {
+      const k = normalizar(d.nome);
+      if (!autoNome.has(k)) autoNome.set(k, slot(proximo++));
+    }
+    return (m: string) => {
+      const k = normalizar(m);
+      return escolhidas.get(k) ?? autoNome.get(k) ?? corGerada(k.length);
+    };
+  }, [dados.disciplinas, dados.sessoes, dados.planos]);
 }

@@ -99,23 +99,26 @@ export function intervalo(periodo: Periodo, passo: number, sessoes: Sessao[], re
   return { de: primeira, ate: ref, rotulo: `${fmt(primeira)} a ${fmt(ref)}`, colunas: meses(p.getFullYear(), p.getMonth(), n) };
 }
 
-/** Paleta categórica (validada para daltonismo nos pares vizinhos). Matérias além da 7ª entram em "Outras". */
-export const CORES_SERIE = ['var(--serie-1)', 'var(--serie-2)', 'var(--serie-3)', 'var(--serie-4)', 'var(--serie-5)', 'var(--serie-6)', 'var(--serie-7)'];
-export const COR_OUTRAS = 'var(--serie-outras)';
-export const MAX_SERIES = 7;
+/** Paleta categórica (validada para daltonismo); a partir da 9ª matéria as cores são geradas, sem limite. */
+export const CORES_SERIE = ['var(--serie-1)', 'var(--serie-2)', 'var(--serie-3)', 'var(--serie-4)', 'var(--serie-5)', 'var(--serie-6)', 'var(--serie-7)', 'var(--serie-8)'];
+
+/** n-ésima cor extra: tonalidades espalhadas pelo ângulo áureo, alternando a luminosidade. */
+export function corGerada(n: number): string {
+  const h = Math.round((n * 137.508 + 20) % 360);
+  const l = [48, 38, 58][n % 3];
+  return `hsl(${h} 65% ${l}%)`;
+}
 
 /**
- * Cor fixa por matéria: as 7 matérias com mais tempo no histórico TODO ganham uma cor cada
- * (não muda ao trocar o período), o resto vira "Outras".
+ * Cor automática fixa por matéria (para quem não escolheu cor): ordem pelo tempo no histórico TODO,
+ * então não muda ao trocar o período. Todas as matérias recebem uma cor própria.
  */
 export function coresPorMateria(sessoes: Sessao[]): Map<string, string> {
   const total = new Map<string, number>();
   for (const s of sessoes) total.set(s.materia, (total.get(s.materia) ?? 0) + s.duracao_seg);
   const ordem = [...total.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([m]) => m);
-  return new Map(ordem.slice(0, MAX_SERIES).map((m, i) => [m, CORES_SERIE[i]]));
+  return new Map(ordem.map((m, i) => [m, CORES_SERIE[i] ?? corGerada(i - CORES_SERIE.length)]));
 }
-
-export const OUTRAS = 'Outras matérias';
 
 export function totalPor<K extends string>(sessoes: Sessao[], chave: (s: Sessao) => K): { chave: K; seg: number }[] {
   const m = new Map<K, number>();

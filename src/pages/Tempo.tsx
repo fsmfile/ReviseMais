@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { href } from '../lib/rota';
 import { useDados } from '../lib/store';
 import { useCorMateria } from '../lib/cores';
-import { COR_OUTRAS, formatarDuracao, intervalo, OUTRAS, rotuloTipo, totalPor, TIPOS_ESTUDO, type Periodo } from '../lib/tempo';
+import { formatarDuracao, intervalo, rotuloTipo, totalPor, TIPOS_ESTUDO, type Periodo } from '../lib/tempo';
 
 const PERIODOS: { p: Periodo; rotulo: string }[] = [
   { p: 'dia', rotulo: 'Dia' },
@@ -22,21 +22,35 @@ export function Tempo() {
   const [passo, setPasso] = useState(0);
   const [planoId, setPlanoId] = useState('');
   const [verTabela, setVerTabela] = useState(false);
+  const [formaMateria, setFormaMateria] = useState<'barras' | 'pizza'>(() => {
+    try {
+      return localStorage.getItem('revisemais:graficoMateria') === 'pizza' ? 'pizza' : 'barras';
+    } catch {
+      return 'barras';
+    }
+  });
+  const mudarForma = (f: 'barras' | 'pizza') => {
+    setFormaMateria(f);
+    try {
+      localStorage.setItem('revisemais:graficoMateria', f);
+    } catch {
+      /* preferência só nesta sessão */
+    }
+  };
 
   const todas = useMemo(() => dados.sessoes.filter((s) => !planoId || s.plano_id === planoId), [dados.sessoes, planoId]);
   const corMateria = useCorMateria();
   const int = useMemo(() => intervalo(periodo, passo, todas), [periodo, passo, todas]);
   const doPeriodo = useMemo(() => todas.filter((s) => s.data >= int.de && s.data <= int.ate), [todas, int]);
   const total = doPeriodo.reduce((t, s) => t + s.duracao_seg, 0);
-  // Matéria com cor (escolhida ou automática) vira série própria; as demais somam em "Outras".
-  const serie = (m: string) => (corMateria(m) !== COR_OUTRAS ? m : OUTRAS);
+  // Cada matéria é uma série própria, com a cor escolhida para a disciplina (ou a automática dela).
+  const serie = (m: string) => m;
   const corDe = corMateria;
 
   const porMateria = totalPor(doPeriodo, (s) => s.materia);
   const porTipo = totalPor(doPeriodo, (s) => s.tipo);
   // Séries do gráfico: matérias com cor própria presentes no período (mais estudadas primeiro) + "Outras".
-  const series = porMateria.map((x) => x.chave).filter((m) => serie(m) === m);
-  if (doPeriodo.some((s) => serie(s.materia) === OUTRAS)) series.push(OUTRAS);
+  const series = porMateria.map((x) => x.chave);
 
   const linhas = int.colunas.map((c) => {
     const l: Record<string, number | string> = { rotulo: c.rotulo, de: c.de, ate: c.ate };
@@ -159,7 +173,7 @@ export function Tempo() {
                       key={m}
                       dataKey={m}
                       stackId="t"
-                      fill={m === OUTRAS ? COR_OUTRAS : corDe(m)}
+                      fill={corDe(m)}
                       stroke="var(--superficie)"
                       strokeWidth={1}
                       radius={i === series.length - 1 ? [4, 4, 0, 0] : 0}
@@ -174,9 +188,48 @@ export function Tempo() {
       )}
 
       <section className="cartao">
-        <h2>Por matéria</h2>
+        <div className="titulo-grafico">
+          <h2>Por matéria</h2>
+          <div className="alterna-forma" role="group" aria-label="Tipo de gráfico">
+            <button className={formaMateria === 'barras' ? 'ativa' : ''} aria-pressed={formaMateria === 'barras'} onClick={() => mudarForma('barras')}>
+              Barras
+            </button>
+            <button className={formaMateria === 'pizza' ? 'ativa' : ''} aria-pressed={formaMateria === 'pizza'} onClick={() => mudarForma('pizza')}>
+              Pizza
+            </button>
+          </div>
+        </div>
+        {porMateria.length > 0 && formaMateria === 'pizza' && (
+          <div className="grafico">
+            <ResponsiveContainer width="100%" height={260}>
+              <PieChart>
+                <Pie
+                  data={porMateria.map((x) => ({ nome: x.chave, seg: x.seg }))}
+                  dataKey="seg"
+                  nameKey="nome"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius="92%"
+                  startAngle={90}
+                  endAngle={-270}
+                  stroke="var(--superficie)"
+                  strokeWidth={2}
+                  isAnimationActive={false}
+                >
+                  {porMateria.map((x) => (
+                    <Cell key={x.chave} fill={corDe(x.chave)} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{ background: 'var(--superficie)', border: '1px solid var(--borda)', borderRadius: 8, color: 'var(--texto)', fontSize: 13 }}
+                  formatter={(v, nome) => [`${formatarDuracao(Number(v))} (${Math.round((Number(v) / total) * 100)}%)`, String(nome)]}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        )}
         {porMateria.length ? (
-          <ul className="barras-h">
+          <ul className={`barras-h ${formaMateria === 'pizza' ? 'so-legenda' : ''}`}>
             {porMateria.map(({ chave: m, seg }) => (
               <li key={m}>
                 <div className="barras-h-rotulo">

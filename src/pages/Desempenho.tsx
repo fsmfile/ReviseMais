@@ -3,6 +3,7 @@ import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YA
 import { Percentual } from '../components/Campos';
 import { deISO, formatarCurto, formatarData, paraISO } from '../lib/datas';
 import { href } from '../lib/rota';
+import { useCorMateria } from '../lib/cores';
 import { useDados, useIndices } from '../lib/store';
 
 interface Registro {
@@ -23,6 +24,7 @@ const media = (l: number[]) => (l.length ? Math.round((l.reduce((s, x) => s + x,
 export function Desempenho() {
   const { dados } = useDados();
   const { contexto } = useIndices();
+  const corMateria = useCorMateria();
   const [planoId, setPlanoId] = useState('');
   const [discId, setDiscId] = useState('');
   const [verTabela, setVerTabela] = useState(false);
@@ -190,7 +192,7 @@ export function Desempenho() {
                     </td>
                     <td className="col-barra">
                       <span className="barra">
-                        <span style={{ width: `${d.media}%` }} />
+                        <span style={{ width: `${d.media}%`, background: corMateria(d.nome) }} />
                       </span>
                     </td>
                     <td>
