@@ -1,7 +1,17 @@
 # ReviseMais — instruções para o Claude
 
 App (PWA) de estudos para concursos jurídicos: React + TypeScript + Vite, Supabase (login/dados), publicado na Vercel
-a partir do ramo `claude/revisemais-inicial`. Textos da interface e do código em português do Brasil.
+(projeto `revisemaisconcursos`, https://revisemaisconcursos.vercel.app) a partir do ramo **`main`** deste repositório.
+Textos da interface e do código em português do Brasil.
+
+## Publicação
+
+- A Vercel publica o ramo `main`. Todo trabalho concluído deve ser enviado ao `main` (e ao `claude/revisemais-inicial`,
+  que acompanha o `main`): `git push origin HEAD:main HEAD:claude/revisemais-inicial`.
+- O rodapé do app mostra a versão publicada (commit). Se o usuário relatar comportamento antigo, peça a versão do rodapé
+  e compare com o último commit do `main` antes de investigar o código.
+- Atenção: na primeira importação a Vercel tinha criado uma cópia do projeto (`fsmfile/revisemaisconcursos`) e publicava
+  dela; o projeto foi religado a este repositório. Não atualize a cópia.
 
 ## Comandos
 
