@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { backend, novoId } from './backend';
 import { REVISOES } from './datas';
-import { calcularCorrelacoes, type MapaCorrelacoes } from './correlacao';
+import { calcularCorrelacoes, normalizar, type MapaCorrelacoes } from './correlacao';
 import type { DisciplinaExtraida } from './editalParser';
 import type { Assunto, Dados, Disciplina, Estudo, Plano, Revisao } from './types';
 
@@ -108,20 +108,37 @@ function useAcoes(dados: Dados, setDados: (f: (d: Dados) => Dados) => void) {
         if (p?.pdf_path) await backend.excluirPdf(p.pdf_path);
         await remover({ ...filhosDoPlano(id), planos: [id] });
       },
+      /**
+       * Importa disciplinas/assuntos para um plano existente. Disciplina com o mesmo nome de uma que já existe
+       * recebe os assuntos novos (ex.: plano criado só com as disciplinas e, depois, o programa com os assuntos).
+       */
       async adicionarEstrutura(planoId: string, estrutura: DisciplinaExtraida[]) {
         const existentes = dados.disciplinas.filter((d) => d.plano_id === planoId);
+        const porNome = new Map(existentes.map((d) => [normalizar(d.nome), d]));
         const disciplinas: Disciplina[] = [];
         const assuntos: Assunto[] = [];
-        estrutura.forEach((de, i) => {
-          const disc: Disciplina = { id: novoId(), plano_id: planoId, nome: de.nome, ordem: existentes.length + i };
-          disciplinas.push(disc);
-          de.assuntos.forEach((a, j) =>
-            assuntos.push({ id: novoId(), disciplina_id: disc.id, codigo: a.codigo, nome: a.nome, nivel: a.nivel, ordem: j }),
+        let ordem = existentes.length;
+        for (const de of estrutura) {
+          let disc = porNome.get(normalizar(de.nome));
+          const jaTem = new Set(
+            disc ? dados.assuntos.filter((a) => a.disciplina_id === disc!.id).map((a) => normalizar(a.nome)) : [],
           );
-        });
+          let j = disc ? Math.max(-1, ...dados.assuntos.filter((a) => a.disciplina_id === disc!.id).map((a) => a.ordem)) + 1 : 0;
+          if (!disc) {
+            disc = { id: novoId(), plano_id: planoId, nome: de.nome, ordem: ordem++ };
+            disciplinas.push(disc);
+            porNome.set(normalizar(de.nome), disc);
+          }
+          for (const a of de.assuntos) {
+            if (jaTem.has(normalizar(a.nome))) continue;
+            jaTem.add(normalizar(a.nome));
+            assuntos.push({ id: novoId(), disciplina_id: disc.id, codigo: a.codigo, nome: a.nome, nivel: a.nivel, ordem: j++ });
+          }
+        }
         await backend.inserir('disciplinas', disciplinas as never[]);
         await backend.inserir('assuntos', assuntos as never[]);
         setDados((d) => ({ ...d, disciplinas: [...d.disciplinas, ...disciplinas], assuntos: [...d.assuntos, ...assuntos] }));
+        return { novasDisciplinas: disciplinas.length, novosAssuntos: assuntos.length };
       },
 
       async criarDisciplina(planoId: string, nome: string) {

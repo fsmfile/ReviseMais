@@ -246,7 +246,7 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
                   const outro = !ult ? estudadoEmOutro(a.id) : undefined;
                   const exp = expandido === a.id;
                   return (
-                    <li key={a.id} id={`a-${a.id}`} className={`assunto ${ult ? 'estudado' : ''} ${destaque === a.id ? 'destacado' : ''}`}>
+                    <li key={a.id} id={`a-${a.id}`} className={`assunto ${ult ? "estudado" : ""} ${destaque === a.id ? "destacado" : ""} ${/^Ponto \d+$/.test(a.nome) ? "titulo-ponto" : ""}`}>
                       <div className="linha-assunto" style={{ paddingLeft: `${(a.nivel - 1) * 1.25}rem` }}>
                         <button className="icone mini" aria-expanded={exp} aria-label="Histórico" onClick={() => setExpandido(exp ? null : a.id)}>
                           {exp ? '▾' : '▸'}

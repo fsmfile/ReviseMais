@@ -17,6 +17,8 @@ Cada pasta tem:
 |---|---|---|---|
 | `cremerj-2026-consulplan` | CREMERJ · Consulplan · 2026 | Edital completo; conteúdo no Anexo I; 4 grupos (“Cargos/especialidades do QUADRO I–IV”) com Conhecimentos Básicos comuns e Específicos com título por cargo; numeração estilo Cebraspe | ✅ 22 cargos; jurídicos conferidos |
 | `seplag-rj-2026-fgv` | SEPLAG/RJ · FGV · 2026 | Edital completo; Anexo I começa com “COMUM PARA TODAS AS ÁREAS”; dois níveis “CARGO: …” → “ÁREA: …” (nome do cargo quebrado em 2 linhas); disciplinas em maiúsculas; assuntos sem numeração separados por “;” | ✅ 4 opções (cargo – área); comuns conferidas |
+| `pge-rj-2026-residencia-juridica` | PGE-RJ · banca própria · 2026 (Residência Jurídica) | Páginas do Diário Oficial com outros atos; **sem conteúdo programático**: só cita “4 disciplinas avaliadas” e remete ao “programa anexo à Resolução PGE nº 5463” | ✅ plano nasce com as 4 disciplinas + aviso |
+| `pge-rj-2026-residencia-juridica-programa` | PGE-RJ · Resolução PGE nº 5463/2026 (Regulamento) | Diário Oficial; “ANEXO” / “PROGRAMA”; “1. DIREITO CONSTITUCIONAL”; **Ponto 1…10** com itens **a) b) c)**; fim na marca “Id: …” do ato | ✅ 4 disciplinas, 139 assuntos conferidos |
 
 ### Formatos simulados (sem edital real ainda)
 
@@ -40,6 +42,11 @@ da banca, ele entra na tabela acima e confirma (ou corrige) a regra.
   e por “;”. O “;” não separa: subitens em minúscula de um tópico com dois-pontos (“Segurança da informação: noções de X; noções
   de Y”) nem listas de artigos (“artigos 293 a 305; 307; 308”). Primeira letra do assunto em maiúscula.
 - **Cargo → Área/Especialidade/Ênfase:** cada área vira uma opção (“Cargo – Área”).
+- **Programa em pontos** (exames jurídicos): “Ponto N” vira assunto e os itens “a)”, “b)” viram subitens (código “Na”).
+- **Edital sem conteúdo programático:** usa as disciplinas citadas (“disciplinas avaliadas: A, B e C”) e avisa qual documento
+  traz o programa; importar esse documento depois junta os assuntos nas disciplinas que já existem no plano.
+- **Diário Oficial:** “PROGRAMA” sozinho na linha também abre o conteúdo; a marca do ato (“Id: 2767243”) e a assinatura
+  digital da página encerram.
 - **Vários cargos:** blocos “Cargo(s)/especialidade(s) …” / “QUADRO …” / “CARGO N: …”; básicos do grupo + títulos de cargo nos
   específicos; sem blocos, títulos de cargo em maiúsculas (ANALISTA…, TÉCNICO…, ESCREVENTE…). Matérias antes do primeiro
   cargo (“para todos os cargos”) entram em todos.

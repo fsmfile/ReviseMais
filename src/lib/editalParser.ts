@@ -30,6 +30,10 @@ const MAIUSCULAS_COM_DOIS_PONTOS =
   /((?:[A-ZÀ-ÖØ-Þ0-9ºª()/,–-]+[ \t]+){0,12}[A-ZÀ-ÖØ-Þ(]{2,}[A-ZÀ-ÖØ-Þ()ºª/-]*)[ \t]*:/g;
 
 const LINHA_ANEXO = /^\s*ANEXO\s+[IVXLC\d]+\b/;
+/** Título "PROGRAMA" sozinho na linha (ex.: anexo de regulamento: "ANEXO" / "PROGRAMA"). */
+const LINHA_PROGRAMA = /^PROGRAMA(\s+(DAS?\s+PROVAS?|DO\s+EXAME|DO\s+CONCURSO))?$/;
+/** Fim de um ato no Diário Oficial ("Id: 2767243") ou assinatura digital da página. */
+const FIM_ATO = /^\s*(Id:\s*\d{5,}|Assinado digitalmente em)\b/;
 
 /**
  * Recorta o texto do "Conteúdo Programático" até o anexo seguinte.
@@ -54,7 +58,7 @@ export function recortarConteudo(texto: string): string {
     for (let i = 0; i < linhas.length && inicioLinha < 0; i++) {
       const t = linhas[i].trim();
       if (primeiraMencao < 0 && INICIO_CONTEUDO.test(t)) primeiraMencao = i;
-      if (!ehTitulo(t, exigir)) continue;
+      if (!ehTitulo(t, exigir) && !(exigir && LINHA_PROGRAMA.test(t))) continue;
       inicioLinha = i;
     }
     if (inicioLinha >= 0) break;
@@ -72,7 +76,7 @@ export function recortarConteudo(texto: string): string {
   // Termina no próximo "ANEXO ..." em linha própria (ou no item seguinte).
   let fimLinha = linhas.length;
   for (let i = inicioLinha + 1; i < linhas.length; i++) {
-    if ((LINHA_ANEXO.test(linhas[i]) && linhas[i].trim().length < 60) || proximoItem?.test(linhas[i])) {
+    if ((LINHA_ANEXO.test(linhas[i]) && linhas[i].trim().length < 60) || proximoItem?.test(linhas[i]) || FIM_ATO.test(linhas[i])) {
       fimLinha = i;
       break;
     }
@@ -310,6 +314,36 @@ export function interpretarCargo(op: OpcaoCargo): DisciplinaExtraida[] {
   return [...basicos, ...esp];
 }
 
+export interface EditalSemConteudo {
+  /** Disciplinas citadas no edital ("disciplinas avaliadas: A, B, C e D"). */
+  disciplinas: string[];
+  /** Documento que traz o programa, quando o edital diz qual é (ex.: "Resolução PGE nº 5463"). */
+  referencia: string | null;
+}
+
+/**
+ * Alguns editais não trazem o conteúdo programático: só citam as disciplinas e remetem a outro documento
+ * (ex.: PGE-RJ, Residência Jurídica: "programa anexo à Resolução PGE nº 5463"). Nesse caso devolve as
+ * disciplinas citadas para o plano já nascer com elas.
+ */
+export function editalSemConteudo(texto: string): EditalSemConteudo | null {
+  const limpo = limparTexto(texto);
+  if (limpo.split('\n').some((l) => LINHA_PROGRAMA.test(l.trim()))) return null;
+  const t = limpo.replace(/\s+/g, ' ');
+  if (INICIO_CONTEUDO.test(t)) return null;
+  const m =
+    /\b(?:disciplinas|mat[eé]rias)\s+(?:avaliadas|cobradas|exigidas|objeto\s+de\s+avalia[cç][aã]o|da\s+prova)\s*(?:ser[aã]o|s[aã]o)?\s*:\s*([^.;]{5,400})/i.exec(t);
+  if (!m) return null;
+  const disciplinas = m[1]
+    .split(/,\s*|\s+e\s+(?=\p{Lu})/u)
+    .map((x) => x.trim())
+    .filter((x) => x.length >= 4 && x.length <= 80 && /^\p{Lu}/u.test(x));
+  if (!disciplinas.length) return null;
+  const r =
+    /programa\s+(?:anexo|constante|previsto|integrante|publicado)[^.]{0,30}?\b((?:Resolu[cç][aã]o|Portaria|Edital|Anexo|Delibera[cç][aã]o|Instru[cç][aã]o)\b[^,.;]{0,40}?n[ºo°.]?\s*[\d.]+(?:\/\d{2,4})?)/i.exec(t);
+  return { disciplinas, referencia: r ? r[1].trim() : null };
+}
+
 /** Separador de páginas inserido na extração do PDF. */
 export const QUEBRA_PAGINA = '\f';
 
@@ -356,6 +390,8 @@ export function limparTexto(texto: string): string {
       if (!t) return true;
       if (ehNumeroPagina(t)) return false;
       // Só linhas curtas (cabeçalho típico); trechos de programa repetidos entre cargos são mantidos.
+      // Enumerações do programa ("Ponto 3", "Unidade 2") se repetem em cada disciplina e não são cabeçalho.
+      if (/^(ponto|item|unidade|m[oó]dulo|aula|t[oó]pico|cap[ií]tulo|parte|bloco|eixo)\s+\d+\b/i.test(t)) return true;
       return !((freq.get(chave(l)) ?? 0) >= 3 && /\d/.test(t) && t.length < 70 && t.split(/\s+/).length <= 10 && !/^\d/.test(t));
     });
   }
@@ -514,6 +550,33 @@ function dividirNumerado(corpo: string): AssuntoExtraido[] | null {
     .filter((a) => a.nome.length >= 2);
 }
 
+/**
+ * Programa em pontos (exames jurídicos sorteiam pontos): "Ponto 1" / "a) ..." / "b) ...".
+ * Cada ponto vira um assunto e cada letra um subitem dele ("1a", "1b").
+ */
+function dividirPontos(corpo: string): AssuntoExtraido[] | null {
+  const marcas = [...corpo.matchAll(/^[ \t]*Ponto[ \t]+(\d{1,2})[ \t]*[:.–-]?[ \t]*$/gim)];
+  if (marcas.length < 2) return null;
+  const saida: AssuntoExtraido[] = [];
+  marcas.forEach((m, k) => {
+    const n = m[1];
+    const texto = corpo.slice(m.index! + m[0].length, marcas[k + 1]?.index ?? corpo.length);
+    saida.push({ codigo: n, nome: `Ponto ${n}`, nivel: 1 });
+    const itens = [...texto.matchAll(/(?:^|\n)[ \t]*([a-z])\)[ \t]+/g)];
+    if (!itens.length) {
+      const unico = limparNome(texto.replace(/\s*\n\s*/g, ' '));
+      if (unico) saida[saida.length - 1].nome = `Ponto ${n} – ${unico}`;
+      return;
+    }
+    itens.forEach((it, j) => {
+      const fim = itens[j + 1]?.index ?? texto.length;
+      const nome = limparNome(texto.slice(it.index! + it[0].length, fim).replace(/\s*\n\s*/g, ' '));
+      if (nome) saida.push({ codigo: `${n}${it[1]}`, nome, nivel: 2 });
+    });
+  });
+  return saida;
+}
+
 function dividirSemNumero(corpo: string): AssuntoExtraido[] {
   const frases = corpo
     .replace(/\n\s*[•▪●◦·\-–]\s*/g, '\u0000') // marcadores de lista viram separadores
@@ -577,9 +640,9 @@ export function interpretarEdital(texto: string): DisciplinaExtraida[] {
   for (const b of blocos) {
     const corpo = b.corpo.trim();
     if (!corpo) continue;
-    const assuntos = (dividirNumerado(corpo) ?? dividirSemNumero(corpo)).map((a) => ({
+    const assuntos = (dividirPontos(corpo) ?? dividirNumerado(corpo) ?? dividirSemNumero(corpo)).map((a) => ({
       ...a,
-      nome: a.nome.length > 400 ? a.nome.slice(0, 397) + '...' : a.nome,
+      nome: a.nome.length > 700 ? a.nome.slice(0, 697) + '...' : a.nome,
     }));
     if (!assuntos.length) continue;
     const chave = semAcentos(b.nome.toLowerCase());

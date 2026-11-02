@@ -1,7 +1,17 @@
 import { useMemo, useState } from 'react';
 import { ChipsCorrelacao } from '../components/Correlacao';
 import { calcularCorrelacoes } from '../lib/correlacao';
-import { interpretarCargo, interpretarEdital, limparTexto, listarCargos, recortarConteudo, type DisciplinaExtraida, type OpcaoCargo } from '../lib/editalParser';
+import {
+  editalSemConteudo,
+  interpretarCargo,
+  interpretarEdital,
+  limparTexto,
+  listarCargos,
+  recortarConteudo,
+  type DisciplinaExtraida,
+  type EditalSemConteudo,
+  type OpcaoCargo,
+} from '../lib/editalParser';
 import { ir } from '../lib/rota';
 import { CORES, useDados } from '../lib/store';
 import type { Assunto, Disciplina, Plano } from '../lib/types';
@@ -42,7 +52,19 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
   };
 
   /** Detecta os cargos do edital; se houver mais de um, pede a escolha antes de montar a estrutura. */
+  const [semConteudo, setSemConteudo] = useState<EditalSemConteudo | null>(null);
+
   const processar = (txt: string) => {
+    // Edital que só cita as disciplinas e remete o programa a outro documento.
+    const sem = editalSemConteudo(txt);
+    setSemConteudo(sem);
+    if (sem) {
+      setCargos([]);
+      setCargoSel(null);
+      setDesmarcadas(new Set());
+      setEstrutura(sem.disciplinas.map((nome) => ({ nome, assuntos: [] })));
+      return;
+    }
     const ops = listarCargos(txt);
     setCargos(ops);
     setBuscaCargo('');
@@ -69,9 +91,14 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
         setProgresso(null);
         return;
       }
-      const recorte = recortarConteudo(limparTexto(bruto));
-      setTexto(recorte);
-      processar(recorte);
+      if (editalSemConteudo(bruto)) {
+        setTexto(limparTexto(bruto));
+        processar(bruto);
+      } else {
+        const recorte = recortarConteudo(limparTexto(bruto));
+        setTexto(recorte);
+        processar(recorte);
+      }
       if (!nome && !existente) {
         const n = f.name.replace(/\.pdf$/i, '').replace(/[_-]+/g, ' ').slice(0, 40);
         setNome(n);
@@ -201,6 +228,25 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
           </details>
         )}
         {erro && <p className="erro-texto">{erro}</p>}
+        {semConteudo && (
+          <div className="aviso-edital" role="status">
+            <strong>⚠️ Este edital não traz a lista de assuntos.</strong>
+            <p>
+              Ele só informa as disciplinas da prova
+              {semConteudo.referencia ? (
+                <>
+                  {' '}
+                  e diz que o programa está em <strong>{semConteudo.referencia}</strong>
+                </>
+              ) : null}
+              . O plano será criado com as {semConteudo.disciplinas.length} disciplinas, ainda sem assuntos.
+            </p>
+            <p>
+              Quando tiver o documento com o programa, abra o plano e use <strong>“⤓ Importar do edital”</strong>: os assuntos entram nas
+              disciplinas que já existem.
+            </p>
+          </div>
+        )}
       </section>
 
       {cargos.length > 0 && origem !== 'branco' && (

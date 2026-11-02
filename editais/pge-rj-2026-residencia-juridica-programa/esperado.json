@@ -1,0 +1,23 @@
+{
+  "inicioRecorte": "1. DIREITO CONSTITUCIONAL\nPonto 1\n\na) Conceito e tipos de Constituição. Teoria d",
+  "fimRecorte": "cipação de tutela. Repetições de indébito. Prerrogativas processuais\nda Fazenda.",
+  "cargos": null,
+  "disciplinas": [
+    {
+      "nome": "Direito Constitucional",
+      "assuntos": 34
+    },
+    {
+      "nome": "Direito Administrativo",
+      "assuntos": 35
+    },
+    {
+      "nome": "Direito Processual Civil",
+      "assuntos": 40
+    },
+    {
+      "nome": "Direito Tributário",
+      "assuntos": 30
+    }
+  ]
+}

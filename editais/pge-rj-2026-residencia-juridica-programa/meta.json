@@ -1,0 +1,22 @@
+{
+  "orgao": "Procuradoria Geral do Estado do Rio de Janeiro (PGE-RJ) – Centro de Estudos Jurídicos (CEJUR)",
+  "banca": "Própria (Banca Examinadora da PGE-RJ)",
+  "ano": 2026,
+  "edital": "Resolução PGE nº 5463/2026 – Regulamento do Exame de Seleção ao Programa de Residência Jurídica, com o PROGRAMA em anexo (DOERJ de 30/09/2026). Complementa o edital 'pge-rj-2026-residencia-juridica', que não traz o programa.",
+  "formato": [
+    "2 páginas do Diário Oficial: começa com outro ato (bibliografia de outro certame) e o Regulamento em artigos ('Art. 1º - ...').",
+    "O programa está no fim: linha 'ANEXO' (sem número) seguida da linha 'PROGRAMA'; termina na marca do ato 'Id: 2767243' e na assinatura digital da página.",
+    "Disciplinas numeradas em maiúsculas: '1. DIREITO CONSTITUCIONAL', '2. DIREITO ADMINISTRATIVO', '3. DIREITO PROCESSUAL CIVIL', '4. DIREITO TRIBUTÁRIO'.",
+    "Cada disciplina em 'Ponto 1' ... 'Ponto 10' (Tributário até 8), cada ponto com itens 'a)', 'b)', 'c)'. A prova sorteia pontos do programa (art. sobre a prova).",
+    "Comportamento esperado: cada ponto vira assunto de nível 1 ('Ponto N', código N) e cada letra um subitem de nível 2 (código 'Na').",
+    "Armadilha: as linhas 'Ponto N' se repetem em todas as disciplinas e não podem ser removidas como cabeçalho repetido."
+  ],
+  "conferido": {
+    "*": {
+      "Direito Constitucional": 34,
+      "Direito Administrativo": 35,
+      "Direito Processual Civil": 40,
+      "Direito Tributário": 30
+    }
+  }
+}

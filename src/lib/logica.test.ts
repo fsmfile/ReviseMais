@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dividirBlocos, interpretarCargo, interpretarEdital, limparTexto, listarCargos, recortarConteudo } from './editalParser';
+import { dividirBlocos, editalSemConteudo, interpretarCargo, interpretarEdital, limparTexto, listarCargos, recortarConteudo } from './editalParser';
 import { REVISOES, somarMeses } from './datas';
 import { calcularCorrelacoes, normalizar } from './correlacao';
 import type { Assunto, Disciplina, Plano } from './types';
@@ -93,6 +93,22 @@ describe('edital completo com vários cargos', () => {
     expect(nomes(1)).toEqual(['Língua Portuguesa:2', 'Conhecimentos específicos – Analista de Comunicação:2']);
     expect(nomes(2)).toEqual(['Língua Portuguesa:2', 'Técnicas de Reportagem:2']);
     expect(nomes(3)).toEqual(['Língua Portuguesa:2', 'Direito Constitucional:2']);
+  });
+});
+
+describe('edital sem conteúdo programático', () => {
+  it('pega as disciplinas citadas e o documento que traz o programa', () => {
+    const txt = `VII.1 - O Exame consistirá em Prova Escrita Discursiva, sobre as matérias integrantes do programa
+anexo à Resolução PGE nº 5463, na qual serão aprovados os candidatos com média 50.
+VII.2 - A nota final será a média do candidato nas 4 (quatro) disciplinas avaliadas: Direito Constitucional,
+Direito Administrativo, Direito Processual Civil e Direito Tributário.`;
+    expect(editalSemConteudo(txt)).toEqual({
+      disciplinas: ['Direito Constitucional', 'Direito Administrativo', 'Direito Processual Civil', 'Direito Tributário'],
+      referencia: 'Resolução PGE nº 5463',
+    });
+  });
+  it('não se aplica quando o edital tem conteúdo programático', () => {
+    expect(editalSemConteudo('ANEXO I - CONTEÚDO PROGRAMÁTICO\ndisciplinas avaliadas: Direito Civil e Direito Penal.')).toBeNull();
   });
 });
 

@@ -1,0 +1,21 @@
+{
+  "orgao": "Procuradoria Geral do Estado do Rio de Janeiro (PGE-RJ) – Centro de Estudos Jurídicos (CEJUR)",
+  "banca": "Própria (Banca Examinadora da PGE-RJ)",
+  "ano": 2026,
+  "edital": "18º Exame de Seleção de Candidatos ao Programa de Residência Jurídica – publicado no Diário Oficial do Estado do RJ de 26/10/2026, págs. 65–66",
+  "formato": [
+    "Não é um PDF do edital isolado: são 2 páginas do Diário Oficial (DOERJ) com outros atos misturados (extratos de termo aditivo, edital de processo disciplinar, propaganda).",
+    "Itens com numeração romana ('I - CANDIDATOS', 'VII - PROVAS', 'VII.1 - ...').",
+    "NÃO traz conteúdo programático: VII.1 diz que a prova é 'sobre as matérias integrantes do programa anexo à Resolução PGE nº 5463'.",
+    "As disciplinas aparecem só numa frase: 'VII.2 - ... nas 4 (quatro) disciplinas avaliadas: Direito Constitucional, Direito Administrativo, Direito Processual Civil e Direito Tributário.'",
+    "Comportamento esperado: plano criado com as 4 disciplinas sem assuntos + aviso indicando a Resolução PGE nº 5463; os assuntos entram depois por 'Importar do edital' (junta nas disciplinas existentes)."
+  ],
+  "conferido": {
+    "*": {
+      "Direito Constitucional": 0,
+      "Direito Administrativo": 0,
+      "Direito Processual Civil": 0,
+      "Direito Tributário": 0
+    }
+  }
+}

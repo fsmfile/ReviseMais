@@ -1,0 +1,30 @@
+{
+  "semConteudo": {
+    "disciplinas": [
+      "Direito Constitucional",
+      "Direito Administrativo",
+      "Direito Processual Civil",
+      "Direito Tributário"
+    ],
+    "referencia": "Resolução PGE nº 5463"
+  },
+  "cargos": null,
+  "disciplinas": [
+    {
+      "nome": "Direito Constitucional",
+      "assuntos": 0
+    },
+    {
+      "nome": "Direito Administrativo",
+      "assuntos": 0
+    },
+    {
+      "nome": "Direito Processual Civil",
+      "assuntos": 0
+    },
+    {
+      "nome": "Direito Tributário",
+      "assuntos": 0
+    }
+  ]
+}

@@ -18,7 +18,8 @@ describe.each(ids)('edital de referência: %s', (id) => {
 
   it('cargos conferidos à mão continuam corretos', () => {
     for (const [cargo, disciplinas] of Object.entries(meta.conferido ?? {})) {
-      const c = resultado.cargos?.find((x) => x.cargo === cargo);
+      // "*" = edital sem divisão por cargo
+      const c = cargo === '*' ? { disciplinas: resultado.disciplinas ?? [] } : resultado.cargos?.find((x) => x.cargo === cargo);
       expect(c, `cargo "${cargo}" não encontrado`).toBeTruthy();
       for (const [nome, n] of Object.entries(disciplinas)) {
         expect(c!.disciplinas.find((d) => d.nome === nome)?.assuntos, `${cargo} › ${nome}`).toBe(n);
