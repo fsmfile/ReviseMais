@@ -112,6 +112,15 @@ Direito Administrativo, Direito Processual Civil e Direito Tributário.`;
   });
 });
 
+describe('data da prova', () => {
+  it('lê frase e cronograma, ignorando locais/orientações', async () => {
+    const { dataDaProva } = await import('./identificacao');
+    expect(dataDaProva('Os locais de realização da prova serão divulgados a partir do dia 7 de dezembro de 2026. As provas serão realizadas no dia 13 de dezembro de 2026.')).toBe('2026-12-13');
+    expect(dataDaProva('Divulgação dos locais de prova 07/12/2026 Realização da Prova Objetiva e Discursiva 13/12/2026 Gabarito 14/12/2026')).toBe('2026-12-13');
+    expect(dataDaProva('O Exame será realizado em data a ser oportunamente designada.')).toBeNull();
+  });
+});
+
 describe('correlação entre editais', () => {
   const planos: Plano[] = [
     { id: 'p1', nome: 'TJ', orgao: null, cor: '#f00', ordem: 0, pdf_path: null, data_prova: null },

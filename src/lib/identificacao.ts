@@ -10,6 +10,8 @@ export interface IdentificacaoEdital {
   ano: string | null;
   /** Programa/certame quando não há cargo (ex.: "Residência Jurídica"). */
   tema: string | null;
+  /** Data da prova (YYYY-MM-DD), quando o edital informa. */
+  dataProva: string | null;
 }
 
 const ORGAO =
@@ -178,7 +180,7 @@ export function identificarEdital(texto: string): IdentificacaoEdital {
     if (m) tema = titulo(m[1]);
   }
 
-  return { orgao, sigla, banca, ano, tema };
+  return { orgao, sigla, banca, ano, tema, dataProva: dataDaProva(corpo) };
 }
 
 /** Nome da aba do plano: "CREMERJ 2026 – Advogado" (o cargo entra quando o edital tem vários). */
@@ -191,4 +193,36 @@ export function nomeSugerido(id: IdentificacaoEdital, cargo?: string | null): st
 export function orgaoBanca(id: IdentificacaoEdital): string {
   const nome = id.sigla && id.orgao && !id.orgao.includes(id.sigla) ? `${id.orgao} (${id.sigla})` : id.orgao ?? id.sigla;
   return [nome, id.banca].filter(Boolean).join(' · ');
+}
+
+const MESES: Record<string, number> = {
+  janeiro: 1, fevereiro: 2, marco: 3, abril: 4, maio: 5, junho: 6, julho: 7, agosto: 8, setembro: 9, outubro: 10, novembro: 11, dezembro: 12,
+};
+
+/**
+ * Data da prova: procura "realização/aplicação da(s) prova(s)", "as provas ... serão realizadas/aplicadas",
+ * "data (provável) da prova" e pega a primeira data logo depois ("13/12/2026" ou "29 de novembro de 2026").
+ */
+export function dataDaProva(corpo: string): string | null {
+  const texto = corpo.replace(/\s+/g, ' ');
+  const gatilho =
+    /(realiza[cç][aã]o|aplica[cç][aã]o)\s+d[ao]s?\s+(prova|provas|exame)\b|\bprovas?\b[^.]{0,90}?\bser[aã]o?\s+(realizadas?|aplicadas?)|data\s+(prov[aá]vel\s+)?(de\s+realiza[cç][aã]o\s+)?d[ao]s?\s+provas?/gi;
+  const data =
+    /\b(\d{1,2})\s*\/\s*(\d{1,2})\s*\/\s*(20\d{2})\b|\b(\d{1,2})(?:º|°)?\s+de\s+(janeiro|fevereiro|mar[cç]o|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro)\s+de\s+(20\d{2})\b/i;
+  for (const g of texto.matchAll(gatilho)) {
+    // "locais de realização das provas", "orientações para realização das provas"... falam de outra coisa
+    const antes = texto.slice(Math.max(0, g.index! - 40), g.index!);
+    if (/\b(locais|local|cidades?|orienta[cç][oõ]es|quando|durante|para|ap[oó]s|antes)\s+(de|da|das|do|dos|para|a)?\s*$/i.test(antes)) continue;
+    const depois = texto.slice(g.index! + g[0].length, g.index! + g[0].length + 160);
+    // para no fim da frase/item e antes de outras etapas ("divulgação", "gabarito", "a partir de")
+    const corte = depois.search(
+      /\.\s+(?=[\p{Lu}\d])|\b(gabarito|resultado|recurso|convoca[cç][aã]o|divulga[cç][aã]o|divulgad|dispon[ií]v|a partir|endere[cç]o|publica[cç]|inscri[cç])/iu,
+    );
+    const trecho = corte >= 0 ? depois.slice(0, corte) : depois;
+    const m = data.exec(trecho);
+    if (!m) continue;
+    const [d, mes, ano] = m[1] ? [Number(m[1]), Number(m[2]), m[3]] : [Number(m[4]), MESES[semAcentos(m[5].toLowerCase())], m[6]];
+    if (d >= 1 && d <= 31 && mes >= 1 && mes <= 12) return `${ano}-${String(mes).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  }
+  return null;
 }

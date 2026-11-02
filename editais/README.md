@@ -53,6 +53,8 @@ da banca, ele entra na tabela acima e confirma (ou corrige) a regra.
 - **Grupos “Para os cargos de A, B e C:”**, níveis de ensino (“ENSINO …”, “➢ …”) e cargos com código (“301 - NOME”).
 - **Títulos “Matéria para (todos) os cargos de …”** (nome = antes de “para”), inclusive continuando na linha seguinte.
 - **Retificações:** “(Revogado)” marca o assunto anterior com “⚠ revogado” (o risco do PDF não vem no texto).
+- **Data da prova:** “realização/aplicação da(s) prova(s) … DATA” (cronograma) ou “as provas serão realizadas no dia …”,
+  ignorando locais/orientações/divulgação; sem data no edital, o campo fica vazio.
 - **Nome do plano:** órgão (sigla, ou Cidade/UF), ano do número do edital e cargo/programa — `src/lib/identificacao.ts`.
 - **Vários cargos:** blocos “Cargo(s)/especialidade(s) …” / “QUADRO …” / “CARGO N: …”; básicos do grupo + títulos de cargo nos
   específicos; sem blocos, títulos de cargo em maiúsculas (ANALISTA…, TÉCNICO…, ESCREVENTE…). Matérias antes do primeiro

@@ -15,10 +15,14 @@ const ids = fs.existsSync(RAIZ) ? fs.readdirSync(RAIZ).filter((d) => fs.existsSy
 describe.each(ids)('edital de referência: %s', (id) => {
   const ler = (f: string) => fs.readFileSync(path.join(RAIZ, id, f), 'utf8');
   const resultado = analisar(ler('texto.txt'));
-  const meta = JSON.parse(ler('meta.json')) as { conferido?: Record<string, Record<string, number>>; nomeSugerido?: string };
+  const meta = JSON.parse(ler('meta.json')) as { conferido?: Record<string, Record<string, number>>; nomeSugerido?: string; dataProva?: string | null };
 
   it('identifica o órgão e sugere o nome do plano', () => {
     if (meta.nomeSugerido) expect(nomeSugerido(identificarEdital(ler('texto.txt')))).toBe(meta.nomeSugerido);
+  });
+
+  it('identifica a data da prova (ou nenhuma, se o edital não informa)', () => {
+    if (meta.dataProva !== undefined) expect(identificarEdital(ler('texto.txt')).dataProva).toBe(meta.dataProva);
   });
 
   it('cargos conferidos à mão continuam corretos', () => {

@@ -39,6 +39,7 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
   const [desmarcadas, setDesmarcadas] = useState<Set<number>>(new Set());
   const [nomeAuto, setNomeAuto] = useState('');
   const [orgaoAuto, setOrgaoAuto] = useState('');
+  const [provaAuto, setProvaAuto] = useState('');
   // Órgão/sigla/ano/banca lidos do edital (ref: usado na mesma chamada em que é calculado).
   const ident = useRef<IdentificacaoEdital | null>(null);
 
@@ -50,6 +51,12 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
     if (novo && (!nome || nome === nomeAuto)) {
       setNome(novo);
       setNomeAuto(novo);
+    }
+    // Data da prova lida do edital (só se o campo está vazio ou ainda com a sugestão anterior).
+    const dp = id?.dataProva ?? '';
+    if (dp && (!prova || prova === provaAuto)) {
+      setProva(dp);
+      setProvaAuto(dp);
     }
     const ob = id ? orgaoBanca(id) : '';
     if (ob && (!orgao || orgao === orgaoAuto)) {
@@ -167,6 +174,7 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
     if (existente) {
       await executar(async () => {
         await acoes.adicionarEstrutura(existente.id, est);
+        if (!existente.data_prova && ident.current?.dataProva) await acoes.atualizarPlano(existente.id, { data_prova: ident.current.dataProva });
         if (pdf && !existente.pdf_path) await acoes.anexarPdf(existente.id, pdf);
       });
       ir({ tela: 'plano', id: existente.id });
@@ -199,6 +207,7 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
             <label>
               Data da prova
               <input type="date" value={prova} onChange={(e) => setProva(e.target.value)} />
+              {prova && prova === provaAuto && <span className="dica-auto">✨ Data lida do edital — confira</span>}
             </label>
           </div>
           <SeletorCor cor={cor} aoMudar={setCor} />
