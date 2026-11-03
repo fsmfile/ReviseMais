@@ -8,6 +8,7 @@ import { SeletorCorMatriz } from '../components/SeletorCorMatriz';
 import { corSugerida, useCorMateria } from '../lib/cores';
 import { normalizar } from '../lib/correlacao';
 import { Icone } from '../components/Icone';
+import { AvisoSemAssuntos } from '../components/AvisoSemAssuntos';
 import { MenuAcoes } from '../components/MenuAcoes';
 import { NavegaSecoes } from '../components/NavegaSecoes';
 import { StatusRevisoes, estadoRevisao } from '../components/StatusRevisoes';
@@ -155,6 +156,12 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
           <span>assuntos presentes em outros editais</span>
         </div>
       </div>
+
+      <AvisoSemAssuntos
+        concurso={[plano.nome, plano.orgao].filter(Boolean).join(' – ')}
+        disciplinas={disciplinas.filter((d) => !(assuntosPorDisc.get(d.id)?.length)).map((d) => d.nome)}
+        planoId={plano.id}
+      />
 
       {todos.length > 0 && (
         <div className="filtros">

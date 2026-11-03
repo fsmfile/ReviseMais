@@ -1,0 +1,86 @@
+{
+  "formato": "lista",
+  "cargos": null,
+  "disciplinas": [
+    {
+      "nome": "Direito Administrativo",
+      "assuntos": 0
+    },
+    {
+      "nome": "Direito Civil",
+      "assuntos": 0
+    },
+    {
+      "nome": "Direito Constitucional",
+      "assuntos": 0
+    },
+    {
+      "nome": "Direito do Trabalho",
+      "assuntos": 0
+    },
+    {
+      "nome": "Direito Empresarial",
+      "assuntos": 0
+    },
+    {
+      "nome": "Direito Penal",
+      "assuntos": 0
+    },
+    {
+      "nome": "Direito Processual Civil",
+      "assuntos": 0
+    },
+    {
+      "nome": "Direito Processual Penal",
+      "assuntos": 0
+    },
+    {
+      "nome": "Direito Processual do Trabalho",
+      "assuntos": 0
+    },
+    {
+      "nome": "Direito Tributário",
+      "assuntos": 0
+    },
+    {
+      "nome": "Direitos Humanos",
+      "assuntos": 0
+    },
+    {
+      "nome": "Direito do Consumidor",
+      "assuntos": 0
+    },
+    {
+      "nome": "Direito da Criança e do Adolescente",
+      "assuntos": 0
+    },
+    {
+      "nome": "Direito Ambiental",
+      "assuntos": 0
+    },
+    {
+      "nome": "Direito Internacional",
+      "assuntos": 0
+    },
+    {
+      "nome": "Filosofia do Direito",
+      "assuntos": 0
+    },
+    {
+      "nome": "Direito Financeiro",
+      "assuntos": 0
+    },
+    {
+      "nome": "Direito Previdenciário",
+      "assuntos": 0
+    },
+    {
+      "nome": "Direito Eleitoral",
+      "assuntos": 0
+    },
+    {
+      "nome": "Ética e Disciplina",
+      "assuntos": 3
+    }
+  ]
+}

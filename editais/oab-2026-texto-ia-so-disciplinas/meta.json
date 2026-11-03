@@ -1,0 +1,19 @@
+{
+  "orgao": "OAB – Exame de Ordem Unificado",
+  "banca": "FGV",
+  "ano": 2026,
+  "edital": "Resposta de IA ao prompt do app, copiada já formatada (perdeu '#'/'##'): o edital da OAB só lista as disciplinas, então vieram sem assuntos.",
+  "formato": [
+    "Título e linhas 'Data da prova:', 'Banca:', 'Fonte:' sem '#'.",
+    "Um grupo 'Disciplinas profissionalizantes obrigatórias (...)' cujos itens são nomes de disciplinas → viram disciplinas.",
+    "Disciplinas com um único item igual ao próprio nome ('Direitos Humanos' / '* Direitos Humanos') → disciplina sem assuntos.",
+    "App mostra aviso de disciplinas sem assuntos com pedido de detalhamento para a IA; a resposta é importada no mesmo plano."
+  ],
+  "conferido": {
+    "*": {
+      "Direito Civil": 0,
+      "Direitos Humanos": 0,
+      "Ética e Disciplina": 3
+    }
+  }
+}

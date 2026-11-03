@@ -26,9 +26,10 @@ ${alvo}
 
 Regras:
 1. Use o edital OFICIAL mais recente desse concurso. Se não tiver acesso a ele ou não tiver certeza, diga isso na linha "Fonte:" (ex.: "Fonte: não confirmado — baseado em editais anteriores") e não invente itens.
-2. ${detalhe}
+2. ${detalhe} Toda disciplina precisa ter assuntos: nunca deixe uma disciplina vazia nem repita o nome dela como único item.
+   Se o edital oficial só lista as disciplinas, sem detalhar os assuntos (como o Exame de Ordem da OAB), detalhe os assuntos tradicionalmente cobrados em cada disciplina, com base na legislação e nos códigos da matéria, e informe isso na linha "Fonte".
 3. Responda SOMENTE em Markdown, exatamente no formato abaixo, sem nenhum texto antes ou depois (sem introdução, comentários, dicas, número de questões ou pesos).
-4. Uma disciplina por título "##". Subitens de um assunto, se houver, com dois espaços antes do "-".${p.observacoes.trim() ? `\n5. ${p.observacoes.trim()}` : ''}
+4. Uma disciplina por título "##" (não agrupe várias disciplinas sob um mesmo título). Subitens de um assunto, se houver, com dois espaços antes do "-".${p.observacoes.trim() ? `\n5. ${p.observacoes.trim()}` : ''}
 
 Formato:
 
@@ -42,6 +43,26 @@ Fonte: link ou identificação do edital
 - Assunto
   - Subitem do assunto
 - Assunto
+
+## Próxima disciplina
+- Assunto
+`;
+}
+
+/** Segundo pedido: detalhar os assuntos de disciplinas que vieram sem assuntos. */
+export function gerarPromptDetalhar(concurso: string, disciplinas: string[]): string {
+  return `Para o concurso ${concurso.trim() || 'abaixo'}, detalhe os assuntos de cada disciplina desta lista:
+${disciplinas.map((d) => `- ${d}`).join('\n')}
+
+Regras:
+1. Liste os assuntos cobrados em cada disciplina, um por linha "-", na ordem lógica da matéria (com base no edital oficial; se ele não detalhar, use a legislação e os códigos da matéria).
+2. Não deixe nenhuma disciplina vazia e não repita o nome da disciplina como item.
+3. Responda SOMENTE em Markdown, neste formato, sem texto antes ou depois:
+
+## Nome da disciplina (exatamente como na lista)
+- Assunto
+- Assunto
+  - Subitem do assunto
 
 ## Próxima disciplina
 - Assunto

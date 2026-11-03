@@ -759,7 +759,28 @@ export function interpretarLista(texto: string): DisciplinaExtraida[] {
     const nome = limparItemLista(m[2]);
     if (nome.length >= 2) atual.assuntos.push({ codigo: null, nome: nome.charAt(0).toUpperCase() + nome.slice(1), nivel });
   }
-  return saida.filter((d) => d.assuntos.length);
+  // Grupo cujos itens são todos nomes de disciplina ("Disciplinas obrigatórias" → "Direito Civil", "Direito Penal"...):
+  // os itens viram disciplinas (ainda sem assuntos). Item único igual ao nome da disciplina não é assunto.
+  const nomeDeDisciplina = new RegExp(`^${NOME_DISCIPLINA}`, 'i');
+  const final: DisciplinaExtraida[] = [];
+  for (const d of saida) {
+    const grupo = d.assuntos.length >= 2 && d.assuntos.every((a) => a.nivel === 1 && a.nome.split(/\s+/).length <= 7 && nomeDeDisciplina.test(a.nome));
+    if (grupo) {
+      for (const a of d.assuntos) final.push({ nome: a.nome, assuntos: [] });
+      continue;
+    }
+    if (d.assuntos.length === 1 && semAcentos(d.assuntos[0].nome.toLowerCase()) === semAcentos(d.nome.toLowerCase())) d.assuntos = [];
+    final.push(d);
+  }
+  // Junta disciplinas repetidas
+  const porNome = new Map<string, DisciplinaExtraida>();
+  for (const d of final) {
+    const k = semAcentos(d.nome.toLowerCase());
+    const ja = porNome.get(k);
+    if (ja) ja.assuntos.push(...d.assuntos);
+    else porNome.set(k, d);
+  }
+  return [...porNome.values()];
 }
 
 /** Transforma o texto do edital em disciplinas e assuntos (o usuário revisa antes de salvar). */

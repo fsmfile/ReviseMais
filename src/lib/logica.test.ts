@@ -159,6 +159,20 @@ Fonte: edital nº 1/2026
     expect(interpretarLista(txt).map((d) => `${d.nome}:${d.assuntos.length}`)).toEqual(['Ética Profissional e Estatuto da OAB:2', 'Direito Constitucional:1']);
   });
 
+  it('grupo de nomes de disciplina vira disciplinas; item igual ao nome não é assunto', () => {
+    const txt = `Exame 2026
+Data da prova: não informada
+Disciplinas obrigatórias
+ * Direito Civil
+ * Direito Penal
+Direitos Humanos
+ * Direitos Humanos
+Ética e Disciplina
+ * Estatuto da Advocacia e da OAB
+ * Regulamento Geral da OAB`;
+    expect(interpretarLista(txt).map((d) => `${d.nome}:${d.assuntos.length}`)).toEqual(['Direito Civil:0', 'Direito Penal:0', 'Direitos Humanos:0', 'Ética e Disciplina:2']);
+  });
+
   it('não confunde edital comum com lista', () => {
     expect(pareceLista('DIREITO CIVIL: 1 Pessoas. 2 Bens.\nDIREITO PENAL: 1 Crime.')).toBe(false);
   });

@@ -14,6 +14,7 @@ import {
 } from '../lib/editalParser';
 import { identificarEdital, nomeSugerido, orgaoBanca, type IdentificacaoEdital } from '../lib/identificacao';
 import { GeradorPrompt } from '../components/GeradorPrompt';
+import { AvisoSemAssuntos } from '../components/AvisoSemAssuntos';
 import { ir } from '../lib/rota';
 import { CORES, useDados } from '../lib/store';
 import type { Assunto, Disciplina, Plano } from '../lib/types';
@@ -110,7 +111,10 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
     if (!pdf) {
       const id = identificarEdital(t);
       // "# Exame de Ordem OAB 2026" (formato do prompt) vira o nome do plano
-      const titulo = /^\s{0,3}#\s+(.+?)\s*$/m.exec(t)?.[1]?.replace(/\*\*/g, '').trim();
+      // ou a 1ª linha, quando a resposta copiada perdeu o "#" mas tem "Data da prova:"/"Banca:" logo abaixo
+      const linhas = t.split('\n').map((l) => l.trim()).filter(Boolean);
+      const semHash = /^(data da prova|banca|fonte)\s*:/i.test(linhas[1] ?? '') ? linhas[0] : undefined;
+      const titulo = (/^\s{0,3}#\s+(.+?)\s*$/m.exec(t)?.[1] ?? semHash)?.replace(/\*\*/g, '').trim();
       ident.current = titulo && !id.sigla ? { ...id, orgao: titulo, sigla: null, ano: null } : id;
     }
     processar(t);
@@ -297,6 +301,12 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
               marcados com <strong>⚠ revogado</strong>: confira no PDF e remova o que não vale mais.
             </p>
           </div>
+        )}
+        {estrutura && origem !== 'pdf' && (
+          <AvisoSemAssuntos
+            concurso={nome || existente?.nome || ''}
+            disciplinas={estrutura.filter((d, i) => !desmarcadas.has(i) && !d.assuntos.length).map((d) => d.nome)}
+          />
         )}
         {semConteudo && (
           <div className="aviso-edital" role="status">
