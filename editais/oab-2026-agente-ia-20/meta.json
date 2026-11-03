@@ -1,0 +1,18 @@
+{
+  "orgao": "OAB – Exame de Ordem Unificado (1ª fase)",
+  "banca": "FGV",
+  "ano": 2026,
+  "edital": "Resposta de agente de IA ao prompt em duas etapas (linha 'Disciplinas (N): ...') com o nº de disciplinas informado (20). Assuntos limitados a 3 por disciplina na simulação. Não é texto oficial.",
+  "formato": [
+    "Markdown do prompt do app com a linha de controle 'Disciplinas (20): A; B; ...' antes das seções '##'.",
+    "Sem o número informado, o mesmo agente anunciou 14 e detalhou 14 (consistente, mas incompleto); com 'O edital tem 20 disciplinas', anunciou e detalhou 20.",
+    "O app compara a linha de controle com as seções e inclui sem assuntos as que faltarem (conferirAnunciadas)."
+  ],
+  "conferido": {
+    "*": {
+      "Ética Profissional": 3,
+      "Direito Eleitoral": 3,
+      "Filosofia do Direito": 3
+    }
+  }
+}

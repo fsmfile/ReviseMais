@@ -23,6 +23,7 @@ Cada pasta tem:
 | `oab-2026-texto-ia` | OAB 1ª fase · FGV (texto escrito por IA, sem PDF) | Introdução solta; “1. Disciplina (8 questões)” seguida de itens “ * assunto” | ✅ 20 disciplinas pelo leitor de listas |
 | `oab-2026-texto-ia-so-disciplinas` | OAB · FGV (resposta de IA ao prompt do app, copiada sem “#”) | Grupo de nomes de disciplina vira disciplinas; disciplina com item igual ao nome fica sem assuntos → aviso + pedido de detalhamento | ✅ 20 disciplinas |
 | `oab-2026-agente-ia` | OAB · FGV (agente de IA respondendo ao prompt do app; versão copiada sem “#”, marcadores “•”) | Formato do prompt; subitens pelo recuo; título que já é disciplina não é desmembrado | ✅ 15 disciplinas (a IA omitiu algumas) |
+| `oab-2026-agente-ia-20` | OAB · FGV (agente de IA, prompt em duas etapas com nº informado = 20) | Linha de controle “Disciplinas (20): …” + seções “##”; app confere e completa as faltantes | ✅ 20 de 20 |
 | `pge-rj-2026-residencia-juridica` | PGE-RJ · banca própria · 2026 (Residência Jurídica) | Páginas do Diário Oficial com outros atos; **sem conteúdo programático**: só cita “4 disciplinas avaliadas” e remete ao “programa anexo à Resolução PGE nº 5463” | ✅ plano nasce com as 4 disciplinas + aviso |
 | `pge-rj-2026-residencia-juridica-programa` | PGE-RJ · Resolução PGE nº 5463/2026 (Regulamento) | Diário Oficial; “ANEXO” / “PROGRAMA”; “1. DIREITO CONSTITUCIONAL”; **Ponto 1…10** com itens **a) b) c)**; fim na marca “Id: …” do ato | ✅ 4 disciplinas, 139 assuntos conferidos |
 

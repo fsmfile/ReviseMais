@@ -7,10 +7,10 @@ import { gerarPrompt, type PedidoPrompt } from '../lib/promptIA';
  * programático em Markdown, no formato que o app lê. Copiar ou baixar o .md.
  */
 export function GeradorPrompt({ aoTerResposta }: { aoTerResposta: () => void }) {
-  const [p, setP] = useState<PedidoPrompt>({ concurso: '', cargo: '', banca: '', edital: '', detalhe: 'completo', observacoes: '' });
+  const [p, setP] = useState<PedidoPrompt>({ concurso: '', cargo: '', banca: '', edital: '', detalhe: 'completo', observacoes: '', numDisciplinas: '' });
   const [copiado, setCopiado] = useState(false);
   const prompt = gerarPrompt(p);
-  const campo = (k: keyof PedidoPrompt) => ({ value: p[k], onChange: (e: { target: { value: string } }) => setP({ ...p, [k]: e.target.value }) });
+  const campo = (k: Exclude<keyof PedidoPrompt, 'numDisciplinas'>) => ({ value: p[k], onChange: (e: { target: { value: string } }) => setP({ ...p, [k]: e.target.value }) });
 
   return (
     <div className="gerador-prompt">
@@ -33,6 +33,10 @@ export function GeradorPrompt({ aoTerResposta }: { aoTerResposta: () => void }) 
         <label>
           Edital / ano
           <input placeholder="Ex.: 2026" {...campo('edital')} />
+        </label>
+        <label>
+          Nº de disciplinas
+          <input inputMode="numeric" placeholder="se souber" value={p.numDisciplinas} onChange={(e) => setP({ ...p, numDisciplinas: e.target.value.replace(/\D/g, '') })} />
         </label>
       </div>
       <fieldset className="tipos-estudo">

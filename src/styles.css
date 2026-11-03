@@ -494,3 +494,4 @@ main { padding-bottom: 6rem; }
 .passos-ia { margin: 0.8rem 0 0; padding-left: 1.2rem; display: grid; gap: 0.3rem; color: var(--texto-suave); }
 .arquivo-texto { margin: 0.4rem 0 0.6rem; }
 .abas-origem button { white-space: nowrap; }
+.ok-caixa { background: var(--verde-fundo); border: 1px solid var(--verde); border-radius: 8px; padding: 0.6rem 0.9rem; margin-top: 0.8rem; font-size: 0.92rem; }

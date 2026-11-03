@@ -1,0 +1,86 @@
+{
+  "formato": "lista",
+  "cargos": null,
+  "disciplinas": [
+    {
+      "nome": "Ética Profissional",
+      "assuntos": 3
+    },
+    {
+      "nome": "Direito Constitucional",
+      "assuntos": 3
+    },
+    {
+      "nome": "Direito Administrativo",
+      "assuntos": 3
+    },
+    {
+      "nome": "Direito Civil",
+      "assuntos": 3
+    },
+    {
+      "nome": "Direito Empresarial",
+      "assuntos": 3
+    },
+    {
+      "nome": "Direito Penal",
+      "assuntos": 3
+    },
+    {
+      "nome": "Direito Processual Civil",
+      "assuntos": 3
+    },
+    {
+      "nome": "Direito Processual Penal",
+      "assuntos": 3
+    },
+    {
+      "nome": "Direito do Trabalho",
+      "assuntos": 3
+    },
+    {
+      "nome": "Direito Processual do Trabalho",
+      "assuntos": 3
+    },
+    {
+      "nome": "Direito Tributário",
+      "assuntos": 3
+    },
+    {
+      "nome": "Direito Previdenciário",
+      "assuntos": 3
+    },
+    {
+      "nome": "Direito do Consumidor",
+      "assuntos": 3
+    },
+    {
+      "nome": "Direito Ambiental",
+      "assuntos": 3
+    },
+    {
+      "nome": "Direito Internacional",
+      "assuntos": 3
+    },
+    {
+      "nome": "Direito Eleitoral",
+      "assuntos": 3
+    },
+    {
+      "nome": "Direito Financeiro",
+      "assuntos": 3
+    },
+    {
+      "nome": "Direitos Humanos",
+      "assuntos": 3
+    },
+    {
+      "nome": "Direito da Criança e do Adolescente",
+      "assuntos": 3
+    },
+    {
+      "nome": "Filosofia do Direito",
+      "assuntos": 3
+    }
+  ]
+}

@@ -1,3 +1,6 @@
+import { normalizar } from './correlacao';
+import type { DisciplinaExtraida } from './editalParser';
+
 export interface PedidoPrompt {
   concurso: string;
   cargo: string;
@@ -5,6 +8,8 @@ export interface PedidoPrompt {
   edital: string;
   detalhe: 'completo' | 'resumido';
   observacoes: string;
+  /** Quantas disciplinas o usuário sabe que o edital tem (opcional, texto livre do campo). */
+  numDisciplinas?: string;
 }
 
 /** Prompt para outra IA devolver o conteúdo programático no formato que o EstudeMais lê (Markdown). */
@@ -25,6 +30,9 @@ export function gerarPrompt(p: PedidoPrompt): string {
 ${alvo}
 
 Regras:
+0. Faça em duas etapas. PRIMEIRO levante a lista completa de disciplinas cobradas e escreva a linha "Disciplinas (N): nome; nome; ..." com TODAS elas e o total N.${
+    Number(p.numDisciplinas) > 0 ? ` O edital tem ${Number(p.numDisciplinas)} disciplinas: confira se a sua lista tem exatamente ${Number(p.numDisciplinas)} antes de continuar.` : ''
+  } DEPOIS detalhe exatamente essas N disciplinas, na mesma ordem e com os mesmos nomes, uma por título "##". Antes de terminar, confira se a quantidade de títulos "##" é igual a N.
 1. Use o edital OFICIAL mais recente desse concurso. Se não tiver acesso a ele ou não tiver certeza, diga isso na linha "Fonte:" (ex.: "Fonte: não confirmado — baseado em editais anteriores") e não invente itens.
 2. ${detalhe} Toda disciplina precisa ter assuntos: nunca deixe uma disciplina vazia nem repita o nome dela como único item.
    Se o edital oficial só lista as disciplinas, sem detalhar os assuntos (como o Exame de Ordem da OAB), detalhe os assuntos tradicionalmente cobrados em cada disciplina, com base na legislação e nos códigos da matéria, e informe isso na linha "Fonte".
@@ -37,6 +45,7 @@ Formato:
 Data da prova: DD/MM/AAAA (ou "não informada")
 Banca: nome da banca (ou "não informada")
 Fonte: link ou identificação do edital
+Disciplinas (N): Nome da disciplina; Próxima disciplina; ...
 
 ## Nome da disciplina
 - Assunto
@@ -67,4 +76,43 @@ Regras:
 ## Próxima disciplina
 - Assunto
 `;
+}
+
+/** Linha de controle "Disciplinas (N): A; B; C" da resposta da IA. */
+export function disciplinasAnunciadas(texto: string): { total: number; nomes: string[] } | null {
+  const m = /^\s*[*_]*disciplinas[*_]*\s*\((\d+)\)\s*:\s*(.+)$/im.exec(texto);
+  if (!m) return null;
+  const nomes = m[2]
+    .split(/;|\s+\|\s+/)
+    .map((x) => x.replace(/\*\*|[.]+$/g, '').trim())
+    .filter((x) => x && x !== '...');
+  return { total: Number(m[1]), nomes };
+}
+
+export interface Conferencia {
+  anunciadas: number;
+  detalhadas: number;
+  /** Disciplinas anunciadas que não vieram detalhadas (incluídas sem assuntos). */
+  faltantes: string[];
+}
+
+/**
+ * Compara a linha de controle com as disciplinas detalhadas; as que faltarem entram no plano sem assuntos
+ * (e caem no pedido de detalhamento).
+ */
+export function conferirAnunciadas(texto: string, estrutura: DisciplinaExtraida[]): { estrutura: DisciplinaExtraida[]; conferencia: Conferencia | null } {
+  const anunc = disciplinasAnunciadas(texto);
+  if (!anunc) return { estrutura, conferencia: null };
+  const tem = (nome: string) => {
+    const n = normalizar(nome);
+    return estrutura.some((d) => {
+      const e = normalizar(d.nome);
+      return e === n || e.includes(n) || n.includes(e);
+    });
+  };
+  const faltantes = anunc.nomes.filter((n) => !tem(n));
+  return {
+    estrutura: [...estrutura, ...faltantes.map((nome) => ({ nome, assuntos: [] }))],
+    conferencia: { anunciadas: Math.max(anunc.total, anunc.nomes.length), detalhadas: estrutura.length, faltantes },
+  };
 }

@@ -178,6 +178,24 @@ Direitos Humanos
   });
 });
 
+describe('conferência das disciplinas anunciadas pela IA', () => {
+  it('detecta as que faltaram e inclui sem assuntos', async () => {
+    const { conferirAnunciadas, disciplinasAnunciadas } = await import('./promptIA');
+    const md = `# OAB 2026
+Disciplinas (4): Ética Profissional; Direito Civil; Direito Eleitoral; Filosofia do Direito
+
+## Ética Profissional
+- Estatuto da OAB
+## Direito Civil
+- Contratos
+`;
+    expect(disciplinasAnunciadas(md)).toEqual({ total: 4, nomes: ['Ética Profissional', 'Direito Civil', 'Direito Eleitoral', 'Filosofia do Direito'] });
+    const r = conferirAnunciadas(md, interpretarEdital(md));
+    expect(r.conferencia).toEqual({ anunciadas: 4, detalhadas: 2, faltantes: ['Direito Eleitoral', 'Filosofia do Direito'] });
+    expect(r.estrutura.map((d) => `${d.nome}:${d.assuntos.length}`)).toEqual(['Ética Profissional:1', 'Direito Civil:1', 'Direito Eleitoral:0', 'Filosofia do Direito:0']);
+  });
+});
+
 describe('cores sugeridas das matérias', () => {
   it('são fixas por matéria, iguais entre variações do nome e distintas entre matérias comuns', async () => {
     const { corSugerida } = await import('./cores');

@@ -14,6 +14,7 @@ import {
 } from '../lib/editalParser';
 import { identificarEdital, nomeSugerido, orgaoBanca, type IdentificacaoEdital } from '../lib/identificacao';
 import { GeradorPrompt } from '../components/GeradorPrompt';
+import { conferirAnunciadas, type Conferencia } from '../lib/promptIA';
 import { AvisoSemAssuntos } from '../components/AvisoSemAssuntos';
 import { ir } from '../lib/rota';
 import { CORES, useDados } from '../lib/store';
@@ -77,8 +78,10 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
 
   /** Detecta os cargos do edital; se houver mais de um, pede a escolha antes de montar a estrutura. */
   const [semConteudo, setSemConteudo] = useState<EditalSemConteudo | null>(null);
+  const [conferencia, setConferencia] = useState<Conferencia | null>(null);
 
   const processar = (txt: string) => {
+    setConferencia(null);
     // Edital que só cita as disciplinas e remete o programa a outro documento.
     const sem = editalSemConteudo(txt);
     setSemConteudo(sem);
@@ -100,7 +103,10 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
       sugerirNome(null);
       setCargoSel(null);
       setDesmarcadas(new Set());
-      setEstrutura(interpretarEdital(txt));
+      // Resposta de IA com a linha "Disciplinas (N): ...": confere e completa o que faltar.
+      const conf = conferirAnunciadas(txt, interpretarEdital(txt));
+      setConferencia(conf.conferencia);
+      setEstrutura(conf.estrutura);
     }
   };
   const [erro, setErro] = useState('');
@@ -300,6 +306,22 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
               Na retificação, o texto revogado aparece riscado no PDF, e o app não consegue ver o risco. Os assuntos logo antes de “(Revogado)” estão
               marcados com <strong>⚠ revogado</strong>: confira no PDF e remova o que não vale mais.
             </p>
+          </div>
+        )}
+        {conferencia && origem !== 'pdf' && (
+          <div className={conferencia.faltantes.length ? 'aviso-edital' : 'ok-caixa'} role="status">
+            {conferencia.faltantes.length ? (
+              <>
+                <strong>
+                  A IA anunciou {conferencia.anunciadas} disciplinas, mas detalhou {conferencia.detalhadas}.
+                </strong>
+                <p>
+                  Incluí as que faltavam, sem assuntos: {conferencia.faltantes.join(', ')}. Use o pedido de detalhamento abaixo para completá-las.
+                </p>
+              </>
+            ) : (
+              <strong>✓ Conferido: a IA anunciou {conferencia.anunciadas} disciplinas e detalhou todas.</strong>
+            )}
           </div>
         )}
         {estrutura && origem !== 'pdf' && (
