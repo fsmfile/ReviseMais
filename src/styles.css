@@ -487,3 +487,10 @@ main { padding-bottom: 6rem; }
 .folha-item.perigo:hover, .folha-item.perigo:active { background: var(--vermelho-fundo); }
 .cor-sugerida { display: flex; align-items: center; gap: 0.6rem; width: 100%; background: var(--superficie-2); color: var(--texto); border: 2px solid transparent; border-radius: 10px; padding: 0.5rem 0.6rem; margin-bottom: 0.8rem; font-weight: 400; text-align: left; white-space: normal; }
 .cor-sugerida.sel { border-color: var(--primaria); }
+.gerador-prompt { margin-top: 0.4rem; }
+.previa-prompt { margin: 0.6rem 0; }
+.previa-prompt summary { cursor: pointer; font-weight: 600; font-size: 0.9rem; }
+.previa-prompt pre { white-space: pre-wrap; word-break: break-word; background: var(--superficie-2); border-radius: 8px; padding: 0.7rem; font-size: 0.78rem; max-height: 320px; overflow: auto; }
+.passos-ia { margin: 0.8rem 0 0; padding-left: 1.2rem; display: grid; gap: 0.3rem; color: var(--texto-suave); }
+.arquivo-texto { margin: 0.4rem 0 0.6rem; }
+.abas-origem button { white-space: nowrap; }

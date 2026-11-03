@@ -1,0 +1,86 @@
+{
+  "formato": "lista",
+  "cargos": null,
+  "disciplinas": [
+    {
+      "nome": "Ética Profissional e Estatuto da OAB",
+      "assuntos": 6
+    },
+    {
+      "nome": "Direito Constitucional",
+      "assuntos": 5
+    },
+    {
+      "nome": "Direito Civil",
+      "assuntos": 5
+    },
+    {
+      "nome": "Direito Processual Civil",
+      "assuntos": 4
+    },
+    {
+      "nome": "Direito Penal",
+      "assuntos": 4
+    },
+    {
+      "nome": "Direito Processual Penal",
+      "assuntos": 5
+    },
+    {
+      "nome": "Direito do Trabalho",
+      "assuntos": 5
+    },
+    {
+      "nome": "Direito Processual do Trabalho",
+      "assuntos": 4
+    },
+    {
+      "nome": "Direito Administrativo",
+      "assuntos": 4
+    },
+    {
+      "nome": "Direito Tributário",
+      "assuntos": 4
+    },
+    {
+      "nome": "Direito Empresarial",
+      "assuntos": 4
+    },
+    {
+      "nome": "Direitos Humanos",
+      "assuntos": 4
+    },
+    {
+      "nome": "Direito Internacional",
+      "assuntos": 4
+    },
+    {
+      "nome": "Estatuto da Criança e do Adolescente - ECA",
+      "assuntos": 3
+    },
+    {
+      "nome": "Direito Ambiental",
+      "assuntos": 3
+    },
+    {
+      "nome": "Direito do Consumidor",
+      "assuntos": 4
+    },
+    {
+      "nome": "Filosofia do Direito",
+      "assuntos": 3
+    },
+    {
+      "nome": "Direito Financeiro",
+      "assuntos": 3
+    },
+    {
+      "nome": "Direito Eleitoral",
+      "assuntos": 2
+    },
+    {
+      "nome": "Direito Previdenciário",
+      "assuntos": 3
+    }
+  ]
+}

@@ -52,7 +52,8 @@ async function main() {
     console.log('Edital SEM conteúdo programático.');
     console.log(`Programa em: ${r.semConteudo.referencia ?? '(documento não identificado)'}`);
     console.log(`Disciplinas citadas: ${r.semConteudo.disciplinas.join('; ')}`);
-  } else console.log(`Recorte: "${r.inicioRecorte.replace(/\n/g, ' ')}" … "${r.fimRecorte.replace(/\n/g, ' ')}"`);
+  } else if ('formato' in r) console.log('Texto em lista (Markdown / resposta de IA).');
+  else console.log(`Recorte: "${r.inicioRecorte.replace(/\n/g, ' ')}" … "${r.fimRecorte.replace(/\n/g, ' ')}"`);
   if (r.cargos) {
     console.log(`${r.cargos.length} cargos:`);
     for (const c of r.cargos) console.log(`  • ${c.cargo} [${c.grupo}]\n      ${c.disciplinas.map((d) => `${d.nome} (${d.assuntos})`).join('; ')}`);

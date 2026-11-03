@@ -1,0 +1,101 @@
+A prova da 1ª Fase do Exame de Ordem da OAB é composta por 80 questões objetivas cobrando 20 disciplinas jurídicas.
+Formalmente, o edital unificado da FGV prevê a cobrança da legislação nacional vigente publicada até a data do edital, juntamente com a jurisprudência consolidada dos Tribunais Superiores. Abaixo está a listagem de todas as 20 disciplinas exigidas e os tópicos mais cobrados em cada uma delas:
+1. Ética Profissional e Estatuto da OAB (8 questões)
+ * Direitos e Prerrogativas do Advogado
+ * Infrações e Sanções Disciplinares
+ * Incompatibilidades e Impedimentos
+ * Inscrição na OAB e Licenciamento/Cancelamento
+ * Honorários Advocatícios e Sociedade de Advogados
+ * Processo Disciplinar e Órgãos da OAB
+2. Direito Constitucional (6 questões)
+ * Controle de Constitucionalidade (Concentrado e Difuso)
+ * Direitos e Garantias Fundamentais
+ * Organização Político-Administrativa do Estado e Repartição de Competências
+ * Processo Legislativo e Poder Legislativo
+ * Remédios Constitucionais
+3. Direito Civil (6 questões)
+ * Parte Geral (LINDB, Capacidade, Pessoa Natural/Jurídica, Bens e Negócio Jurídico)
+ * Prescrição e Decadência
+ * Direito das Coisas (Posse, Propriedade e Direitos Reais)
+ * Contratos em Geral, Contratos em Espécie e Responsabilidade Civil
+ * Direito de Família e Sucessões
+4. Direito Processual Civil (6 questões)
+ * Tutelas Provisórias, Competência e Petição Inicial
+ * Procedimento Comum e Contestação
+ * Sentença, Coisa Julgada e Recursos (Apelação, Agravo de Instrumento, etc.)
+ * Teoria Geral da Execução e Cumprimento de Sentença
+5. Direito Penal (6 questões)
+ * Teoria Geral do Delito / Crime (Tipicidade, Ilicitude e Culpabilidade)
+ * Concurso de Pessoas, Penas e Dosimetria da Pena
+ * Crimes em Espécie (contra a Pessoa, Patrimônio e Administração Pública)
+ * Leis Penais Especiais
+6. Direito Processual Penal (6 questões)
+ * Inquérito Policial e Ação Penal
+ * Jurisdição, Competência e Provas
+ * Prisão, Liberdade Provisória e Medidas Cautelares
+ * Procedimentos (Comum, Sumário e Tribunal do Júri)
+ * Recursos e Ações Autônomas de Impugnação (Habeas Corpus e Revisão Criminal)
+7. Direito do Trabalho (5 questões)
+ * Relação de Trabalho x Relação de Emprego e Tipos de Trabalhadores
+ * Contrato Individual de Trabalho e Alterações
+ * Cessação e Rescisão do Contrato de Trabalho
+ * Duração do Trabalho (Jornada, Horas Extras, Intervalos e Descanso)
+ * Salário e Remuneração
+8. Direito Processual do Trabalho (5 questões)
+ * Competência da Justiça do Trabalho
+ * Atos, Prazos Processuais e Custas
+ * Audiência Trabalhista, Resposta do Réu e Provas
+ * Recursos Trabalhistas e Execução Trabalhista
+9. Direito Administrativo (5 questões)
+ * Organização da Administração Pública (Direta e Indireta)
+ * Agentes Públicos e Improbidade Administrativa
+ * Licitações e Contratos Administrativos (Lei nº 14.133/2021)
+ * Intervenção do Estado na Propriedade, Serviços Públicos e Poderes da Administração
+10. Direito Tributário (5 questões)
+ * Sistema Tributário Nacional, Conceito e Classificação dos Tributos
+ * Limitações Constitucionais ao Poder de Tributar (Princípios e Imunidades)
+ * Impostos em Espécie (Federais, Estaduais e Municipais)
+ * Crédito Tributário (Lançamento, Extinção, Suspensão e Exclusão)
+11. Direito Empresarial (4 questões)
+ * Teoria Geral do Direito Empresarial, Estabelecimento e Registro
+ * Sociedades Simples e Empresárias (Limitada e Sociedade Anônima)
+ * Títulos de Crédito (Cheque, Duplicata, Nota Promissória e Letra de Câmbio)
+ * Falência e Recuperação Judicial
+12. Direitos Humanos (2 questões)
+ * Teoria Geral dos Direitos Humanos
+ * Sistema Global de Direitos Humanos (ONU)
+ * Sistema Interamericano de Direitos Humanos (OEA e Convenção Americana)
+ * Direitos Humanos na Constituição Federal
+13. Direito Internacional (2 questões)
+ * Direito Internacional Público e Privado
+ * Nacionalidade e Condição Jurídica do Estrangeiro
+ * Elementos de Conexão (LINDB) e Competência Internacional
+ * Tratados e Organizações Internacionais
+14. Estatuto da Criança e do Adolescente - ECA (2 questões)
+ * Noções Introdutórias e Direitos Fundamentais da Criança e Adolescente
+ * Medidas de Proteção e Medidas Socioeducativas
+ * Procedimentos e Execução de Medidas Socioeducativas
+15. Direito Ambiental (2 questões)
+ * Princípios de Direito Ambiental e Competências Constitucionais Ambientais
+ * Instrumentos da Política Nacional do Meio Ambiente (PNMA)
+ * Licenciamento Ambiental, SNUC e Responsabilidade Ambiental
+16. Direito do Consumidor (2 questões)
+ * Conceitos Introdutórios (Consumidor, Fornecedor, Produto e Serviço)
+ * Responsabilidade pelo Fato e pelo Vício do Produto/Serviço
+ * Decadência, Prescrição e Práticas Comerciais Abusivas
+ * Proteção Contratual e Defesa do Consumidor em Juízo
+17. Filosofia do Direito (2 questões)
+ * Positivismo Jurídico e Jusnaturalismo
+ * Métodos de Interpretação e Hermenêutica Jurídica
+ * Pensadores Clássicos e Contemporâneos (Aristóteles, Immanuel Kant, Jeremy Bentham, Hans Kelsen, Norberto Bobbio)
+18. Direito Financeiro (2 questões)
+ * Orçamento Público (PPA, LDO e LOA)
+ * Receita e Despesa Pública
+ * Lei de Responsabilidade Fiscal (LRF)
+19. Direito Eleitoral (2 questões)
+ * Direitos Políticos, Inelegividades e Alistamento Eleitoral
+ * Partidos Políticos, Propaganda Eleitoral e Crimes Eleitorais
+20. Direito Previdenciário (2 questões)
+ * Segurados e Dependentes do Regime Geral de Previdência Social (RGPS)
+ * Benefícios Previdenciários (Aposentadorias, Auxílios, Pensão por Morte)
+ * Custeio da Seguridade Social

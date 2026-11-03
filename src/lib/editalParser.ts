@@ -699,8 +699,75 @@ function dividirSemNumero(corpo: string): AssuntoExtraido[] {
   return saida;
 }
 
+const MARCADOR_ITEM = /^(\s*)(?:[-*+•▪●◦·]|\d{1,3}[.)](?=\s))\s+(.+)$/;
+const TITULO_MD = /^\s{0,3}(#{1,6})\s+(.+?)\s*#*\s*$/;
+
+/**
+ * Texto em lista (Markdown ou resposta de IA): disciplinas como títulos ("## Direito Civil" ou
+ * "1. Direito Civil (6 questões)") seguidos de itens com marcador ("- assunto", "* assunto").
+ */
+export function pareceLista(texto: string): boolean {
+  const linhas = texto.replace(/\f/g, '\n').split('\n').filter((l) => l.trim());
+  const itens = linhas.filter((l) => /^\s*[-*+•▪●◦·]\s+\S/.test(l)).length;
+  const titulosMd = linhas.filter((l) => TITULO_MD.test(l)).length;
+  return (itens >= 3 && itens / linhas.length >= 0.35) || (titulosMd >= 2 && itens >= 2);
+}
+
+function limparTituloLista(t: string): string {
+  return t
+    .replace(/\*\*|__|`/g, '')
+    .replace(/^\s*(?:\d{1,3}|[IVXLC]{1,6})\s*[.)–-]\s*/, '') // "1. ", "IV - "
+    .replace(/\s*[(–-]\s*\d+\s*(?:quest(?:ões|oes|ão)|itens|pontos)\)?\s*$/i, '') // "(8 questões)"
+    .replace(/[\s:;.–-]+$/, '')
+    .trim();
+}
+
+function limparItemLista(t: string): string {
+  return t.replace(/\*\*|__|`/g, '').replace(/\s+/g, ' ').replace(/[\s;.]+$/, '').trim();
+}
+
+export function interpretarLista(texto: string): DisciplinaExtraida[] {
+  const linhas = texto.replace(/\f/g, '\n').replace(/\t/g, '  ').split('\n');
+  const proxNaoVazia = (i: number) => {
+    for (let j = i + 1; j < linhas.length; j++) if (linhas[j].trim()) return linhas[j];
+    return '';
+  };
+  const ehMarcador = (l: string) => /^\s*[-*+•▪●◦·]\s+\S/.test(l) || /^\s{2,}\d{1,3}[.)]\s+\S/.test(l);
+  const saida: DisciplinaExtraida[] = [];
+  let atual: DisciplinaExtraida | null = null;
+  let base = -1; // recuo dos itens de primeiro nível da disciplina atual
+  for (let i = 0; i < linhas.length; i++) {
+    const l = linhas[i];
+    if (!l.trim()) continue;
+    const md = TITULO_MD.exec(l);
+    // Título de disciplina: "## Nome" ou linha que não é item e é seguida de um item.
+    if (md || (!ehMarcador(l) && ehMarcador(proxNaoVazia(i)))) {
+      const nome = limparTituloLista(md ? md[2] : l);
+      if (md && !ehMarcador(proxNaoVazia(i))) continue; // "# Título do concurso", sem itens embaixo
+      if (nome.length >= 2 && nome.length <= 120) {
+        atual = { nome, assuntos: [] };
+        saida.push(atual);
+        base = -1;
+      }
+      continue;
+    }
+    const m = MARCADOR_ITEM.exec(l);
+    if (!m || !atual || !ehMarcador(l)) continue; // texto solto (introdução, "Fonte:", "Data da prova:")
+    const recuo = m[1].length;
+    if (base < 0) base = recuo;
+    const nivel = recuo <= base ? 1 : recuo <= base + 3 ? 2 : 3;
+    const nome = limparItemLista(m[2]);
+    if (nome.length >= 2) atual.assuntos.push({ codigo: null, nome: nome.charAt(0).toUpperCase() + nome.slice(1), nivel });
+  }
+  return saida.filter((d) => d.assuntos.length);
+}
+
 /** Transforma o texto do edital em disciplinas e assuntos (o usuário revisa antes de salvar). */
 export function interpretarEdital(texto: string): DisciplinaExtraida[] {
+  if (pareceLista(texto)) {
+    const lista = interpretarLista(texto);
+    if (lista.length) return lista;
+  }
   const limpo = limparTexto(texto)
     .split('\n')
     // Linhas de estrutura que não são matéria: "I. Conhecimentos Básicos", "Cargos/especialidades ...", "ANEXO I".

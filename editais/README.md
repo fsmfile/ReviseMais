@@ -20,6 +20,7 @@ Cada pasta tem:
 | `trf3-2026-vunesp` | TRF3 (JFSP/JFMS) · Vunesp · 2026 | Edital completo, Anexo VI; grupos “Para os cargos de A, B e C:” com Conhecimentos Gerais/Específicos; título de cargo em letras mistas com “Especialidade:” quebrado em 2 linhas; “Direito Civil: assunto. assunto.” | ✅ 8 cargos; JFMS conferido |
 | `contagem-mg-2026-anexo-iv` | Município de Contagem/MG · IBGP · 2026 | Só o Anexo IV (retificação); níveis “ENSINO MÉDIO…”/“ENSINO SUPERIOR…” com comuns; cargo “301 - NOME”; trechos riscados + “(Revogado)” | ✅ 36 cargos; aviso de revogados |
 | `saquarema-rj-2026-educacao-anexo-iii` | Prefeitura de Saquarema/RJ · 2026 (Educação) | Só o Anexo III; níveis com “➢”; “Matéria para (todos) os cargos de …” em até 3 linhas; cargos em maiúsculas; itens “1. … 2. …” | ✅ 6 cargos |
+| `oab-2026-texto-ia` | OAB 1ª fase · FGV (texto escrito por IA, sem PDF) | Introdução solta; “1. Disciplina (8 questões)” seguida de itens “ * assunto” | ✅ 20 disciplinas pelo leitor de listas |
 | `pge-rj-2026-residencia-juridica` | PGE-RJ · banca própria · 2026 (Residência Jurídica) | Páginas do Diário Oficial com outros atos; **sem conteúdo programático**: só cita “4 disciplinas avaliadas” e remete ao “programa anexo à Resolução PGE nº 5463” | ✅ plano nasce com as 4 disciplinas + aviso |
 | `pge-rj-2026-residencia-juridica-programa` | PGE-RJ · Resolução PGE nº 5463/2026 (Regulamento) | Diário Oficial; “ANEXO” / “PROGRAMA”; “1. DIREITO CONSTITUCIONAL”; **Ponto 1…10** com itens **a) b) c)**; fim na marca “Id: …” do ato | ✅ 4 disciplinas, 139 assuntos conferidos |
 
@@ -50,6 +51,8 @@ da banca, ele entra na tabela acima e confirma (ou corrige) a regra.
   traz o programa; importar esse documento depois junta os assuntos nas disciplinas que já existem no plano.
 - **Diário Oficial:** “PROGRAMA” sozinho na linha também abre o conteúdo; a marca do ato (“Id: 2767243”) e a assinatura
   digital da página encerram.
+- **Listas / Markdown (respostas de IA):** “## Disciplina” ou “1. Disciplina (8 questões)” seguidas de itens “- …”/“* …”
+  (subitens pelo recuo). É o formato pedido pelo botão **🤖 Gerar com IA** (`src/lib/promptIA.ts`).
 - **Grupos “Para os cargos de A, B e C:”**, níveis de ensino (“ENSINO …”, “➢ …”) e cargos com código (“301 - NOME”).
 - **Títulos “Matéria para (todos) os cargos de …”** (nome = antes de “para”), inclusive continuando na linha seguinte.
 - **Retificações:** “(Revogado)” marca o assunto anterior com “⚠ revogado” (o risco do PDF não vem no texto).

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dividirBlocos, editalSemConteudo, interpretarCargo, interpretarEdital, limparTexto, listarCargos, recortarConteudo } from './editalParser';
+import { dividirBlocos, editalSemConteudo, interpretarLista, pareceLista, interpretarCargo, interpretarEdital, limparTexto, listarCargos, recortarConteudo } from './editalParser';
 import { REVISOES, somarMeses } from './datas';
 import { calcularCorrelacoes, normalizar } from './correlacao';
 import type { Assunto, Disciplina, Plano } from './types';
@@ -118,6 +118,49 @@ describe('data da prova', () => {
     expect(dataDaProva('Os locais de realização da prova serão divulgados a partir do dia 7 de dezembro de 2026. As provas serão realizadas no dia 13 de dezembro de 2026.')).toBe('2026-12-13');
     expect(dataDaProva('Divulgação dos locais de prova 07/12/2026 Realização da Prova Objetiva e Discursiva 13/12/2026 Gabarito 14/12/2026')).toBe('2026-12-13');
     expect(dataDaProva('O Exame será realizado em data a ser oportunamente designada.')).toBeNull();
+  });
+});
+
+describe('texto em lista (resposta de IA / Markdown)', () => {
+  it('lê o formato do prompt do app: ## disciplina, - assunto, subitens e cabeçalho ignorado', async () => {
+    const md = `# Exame de Ordem OAB 2026
+Data da prova: 12/04/2027
+Banca: FGV
+Fonte: edital nº 1/2026
+
+## Ética Profissional
+- Direitos do advogado
+- Infrações disciplinares
+  - Censura
+  - Suspensão
+
+## **Direito Civil**
+- Parte geral
+- Contratos.
+`;
+    expect(pareceLista(md)).toBe(true);
+    const r = interpretarEdital(md);
+    expect(r.map((d) => d.nome)).toEqual(['Ética Profissional', 'Direito Civil']);
+    expect(r[0].assuntos.map((a) => `${a.nivel}:${a.nome}`)).toEqual(['1:Direitos do advogado', '1:Infrações disciplinares', '2:Censura', '2:Suspensão']);
+    expect(r[1].assuntos.map((a) => a.nome)).toEqual(['Parte geral', 'Contratos']);
+    const { identificarEdital } = await import('./identificacao');
+    expect(identificarEdital(md).dataProva).toBe('2027-04-12');
+    expect(identificarEdital(md).banca).toBe('FGV');
+  });
+
+  it('lê lista numerada com marcadores e ignora a introdução', () => {
+    const txt = `A prova é composta por 80 questões. Abaixo está a listagem:
+1. Ética Profissional e Estatuto da OAB (8 questões)
+ * Direitos e Prerrogativas do Advogado
+ * Infrações e Sanções Disciplinares
+2. Direito Constitucional (6 questões)
+ * Controle de Constitucionalidade
+`;
+    expect(interpretarLista(txt).map((d) => `${d.nome}:${d.assuntos.length}`)).toEqual(['Ética Profissional e Estatuto da OAB:2', 'Direito Constitucional:1']);
+  });
+
+  it('não confunde edital comum com lista', () => {
+    expect(pareceLista('DIREITO CIVIL: 1 Pessoas. 2 Bens.\nDIREITO PENAL: 1 Crime.')).toBe(false);
   });
 });
 

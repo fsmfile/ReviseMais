@@ -13,12 +13,13 @@ import {
   type OpcaoCargo,
 } from '../lib/editalParser';
 import { identificarEdital, nomeSugerido, orgaoBanca, type IdentificacaoEdital } from '../lib/identificacao';
+import { GeradorPrompt } from '../components/GeradorPrompt';
 import { ir } from '../lib/rota';
 import { CORES, useDados } from '../lib/store';
 import type { Assunto, Disciplina, Plano } from '../lib/types';
 import { SeletorCor } from './Plano';
 
-type Origem = 'pdf' | 'texto' | 'branco';
+type Origem = 'pdf' | 'texto' | 'ia' | 'branco';
 
 /** Cria um plano novo (aba) ou importa disciplinas para um plano existente (planoId). */
 export function NovoPlano({ planoId }: { planoId?: string }) {
@@ -103,6 +104,17 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
   };
   const [erro, setErro] = useState('');
   const [salvando, setSalvando] = useState(false);
+
+  /** Texto colado ou arquivo .md/.txt (ex.: resposta de IA no formato do app). */
+  const interpretarColado = (t: string) => {
+    if (!pdf) {
+      const id = identificarEdital(t);
+      // "# Exame de Ordem OAB 2026" (formato do prompt) vira o nome do plano
+      const titulo = /^\s{0,3}#\s+(.+?)\s*$/m.exec(t)?.[1]?.replace(/\*\*/g, '').trim();
+      ident.current = titulo && !id.sigla ? { ...id, orgao: titulo, sigla: null, ano: null } : id;
+    }
+    processar(t);
+  };
 
   const lerPdf = async (f: File) => {
     setPdf(f);
@@ -221,6 +233,7 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
             [
               ['pdf', '📄 Enviar PDF do edital'],
               ['texto', '📋 Colar texto'],
+              ['ia', '🤖 Gerar com IA'],
               ...(existente ? [] : [['branco', '✏️ Começar em branco']]),
             ] as [Origem, string][]
           ).map(([k, r]) => (
@@ -229,6 +242,8 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
             </button>
           ))}
         </div>
+
+        {origem === 'ia' && <GeradorPrompt aoTerResposta={() => setOrigem('texto')} />}
 
         {origem === 'pdf' && (
           <div className="zona-pdf">
@@ -252,12 +267,23 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
               placeholder={'DIREITO CONSTITUCIONAL: 1 Constituição. 1.1 Conceito... 2 Direitos e garantias fundamentais...\nDIREITO ADMINISTRATIVO: 1 ...'}
               onChange={(e) => setTexto(e.target.value)}
             />
-            <button className="secundario" onClick={() => {
-                if (!pdf) ident.current = identificarEdital(texto);
-                processar(texto);
-              }}
-              disabled={!texto.trim()}
-            >
+            {origem === 'texto' && (
+              <label className="arquivo-texto pequeno">
+                ou envie o arquivo da IA (.md / .txt)
+                <input
+                  type="file"
+                  accept=".md,.markdown,.txt,text/markdown,text/plain"
+                  onChange={async (e) => {
+                    const f = e.target.files?.[0];
+                    if (!f) return;
+                    const t = await f.text();
+                    setTexto(t);
+                    interpretarColado(t);
+                  }}
+                />
+              </label>
+            )}
+            <button className="secundario" onClick={() => interpretarColado(texto)} disabled={!texto.trim()}>
               Interpretar texto
             </button>
           </details>

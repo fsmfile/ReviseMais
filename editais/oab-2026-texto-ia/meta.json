@@ -1,0 +1,21 @@
+{
+  "orgao": "OAB – Exame de Ordem Unificado (1ª fase)",
+  "banca": "FGV",
+  "ano": 2026,
+  "edital": "Sem PDF: conteúdo escrito por uma IA a pedido do usuário (prompt livre: 'Qual o edital da oab com todas as disciplinas e assuntos cobrados?'). Não é texto oficial.",
+  "formato": [
+    "Texto colado (não PDF): parágrafos de introdução, depois disciplinas numeradas em linha própria com nº de questões ('1. Ética Profissional e Estatuto da OAB (8 questões)').",
+    "Assuntos como itens com marcador e recuo (' * Direitos e Prerrogativas do Advogado').",
+    "Lido pelo leitor de listas (pareceLista/interpretarLista): título = linha que não é item e é seguida de item; introdução ignorada; '(8 questões)' e numeração saem do nome.",
+    "O app tem o botão 'Gerar com IA', que cria um prompt pedindo a resposta em Markdown (## disciplina / - assunto) — formato preferido."
+  ],
+  "conferido": {
+    "*": {
+      "Ética Profissional e Estatuto da OAB": 6,
+      "Direito Constitucional": 5,
+      "Direito Processual do Trabalho": 4,
+      "Estatuto da Criança e do Adolescente - ECA": 3,
+      "Direito Eleitoral": 2
+    }
+  }
+}
