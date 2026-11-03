@@ -1,0 +1,66 @@
+{
+  "formato": "lista",
+  "cargos": null,
+  "disciplinas": [
+    {
+      "nome": "Ética Profissional",
+      "assuntos": 7
+    },
+    {
+      "nome": "Direito Constitucional",
+      "assuntos": 9
+    },
+    {
+      "nome": "Direito Administrativo",
+      "assuntos": 8
+    },
+    {
+      "nome": "Direito Civil",
+      "assuntos": 11
+    },
+    {
+      "nome": "Direito Empresarial",
+      "assuntos": 6
+    },
+    {
+      "nome": "Direito do Consumidor",
+      "assuntos": 4
+    },
+    {
+      "nome": "Direito Penal",
+      "assuntos": 7
+    },
+    {
+      "nome": "Direito Processual Civil",
+      "assuntos": 8
+    },
+    {
+      "nome": "Direito Processual Penal",
+      "assuntos": 8
+    },
+    {
+      "nome": "Direito do Trabalho",
+      "assuntos": 8
+    },
+    {
+      "nome": "Direito Processual do Trabalho",
+      "assuntos": 5
+    },
+    {
+      "nome": "Direito Tributário",
+      "assuntos": 7
+    },
+    {
+      "nome": "Direito Internacional",
+      "assuntos": 3
+    },
+    {
+      "nome": "Direito Ambiental",
+      "assuntos": 4
+    },
+    {
+      "nome": "Direito Previdenciário",
+      "assuntos": 5
+    }
+  ]
+}

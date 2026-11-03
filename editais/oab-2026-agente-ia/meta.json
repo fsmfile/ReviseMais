@@ -1,0 +1,19 @@
+{
+  "orgao": "OAB – Exame de Ordem Unificado (1ª fase)",
+  "banca": "FGV",
+  "ano": 2026,
+  "edital": "Resposta de um agente de IA (sem internet) ao prompt gerado pelo app ('Gerar com IA'), na forma copiada do chat formatado: sem '#', marcadores '•' com recuo. Não é texto oficial.",
+  "formato": [
+    "Cabeçalho do prompt: título, 'Data da prova: não informada', 'Banca: FGV', 'Fonte: não confirmado...'.",
+    "Disciplinas em linha própria (eram '##'), assuntos ' • ...', subitens com recuo maior (nível 2).",
+    "Armadilha: 'Direito Internacional' tem assuntos que começam com 'Direito Internacional Público (...)' — não podem virar disciplinas (o título já é disciplina e os itens têm parênteses)."
+  ],
+  "conferido": {
+    "*": {
+      "Ética Profissional": 7,
+      "Direito Civil": 11,
+      "Direito Internacional": 3,
+      "Direito Previdenciário": 5
+    }
+  }
+}

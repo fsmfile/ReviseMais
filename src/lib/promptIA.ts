@@ -29,7 +29,7 @@ Regras:
 2. ${detalhe} Toda disciplina precisa ter assuntos: nunca deixe uma disciplina vazia nem repita o nome dela como único item.
    Se o edital oficial só lista as disciplinas, sem detalhar os assuntos (como o Exame de Ordem da OAB), detalhe os assuntos tradicionalmente cobrados em cada disciplina, com base na legislação e nos códigos da matéria, e informe isso na linha "Fonte".
 3. Responda SOMENTE em Markdown, exatamente no formato abaixo, sem nenhum texto antes ou depois (sem introdução, comentários, dicas, número de questões ou pesos).
-4. Uma disciplina por título "##" (não agrupe várias disciplinas sob um mesmo título). Subitens de um assunto, se houver, com dois espaços antes do "-".${p.observacoes.trim() ? `\n5. ${p.observacoes.trim()}` : ''}
+4. Inclua TODAS as disciplinas cobradas, inclusive as que têm poucas questões. Uma disciplina por título "##": não agrupe disciplinas sob um mesmo título nem coloque uma disciplina como assunto de outra. Subitens de um assunto, se houver, com dois espaços antes do "-".${p.observacoes.trim() ? `\n5. ${p.observacoes.trim()}` : ''}
 
 Formato:
 

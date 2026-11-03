@@ -764,7 +764,11 @@ export function interpretarLista(texto: string): DisciplinaExtraida[] {
   const nomeDeDisciplina = new RegExp(`^${NOME_DISCIPLINA}`, 'i');
   const final: DisciplinaExtraida[] = [];
   for (const d of saida) {
-    const grupo = d.assuntos.length >= 2 && d.assuntos.every((a) => a.nivel === 1 && a.nome.split(/\s+/).length <= 7 && nomeDeDisciplina.test(a.nome));
+    // Só quando o título não é ele próprio uma disciplina ("Direito Internacional" → "Direito Internacional Público (...)" são assuntos)
+    const grupo =
+      d.assuntos.length >= 2 &&
+      !nomeDeDisciplina.test(d.nome) &&
+      d.assuntos.every((a) => a.nivel === 1 && a.nome.split(/\s+/).length <= 7 && !a.nome.includes('(') && nomeDeDisciplina.test(a.nome));
     if (grupo) {
       for (const a of d.assuntos) final.push({ nome: a.nome, assuntos: [] });
       continue;
