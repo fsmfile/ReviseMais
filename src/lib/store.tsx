@@ -210,6 +210,11 @@ function useAcoes(dados: Dados, setDados: (f: (d: Dados) => Dados) => void) {
         await backend.atualizar('assuntos', id, patch);
         setDados((d) => ({ ...d, assuntos: d.assuntos.map((x) => (x.id === id ? { ...x, ...patch } : x)) }));
       },
+      /** Exclui de uma vez todos os assuntos de uma disciplina (e o histórico deles); a disciplina fica. */
+      async excluirAssuntosDaDisciplina(disciplinaId: string) {
+        const ids = dados.assuntos.filter((x) => x.disciplina_id === disciplinaId).map((x) => x.id);
+        if (ids.length) await remover({ ...filhosDosAssuntos(ids), ass: ids });
+      },
       async excluirAssunto(id: string) {
         await remover({ ...filhosDosAssuntos([id]), ass: [id] });
       },

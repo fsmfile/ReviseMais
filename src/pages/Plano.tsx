@@ -336,6 +336,18 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
                   if (nome?.trim()) executar(() => acoes.renomearDisciplina(d.id, nome.trim()));
                 },
               },
+              ...(n
+                ? [
+                    {
+                      icone: 'excluir',
+                      rotulo: `Excluir todos os ${n} assuntos`,
+                      perigo: true,
+                      acao: () =>
+                        confirm(`Excluir os ${n} assuntos de "${d.nome}" e o histórico de estudos deles? A disciplina continua no plano.`) &&
+                        executar(() => acoes.excluirAssuntosDaDisciplina(d.id)),
+                    },
+                  ]
+                : []),
               {
                 icone: 'excluir',
                 rotulo: 'Excluir disciplina',

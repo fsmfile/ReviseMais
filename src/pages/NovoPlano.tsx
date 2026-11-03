@@ -16,6 +16,7 @@ import { identificarEdital, nomeSugerido, orgaoBanca, type IdentificacaoEdital }
 import { GeradorPrompt } from '../components/GeradorPrompt';
 import { conferirAnunciadas, type Conferencia } from '../lib/promptIA';
 import { AvisoSemAssuntos } from '../components/AvisoSemAssuntos';
+import { Icone } from '../components/Icone';
 import { ir } from '../lib/rota';
 import { CORES, useDados } from '../lib/store';
 import type { Assunto, Disciplina, Plano } from '../lib/types';
@@ -396,6 +397,16 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
             <button className="link" onClick={() => setDesmarcadas(new Set(estrutura.map((_, i) => i)))}>
               desmarcar todas
             </button>
+            <button
+              className="link perigo"
+              disabled={!total}
+              onClick={() =>
+                confirm(`Importar só as disciplinas, removendo os ${total} assuntos desta importação? Você poderá incluir os assuntos depois, manualmente.`) &&
+                alterar((c) => c.forEach((d) => (d.assuntos = [])))
+              }
+            >
+              importar só as disciplinas (sem assuntos)
+            </button>
           </div>
           {estrutura.map((d, i) => (
             <div key={i} className={`prev-disc ${desmarcadas.has(i) ? 'desmarcada' : ''}`}>
@@ -413,9 +424,10 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
                 />
                 <input value={d.nome} onChange={(e) => alterar((c) => (c[i].nome = e.target.value))} aria-label="Nome da disciplina" />
                 <ChipsCorrelacao itens={prev?.disciplinas.get(`__d${i}`)} />
-                <span className="suave pequeno">{d.assuntos.length} assuntos</span>
                 <button
-                  className="link perigo"
+                  className="botao-icone perigo"
+                  aria-label={`Remover a disciplina ${d.nome}`}
+                  title="Remover disciplina"
                   onClick={() => {
                     const n = d.assuntos.length;
                     if (!confirm(`Remover a disciplina "${d.nome}"${n ? ` e os ${n} assuntos dela` : ''} desta importação?`)) return;
@@ -423,11 +435,24 @@ export function NovoPlano({ planoId }: { planoId?: string }) {
                     setDesmarcadas(new Set([...desmarcadas].filter((x) => x !== i).map((x) => (x > i ? x - 1 : x))));
                   }}
                 >
-                  remover disciplina
+                  <Icone nome="excluir" tamanho={20} />
                 </button>
               </div>
-              <details>
-                <summary className="pequeno">ver assuntos</summary>
+              <details className="ver-assuntos">
+                <summary>
+                  <span className="seta" aria-hidden>
+                    ▸
+                  </span>
+                  {d.assuntos.length ? `Ver assuntos (${d.assuntos.length})` : 'Sem assuntos'}
+                </summary>
+                {d.assuntos.length > 0 && (
+                  <button
+                    className="link perigo limpar-assuntos"
+                    onClick={() => confirm(`Remover os ${d.assuntos.length} assuntos de "${d.nome}" (a disciplina fica)?`) && alterar((c) => (c[i].assuntos = []))}
+                  >
+                    Limpar assuntos desta disciplina
+                  </button>
+                )}
                 <ul>
                   {d.assuntos.map((a, j) => (
                     <li key={j} style={{ paddingLeft: `${(a.nivel - 1) * 1.25}rem` }}>

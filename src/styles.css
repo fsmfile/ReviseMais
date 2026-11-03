@@ -495,3 +495,16 @@ main { padding-bottom: 6rem; }
 .arquivo-texto { margin: 0.4rem 0 0.6rem; }
 .abas-origem button { white-space: nowrap; }
 .ok-caixa { background: var(--verde-fundo); border: 1px solid var(--verde); border-radius: 8px; padding: 0.6rem 0.9rem; margin-top: 0.8rem; font-size: 0.92rem; }
+
+/* Revisão da importação: "ver assuntos" grande e lixeira discreta */
+.prev-disc-cab { flex-wrap: nowrap; }
+.prev-disc-cab .chips-corr { flex-basis: 100%; order: 3; margin-left: 2rem; }
+.prev-disc-cab { flex-wrap: wrap; }
+.prev-disc-cab .botao-icone { order: 2; }
+.botao-icone.perigo { color: var(--vermelho); background: none; border: 0; padding: 0; }
+.ver-assuntos > summary { list-style: none; display: flex; align-items: center; gap: 0.5rem; min-height: 44px; margin-top: 0.3rem; padding: 0 0.75rem; border-radius: 10px; background: var(--superficie-2); font-weight: 600; font-size: 0.95rem; cursor: pointer; }
+.ver-assuntos > summary::-webkit-details-marker { display: none; }
+.ver-assuntos .seta { transition: transform 0.15s; display: inline-block; }
+.ver-assuntos[open] .seta { transform: rotate(90deg); }
+.limpar-assuntos { margin: 0.5rem 0 0.2rem; font-size: 0.9rem; }
+.prev-disc li .icone.mini { min-width: 40px; min-height: 40px; font-size: 1.2rem; }
