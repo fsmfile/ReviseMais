@@ -196,6 +196,26 @@ Disciplinas (4): Ética Profissional; Direito Civil; Direito Eleitoral; Filosofi
   });
 });
 
+describe('adicionar vários assuntos (um por linha)', () => {
+  it('lê códigos, marcadores e subitens por recuo ou código', async () => {
+    const { lerAssuntosDigitados } = await import('./listaAssuntos');
+    const r = lerAssuntosDigitados(`- controle de constitucionalidade;
+• Direitos fundamentais
+    Remédios constitucionais
+
+4.2 Poder constituinte
+4.2.1 Originário.`);
+    expect(r.map((a) => `${a.nivel}:${a.codigo ?? ''}:${a.nome}`)).toEqual([
+      '1::Controle de constitucionalidade',
+      '1::Direitos fundamentais',
+      '2::Remédios constitucionais',
+      '2:4.2:Poder constituinte',
+      '3:4.2.1:Originário',
+    ]);
+    expect(lerAssuntosDigitados('Um assunto só')).toEqual([{ codigo: null, nome: 'Um assunto só', nivel: 1 }]);
+  });
+});
+
 describe('cores sugeridas das matérias', () => {
   it('são fixas por matéria, iguais entre variações do nome e distintas entre matérias comuns', async () => {
     const { corSugerida } = await import('./cores');

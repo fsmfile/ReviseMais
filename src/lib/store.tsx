@@ -206,6 +206,15 @@ function useAcoes(dados: Dados, setDados: (f: (d: Dados) => Dados) => void) {
         await backend.inserir('assuntos', [a as never]);
         setDados((d) => ({ ...d, assuntos: [...d.assuntos, a] }));
       },
+      /** Vários assuntos de uma vez, no fim da disciplina, na ordem dada. */
+      async criarAssuntos(disciplinaId: string, itens: { nome: string; codigo: string | null; nivel: number }[]) {
+        const irmaos = dados.assuntos.filter((a) => a.disciplina_id === disciplinaId);
+        let ordem = Math.max(-1, ...irmaos.map((x) => x.ordem)) + 1;
+        const novos: Assunto[] = itens.map((it) => ({ id: novoId(), disciplina_id: disciplinaId, nome: it.nome, codigo: it.codigo, nivel: it.nivel, ordem: ordem++ }));
+        if (!novos.length) return;
+        await backend.inserir('assuntos', novos as never[]);
+        setDados((d) => ({ ...d, assuntos: [...d.assuntos, ...novos] }));
+      },
       async atualizarAssunto(id: string, patch: Partial<Assunto>) {
         await backend.atualizar('assuntos', id, patch);
         setDados((d) => ({ ...d, assuntos: d.assuntos.map((x) => (x.id === id ? { ...x, ...patch } : x)) }));

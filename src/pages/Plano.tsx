@@ -10,6 +10,7 @@ import { normalizar } from '../lib/correlacao';
 import { Icone } from '../components/Icone';
 import { AvisoSemAssuntos } from '../components/AvisoSemAssuntos';
 import { MenuAcoes } from '../components/MenuAcoes';
+import { AdicionarAssuntos } from '../components/AdicionarAssuntos';
 import { NavegaSecoes } from '../components/NavegaSecoes';
 import { StatusRevisoes, estadoRevisao } from '../components/StatusRevisoes';
 import { backend } from '../lib/backend';
@@ -34,6 +35,7 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
   const [colorindo, setColorindo] = useState<{ tipo: 'disciplina' | 'assunto'; id: string } | null>(null);
   const [comSubitens, setComSubitens] = useState(true);
   const corMateria = useCorMateria();
+  const [adicionando, setAdicionando] = useState<string | null>(null);
   const [menu, setMenu] = useState<{ tipo: 'disciplina' | 'assunto'; id: string } | null>(null);
 
   useEffect(() => {
@@ -283,7 +285,13 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
                     </li>
                   );
                 })}
-                {!lista.length && <li className="suave pequeno vazio-disc">Nenhum assunto. Toque no nome da disciplina para adicionar.</li>}
+                {!lista.length && (
+                  <li className="vazio-disc">
+                    <button className="secundario" onClick={() => setAdicionando(d.id)}>
+                      + Adicionar assuntos
+                    </button>
+                  </li>
+                )}
               </ul>
             )}
           </section>
@@ -315,12 +323,8 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
             itens={[
               {
                 icone: 'mais',
-                rotulo: 'Adicionar assunto',
-                acao: () => {
-                  const nome = prompt('Novo assunto (pode começar com o número do edital, ex.: "4.2 Controle de constitucionalidade"):');
-                  const m = nome?.trim().match(/^(\d+(?:\.\d+)*)\.?\s+(.*)$/);
-                  if (nome?.trim()) executar(() => acoes.criarAssunto(d.id, m ? m[2] : nome.trim(), m ? m[1] : null));
-                },
+                rotulo: 'Adicionar assuntos',
+                acao: () => setAdicionando(d.id),
               },
               {
                 icone: 'cor',
@@ -389,6 +393,13 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
         );
       })()}
 
+      {adicionando && (
+        <AdicionarAssuntos
+          disciplinaId={adicionando}
+          disciplinaNome={disciplinas.find((x) => x.id === adicionando)?.nome ?? ''}
+          aoFechar={() => setAdicionando(null)}
+        />
+      )}
       {colorindo && (() => {
         if (colorindo.tipo === 'disciplina') {
           const d = disciplinas.find((x) => x.id === colorindo.id);
