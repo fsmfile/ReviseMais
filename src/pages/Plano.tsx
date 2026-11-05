@@ -12,6 +12,7 @@ import { AvisoSemAssuntos } from '../components/AvisoSemAssuntos';
 import { MenuAcoes } from '../components/MenuAcoes';
 import { AdicionarAssuntos } from '../components/AdicionarAssuntos';
 import { NavegaSecoes } from '../components/NavegaSecoes';
+import { OrdenarDisciplinas } from '../components/OrdenarDisciplinas';
 import { StatusRevisoes, estadoRevisao } from '../components/StatusRevisoes';
 import { backend } from '../lib/backend';
 import { diasEntre, formatarData, hoje } from '../lib/datas';
@@ -36,6 +37,7 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
   const [comSubitens, setComSubitens] = useState(true);
   const corMateria = useCorMateria();
   const [adicionando, setAdicionando] = useState<string | null>(null);
+  const [ordenando, setOrdenando] = useState(false);
   const [menu, setMenu] = useState<{ tipo: 'disciplina' | 'assunto'; id: string } | null>(null);
 
   useEffect(() => {
@@ -178,6 +180,11 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
           <button className="secundario" onClick={() => setFechadas(fechadas.size ? new Set() : new Set(disciplinas.map((d) => d.id)))}>
             {fechadas.size ? 'Expandir tudo' : 'Recolher tudo'}
           </button>
+          {disciplinas.length > 1 && (
+            <button className="secundario com-icone" onClick={() => setOrdenando(true)}>
+              <Icone nome="ordenar" tamanho={18} /> Ordem das matérias
+            </button>
+          )}
         </div>
       )}
 
@@ -310,6 +317,13 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
         <button type="submit">+ Adicionar disciplina</button>
       </form>
 
+      {ordenando && (
+        <OrdenarDisciplinas
+          disciplinas={disciplinas}
+          aoFechar={() => setOrdenando(false)}
+          aoSalvar={(ids) => executar(() => acoes.ordenarDisciplinas(plano.id, ids))}
+        />
+      )}
       <NavegaSecoes secoes={disciplinas.map((d) => ({ id: `d-${d.id}`, nome: d.nome }))} />
 
       {menu?.tipo === 'disciplina' && (() => {
@@ -333,6 +347,15 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
                 acao: () => setColorindo({ tipo: 'disciplina', id: d.id }),
                 extra: <span className="bolinha-cor" style={{ background: d.cor ?? corMateria(d.nome) }} />,
               },
+              ...(disciplinas.length > 1
+                ? [
+                    {
+                      icone: 'ordenar',
+                      rotulo: 'Mudar a ordem das matérias',
+                      acao: () => setOrdenando(true),
+                    },
+                  ]
+                : []),
               {
                 icone: 'editar',
                 rotulo: 'Renomear',

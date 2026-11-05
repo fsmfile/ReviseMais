@@ -286,7 +286,10 @@ function CronometroAtivo({ estado }: { estado: EstadoCronometro }) {
 
 export function Estudar({ assuntoId }: { assuntoId?: string }) {
   const estado = useCronometro();
-  const { disciplinas } = useIndices();
+  const { acoes } = useDados();
+  const { disciplinas, contexto } = useIndices();
+  // Chegou aqui querendo estudar outro assunto com um cronômetro já ativo: só um estudo por vez.
+  const pedido = assuntoId && estado && estado.assunto_id !== assuntoId ? contexto(assuntoId) : null;
   const inicial = useEscolhaInicial(assuntoId);
   const [escolha, setEscolha] = useState<Escolha>(inicial);
   const [manual, setManual] = useState(false);
@@ -296,7 +299,15 @@ export function Estudar({ assuntoId }: { assuntoId?: string }) {
     <div className="pagina-estudar">
       <h1>Estudar</h1>
       {estado ? (
-        <CronometroAtivo estado={estado} />
+        <>
+          {pedido && (
+            <p className="cartao aviso-cronometro" role="alert">
+              Você já está estudando <strong>{estado.materia}</strong>. Só é possível estudar uma matéria por vez: conclua ou descarte esta sessão
+              para começar <strong>{pedido.disciplina.nome}</strong> › {pedido.assunto.nome}.
+            </p>
+          )}
+          <CronometroAtivo estado={estado} />
+        </>
       ) : (
         <>
           <section className="cartao">
@@ -307,15 +318,18 @@ export function Estudar({ assuntoId }: { assuntoId?: string }) {
                 <button
                   className="grande"
                   disabled={!materia}
-                  onClick={() =>
-                    cronometro.iniciar({
+                  onClick={() => {
+                    const ok = cronometro.iniciar({
                       plano_id: escolha.plano_id,
                       disciplina_id: escolha.disciplina_id,
                       assunto_id: escolha.assunto_id,
                       materia,
                       tipo: escolha.tipo,
-                    })
-                  }
+                    });
+                    if (!ok) return alert('Já existe um estudo em andamento. Conclua ou descarte antes de começar outra matéria.');
+                    // A matéria que começou a ser estudada sobe para o topo do plano.
+                    if (escolha.disciplina_id) acoes.disciplinaParaTopo(escolha.disciplina_id).catch(() => {});
+                  }}
                 >
                   ▶ Iniciar cronômetro
                 </button>

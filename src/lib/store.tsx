@@ -25,6 +25,17 @@ function useAcoes(dados: Dados, setDados: (f: (d: Dados) => Dados) => void) {
       const c = dados.disciplinas.find((x) => x.cor && normalizar(x.nome) === k)?.cor;
       return c ? { cor: c } : {};
     };
+    /** Nova ordem das disciplinas de um plano (lista completa de ids, na ordem desejada). */
+    const ordenarDisciplinas = async (planoId: string, ids: string[]) => {
+      const doPlano = dados.disciplinas.filter((d) => d.plano_id === planoId).sort((a, b) => a.ordem - b.ordem);
+      // Garante que nenhuma disciplina fique de fora (as não citadas vão para o fim, na ordem atual).
+      const lista = [...ids.filter((id) => doPlano.some((d) => d.id === id)), ...doPlano.map((d) => d.id).filter((id) => !ids.includes(id))];
+      const nova = new Map(lista.map((id, k) => [id, k]));
+      const mudaram = doPlano.filter((d) => nova.get(d.id) !== d.ordem);
+      if (!mudaram.length) return;
+      setDados((d) => ({ ...d, disciplinas: d.disciplinas.map((x) => (nova.has(x.id) ? { ...x, ordem: nova.get(x.id)! } : x)) }));
+      await Promise.all(mudaram.map((d) => backend.atualizar('disciplinas', d.id, { ordem: nova.get(d.id)! })));
+    };
     const filhosDoPlano = (planoId: string) => {
       const discs = dados.disciplinas.filter((d) => d.plano_id === planoId).map((d) => d.id);
       return { discs, ...filhosDasDisciplinas(discs) };
@@ -168,6 +179,15 @@ function useAcoes(dados: Dados, setDados: (f: (d: Dados) => Dados) => void) {
         };
         await backend.inserir('disciplinas', [disc as never]);
         setDados((d) => ({ ...d, disciplinas: [...d.disciplinas, disc] }));
+      },
+      ordenarDisciplinas,
+      /** Ao começar a estudar uma matéria, ela sobe para o topo do plano. */
+      async disciplinaParaTopo(id: string) {
+        const disc = dados.disciplinas.find((d) => d.id === id);
+        if (!disc) return;
+        const doPlano = dados.disciplinas.filter((d) => d.plano_id === disc.plano_id).sort((a, b) => a.ordem - b.ordem);
+        if (doPlano[0]?.id === id) return;
+        await ordenarDisciplinas(disc.plano_id, [id, ...doPlano.map((d) => d.id).filter((x) => x !== id)]);
       },
       async atualizarDisciplina(id: string, patch: Partial<Disciplina>) {
         await backend.atualizar('disciplinas', id, patch);

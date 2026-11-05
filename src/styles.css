@@ -515,3 +515,14 @@ main { padding-bottom: 6rem; }
 .previa-assuntos summary { cursor: pointer; font-weight: 600; font-size: 0.92rem; color: var(--primaria); }
 .previa-assuntos ul { list-style: none; padding: 0; margin: 0.4rem 0 0; max-height: 180px; overflow: auto; font-size: 0.88rem; display: grid; gap: 0.2rem; }
 .vazio-disc { padding: 0.6rem 0.8rem; }
+
+/* Ordem das matérias (arrastar) */
+.com-icone { display: inline-flex; align-items: center; gap: 0.35rem; }
+.lista-ordenar { list-style: none; margin: 0.6rem 0 0; padding: 0; display: grid; gap: 0.35rem; }
+.lista-ordenar li { display: flex; align-items: center; gap: 0.5rem; background: var(--superficie-2); border: 1px solid var(--borda); border-radius: 10px; padding: 0.25rem 0.4rem; user-select: none; -webkit-user-select: none; }
+.lista-ordenar li.arrastando { border-color: var(--primaria, #2f6fdf); box-shadow: 0 6px 18px rgb(0 0 0 / 22%); transform: scale(1.02); position: relative; z-index: 1; }
+.lista-ordenar .alca { background: none; border: none; color: var(--texto-suave); padding: 0.45rem 0.3rem; min-width: 44px; min-height: 44px; display: grid; place-items: center; cursor: grab; touch-action: none; }
+.lista-ordenar li.arrastando .alca { cursor: grabbing; }
+.lista-ordenar .nome { flex: 1; min-width: 0; font-weight: 500; }
+.lista-ordenar .quad { width: 0.8rem; height: 0.8rem; border-radius: 3px; flex: none; }
+.aviso-cronometro { border-left: 4px solid var(--amarelo, #e8a400); }

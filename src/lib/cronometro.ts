@@ -50,8 +50,12 @@ if (typeof window !== 'undefined')
   });
 
 export const cronometro = {
-  iniciar(cfg: Pick<EstadoCronometro, 'plano_id' | 'disciplina_id' | 'assunto_id' | 'materia' | 'tipo'>) {
+  /** Só um estudo por vez: não começa outro enquanto houver cronômetro (rodando ou pausado). */
+  iniciar(cfg: Pick<EstadoCronometro, 'plano_id' | 'disciplina_id' | 'assunto_id' | 'materia' | 'tipo'>): boolean {
+    atual = ler() ?? atual;
+    if (atual) return false;
     gravar({ ...cfg, iniciadoEm: new Date().toISOString(), rodandoDesde: Date.now(), acumuladoMs: 0 });
+    return true;
   },
   pausar() {
     if (!atual?.rodandoDesde) return;
