@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { backend, novoId } from './backend';
 import { REVISOES } from './datas';
-import { calcularCorrelacoes, normalizar, type MapaCorrelacoes } from './correlacao';
+import { calcularCorrelacoes, fontesDeEstudo, normalizar, type MapaCorrelacoes } from './correlacao';
 import type { DisciplinaExtraida } from './editalParser';
 import type { Assunto, Dados, Disciplina, Estudo, Plano, Revisao, Sessao } from './types';
 
@@ -376,7 +376,7 @@ export function useDados(): Ctx {
 
 /** Índices auxiliares usados em várias telas. */
 export function useIndices() {
-  const { dados } = useDados();
+  const { dados, correlacoes } = useDados();
   return useMemo(() => {
     const planos = new Map(dados.planos.map((p) => [p.id, p]));
     const disciplinas = new Map(dados.disciplinas.map((d) => [d.id, d]));
@@ -401,6 +401,14 @@ export function useIndices() {
       const p = d && planos.get(d.plano_id);
       return a && d && p ? { assunto: a, disciplina: d, plano: p } : null;
     };
-    return { planos, disciplinas, assuntos, estudosPorAssunto, revisoesPorAssunto, contexto };
-  }, [dados]);
+    const fontes = fontesDeEstudo(assuntos.keys(), correlacoes, (id) => {
+      const l = estudosPorAssunto.get(id);
+      return l?.length ? l[l.length - 1].data : undefined;
+    });
+    /** De onde vem o estudo do assunto (ele mesmo ou um equivalente de outro plano); undefined = não estudado. */
+    const fonteEstudo = (assuntoId: string) => fontes.get(assuntoId);
+    /** Id cujos estudos/revisões valem para o assunto (estudo compartilhado entre planos). */
+    const idEfetivo = (assuntoId: string) => fontes.get(assuntoId)?.id ?? assuntoId;
+    return { planos, disciplinas, assuntos, estudosPorAssunto, revisoesPorAssunto, contexto, fonteEstudo, idEfetivo };
+  }, [dados, correlacoes]);
 }

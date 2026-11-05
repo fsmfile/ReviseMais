@@ -112,7 +112,7 @@ function FinalizarSessao({
   aoCancelar?: () => void;
 }) {
   const { acoes, executar } = useDados();
-  const { disciplinas, estudosPorAssunto, revisoesPorAssunto } = useIndices();
+  const { disciplinas, revisoesPorAssunto, fonteEstudo, idEfetivo } = useIndices();
   const [data, setData] = useState(hoje());
   const [horas, setHoras] = useState(String(Math.floor(segundos / 3600)));
   const [minutos, setMinutos] = useState(String(Math.round((segundos % 3600) / 60)));
@@ -120,9 +120,11 @@ function FinalizarSessao({
   const [acertos, setAcertos] = useState('');
   const [obs, setObs] = useState('');
   const temAssunto = !!escolha.assunto_id;
-  const jaEstudado = temAssunto && !!estudosPorAssunto.get(escolha.assunto_id!)?.length;
+  const jaEstudado = temAssunto && !!fonteEstudo(escolha.assunto_id!);
+  // Estudo compartilhado: se o assunto só foi estudado em outro plano, o ciclo de revisões é aquele.
+  const alvo = temAssunto ? idEfetivo(escolha.assunto_id!) : undefined;
   const revPendente = temAssunto
-    ? (revisoesPorAssunto.get(escolha.assunto_id!) ?? []).find((r) => !r.concluida_em && r.data_prevista <= hoje())
+    ? (revisoesPorAssunto.get(alvo!) ?? []).find((r) => !r.concluida_em && r.data_prevista <= hoje())
     : undefined;
   const [registrarEstudo, setRegistrarEstudo] = useState(
     temAssunto && !jaEstudado && ['teoria', 'videoaula', 'lei_seca', 'resumo'].includes(escolha.tipo),
@@ -154,7 +156,7 @@ function FinalizarSessao({
         observacao: obs.trim() || null,
       });
       if (temAssunto && registrarEstudo)
-        await acoes.registrarEstudo({ assunto_id: escolha.assunto_id!, data, percentual: pct, questoes: q, observacao: obs.trim() || null, substituirPendentes: true });
+        await acoes.registrarEstudo({ assunto_id: alvo!, data, percentual: pct, questoes: q, observacao: obs.trim() || null, substituirPendentes: true });
       if (revPendente && concluirRev) await acoes.concluirRevisao(revPendente.id, { concluida_em: data, percentual: pct, questoes: q });
       return true;
     });

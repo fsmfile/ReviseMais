@@ -210,6 +210,8 @@ button.icone:hover { background: var(--superficie-2); }
 .correlatos { border: 1px solid var(--borda); border-radius: 8px; padding: 0.5rem 0.8rem; margin: 0.5rem 0; }
 .correlatos legend { font-size: 0.85rem; color: var(--texto-suave); padding: 0 0.3rem; }
 .correlatos .check { margin: 0.3rem 0; }
+.correlatos p { margin: 0; }
+.nota-compartilhado { margin: 0 0 0.5rem; color: var(--verde); background: var(--verde-fundo); border-radius: 8px; padding: 0.4rem 0.6rem; }
 .cores { border: 0; padding: 0; margin: 0 0 0.75rem; display: flex; gap: 0.45rem; flex-wrap: wrap; }
 .cores legend { font-size: 0.85rem; color: var(--texto-suave); margin-bottom: 0.35rem; }
 .cor { width: 1.9rem; height: 1.9rem; border-radius: 50%; padding: 0; border: 3px solid var(--superficie); box-shadow: 0 0 0 1px var(--borda); }

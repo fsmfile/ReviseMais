@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { dividirBlocos, editalSemConteudo, interpretarLista, pareceLista, interpretarCargo, interpretarEdital, limparTexto, listarCargos, recortarConteudo } from './editalParser';
 import { REVISOES, somarMeses } from './datas';
-import { calcularCorrelacoes, normalizar } from './correlacao';
+import { calcularCorrelacoes, fontesDeEstudo, normalizar } from './correlacao';
 import type { Assunto, Disciplina, Plano } from './types';
 
 describe('revisões', () => {
@@ -258,5 +258,20 @@ describe('correlação entre editais', () => {
     expect(c.assuntos.get('a1')?.[0].assunto?.id).toBe('a2');
     expect(c.assuntos.get('a2')?.[0].assunto?.id).toBe('a1');
     expect(c.assuntos.get('a3')).toBeUndefined();
+  });
+
+  it('estudo compartilhado: estudado em um plano conta no equivalente do outro', () => {
+    const c = calcularCorrelacoes({ planos, disciplinas, assuntos });
+    const ids = assuntos.map((x) => x.id);
+    // a1 (plano 1) estudado; a2 (plano 2) é o equivalente e passa a contar como estudado via plano 1.
+    let f = fontesDeEstudo(ids, c, (id) => ({ a1: '2026-03-01' })[id as 'a1']);
+    expect(f.get('a1')).toEqual({ id: 'a1' });
+    expect(f.get('a2')?.id).toBe('a1');
+    expect(f.get('a2')?.via?.plano.id).toBe('p1');
+    expect(f.has('a3')).toBe(false);
+    expect(f.has('a4')).toBe(false);
+    // O estudo próprio tem prioridade.
+    f = fontesDeEstudo(ids, c, (id) => ({ a1: '2026-03-01', a2: '2026-02-01' })[id as 'a1']);
+    expect(f.get('a2')).toEqual({ id: 'a2' });
   });
 });

@@ -8,15 +8,23 @@ import { estadoRevisao } from './StatusRevisoes';
 /** Histórico de estudos e revisões de um assunto (aparece ao expandir a linha). */
 export function HistoricoAssunto({ assuntoId }: { assuntoId: string }) {
   const { acoes, executar } = useDados();
-  const { estudosPorAssunto, revisoesPorAssunto } = useIndices();
+  const { estudosPorAssunto, revisoesPorAssunto, fonteEstudo } = useIndices();
   const [concluindo, setConcluindo] = useState<string | null>(null);
-  const estudos = [...(estudosPorAssunto.get(assuntoId) ?? [])].reverse();
-  const revisoes = revisoesPorAssunto.get(assuntoId) ?? [];
+  const fonte = fonteEstudo(assuntoId);
+  const id = fonte?.id ?? assuntoId;
+  const estudos = [...(estudosPorAssunto.get(id) ?? [])].reverse();
+  const revisoes = revisoesPorAssunto.get(id) ?? [];
 
   if (!estudos.length) return <p className="suave pequeno">Nenhum estudo registrado ainda.</p>;
 
   return (
     <div className="historico">
+      {fonte?.via && (
+        <p className="nota-compartilhado pequeno">
+          Estudado em <strong>{fonte.via.plano.nome}</strong> › {fonte.via.disciplina.nome} › {fonte.via.assunto?.nome}. Estudo e revisões são compartilhados entre os
+          dois planos.
+        </p>
+      )}
       {estudos.map((e) => (
         <div key={e.id} className="ciclo-estudo">
           <div className="linha-estudo">

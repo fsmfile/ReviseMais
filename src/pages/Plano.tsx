@@ -23,7 +23,7 @@ type Filtro = 'todos' | 'nao' | 'estudados' | 'atrasados' | 'comuns';
 
 export function Plano({ id, destaque }: { id: string; destaque?: string }) {
   const { dados, acoes, executar, correlacoes } = useDados();
-  const { estudosPorAssunto, revisoesPorAssunto } = useIndices();
+  const { estudosPorAssunto, revisoesPorAssunto, fonteEstudo, idEfetivo } = useIndices();
   const plano = dados.planos.find((p) => p.id === id);
   const [busca, setBusca] = useState('');
   const [filtro, setFiltro] = useState<Filtro>('todos');
@@ -58,7 +58,8 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
 
   if (!plano) return <p className="vazio">Plano não encontrado. <a href={href({ tela: 'hoje' })}>Voltar</a></p>;
 
-  const ultimoPct = (aid: string) => {
+  const ultimoPct = (id: string) => {
+    const aid = idEfetivo(id);
     const regs = [
       ...(estudosPorAssunto.get(aid) ?? []).map((e) => ({ d: e.data, p: e.percentual })),
       ...(revisoesPorAssunto.get(aid) ?? []).filter((r) => r.concluida_em).map((r) => ({ d: r.concluida_em!, p: r.percentual })),
@@ -66,20 +67,19 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
     regs.sort((a, b) => a.d.localeCompare(b.d));
     return regs.length ? regs[regs.length - 1].p : null;
   };
-  const cicloAtual = (aid: string) => {
+  const cicloAtual = (id: string) => {
+    const aid = idEfetivo(id);
     const est = estudosPorAssunto.get(aid);
     if (!est?.length) return [];
     const ult = est[est.length - 1].id;
     return (revisoesPorAssunto.get(aid) ?? []).filter((r) => r.estudo_id === ult);
   };
-  const atrasado = (aid: string) => (revisoesPorAssunto.get(aid) ?? []).some((r) => estadoRevisao(r) === 'atrasada');
-  const estudadoEmOutro = (aid: string) =>
-    (correlacoes.assuntos.get(aid) ?? []).find((c) => c.assunto && estudosPorAssunto.get(c.assunto.id)?.length);
+  const atrasado = (aid: string) => (revisoesPorAssunto.get(idEfetivo(aid)) ?? []).some((r) => estadoRevisao(r) === 'atrasada');
 
   const termo = busca.trim().toLowerCase();
   const passa = (a: Assunto) => {
     if (termo && !a.nome.toLowerCase().includes(termo)) return false;
-    const est = !!estudosPorAssunto.get(a.id)?.length;
+    const est = !!fonteEstudo(a.id);
     switch (filtro) {
       case 'nao':
         return !est;
@@ -95,7 +95,7 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
   };
 
   const todos = disciplinas.flatMap((d) => assuntosPorDisc.get(d.id) ?? []);
-  const estudados = todos.filter((a) => estudosPorAssunto.get(a.id)?.length).length;
+  const estudados = todos.filter((a) => fonteEstudo(a.id)).length;
   const comuns = todos.filter((a) => correlacoes.assuntos.get(a.id)?.length).length;
   const pcts = todos.map((a) => ultimoPct(a.id)).filter((p): p is number => p != null);
   const media = pcts.length ? Math.round(pcts.reduce((s, x) => s + x, 0) / pcts.length) : null;
@@ -203,7 +203,7 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
         const lista = assuntosPorDisc.get(d.id) ?? [];
         const visiveis = lista.filter(passa);
         if ((termo || filtro !== 'todos') && !visiveis.length) return null;
-        const est = lista.filter((a) => estudosPorAssunto.get(a.id)?.length).length;
+        const est = lista.filter((a) => fonteEstudo(a.id)).length;
         const aberta = !fechadas.has(d.id);
         return (
           <section key={d.id} id={`d-${d.id}`} className="disciplina com-cor" style={{ ['--cor-disc' as string]: d.cor ?? corMateria(d.nome) }}>
@@ -233,9 +233,10 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
             {aberta && (
               <ul className="assuntos">
                 {visiveis.map((a) => {
-                  const ests = estudosPorAssunto.get(a.id) ?? [];
+                  const fonte = fonteEstudo(a.id);
+                  const ests = fonte ? (estudosPorAssunto.get(fonte.id) ?? []) : [];
                   const ult = ests[ests.length - 1];
-                  const outro = !ult ? estudadoEmOutro(a.id) : undefined;
+                  const outro = fonte?.via;
                   const exp = expandido === a.id;
                   return (
                     <li
@@ -262,8 +263,8 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
                           {a.codigo && <span className="codigo">{a.codigo}</span>} {a.nome}
                           <ChipsCorrelacao itens={correlacoes.assuntos.get(a.id)} compacto />
                           {outro && (
-                            <span className="nota-outro" title={`${outro.assunto?.nome}`}>
-                              já estudado em {outro.plano.nome}
+                            <span className="nota-outro" title={`Estudado em ${outro.plano.nome}: ${outro.assunto?.nome}`}>
+                              via {outro.plano.nome}
                             </span>
                           )}
                         </span>

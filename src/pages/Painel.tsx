@@ -23,7 +23,7 @@ const estiloTooltip = {
 
 export function Painel() {
   const { dados } = useDados();
-  const { contexto } = useIndices();
+  const { contexto, fonteEstudo } = useIndices();
   const corMateria = useCorMateria();
   const [planoId, setPlanoId] = useState('');
   const [diaSel, setDiaSel] = useState<string | null>(null);
@@ -99,7 +99,8 @@ export function Painel() {
       .sort((a, b) => a.media - b.media);
 
     // Progresso por plano.
-    const estudados = new Set(estudos.map((e) => e.assunto_id));
+    // Conta também o que foi estudado em um assunto equivalente de outro plano (estudo compartilhado).
+    const estudados = new Set(assuntos.filter((a) => fonteEstudo(a.id)).map((a) => a.id));
     const progresso = planos
       .filter((pl) => !planoId || pl.id === planoId)
       .map((pl) => {
@@ -130,7 +131,7 @@ export function Painel() {
       progresso,
       prova: provas[0],
     };
-  }, [dados, planoId, planos, ref, contexto]);
+  }, [dados, planoId, planos, ref, contexto, fonteEstudo]);
 
   // Mapa de constância: 15 semanas (colunas) x 7 dias (linhas).
   const mapa = useMemo(() => {

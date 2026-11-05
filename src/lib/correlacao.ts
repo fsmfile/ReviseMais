@@ -137,3 +137,36 @@ function melhorPorPlano(l: Correlato[]): Correlato[] {
   }
   return [...porPlano.values()].sort((a, b) => a.plano.ordem - b.plano.ordem);
 }
+
+export interface FonteEstudo {
+  /** Assunto cujos estudos e revisões valem para este (ele mesmo ou o equivalente de outro plano). */
+  id: string;
+  /** Preenchido quando o estudo vem de outro plano. */
+  via?: Correlato;
+}
+
+/**
+ * Estudo compartilhado: um assunto estudado em um plano conta como estudado nos assuntos
+ * equivalentes dos outros planos, sem copiar registros (as revisões continuam uma só).
+ * O estudo próprio tem prioridade; sem ele, vale o equivalente estudado mais recentemente.
+ */
+export function fontesDeEstudo(
+  assuntoIds: Iterable<string>,
+  correlacoes: MapaCorrelacoes,
+  ultimoEstudo: (assuntoId: string) => string | undefined,
+): Map<string, FonteEstudo> {
+  const m = new Map<string, FonteEstudo>();
+  for (const id of assuntoIds) {
+    if (ultimoEstudo(id)) {
+      m.set(id, { id });
+      continue;
+    }
+    let melhor: { c: Correlato; data: string } | undefined;
+    for (const c of correlacoes.assuntos.get(id) ?? []) {
+      const data = c.assunto && ultimoEstudo(c.assunto.id);
+      if (data && (!melhor || data > melhor.data)) melhor = { c, data };
+    }
+    if (melhor) m.set(id, { id: melhor.c.assunto!.id, via: melhor.c });
+  }
+  return m;
+}

@@ -6,20 +6,22 @@ import { Modal } from './Modal';
 
 export function RegistrarEstudo({ assuntoId, aoFechar }: { assuntoId: string; aoFechar: () => void }) {
   const { acoes, executar, correlacoes } = useDados();
-  const { contexto, revisoesPorAssunto } = useIndices();
+  const { contexto, revisoesPorAssunto, fonteEstudo } = useIndices();
   const ctx = contexto(assuntoId);
   const [data, setData] = useState(hoje());
   const [pct, setPct] = useState('');
   const [questoes, setQuestoes] = useState('');
   const [obs, setObs] = useState('');
   const [substituir, setSubstituir] = useState(true);
-  const [correlatos, setCorrelatos] = useState<Set<string>>(new Set());
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState('');
 
   if (!ctx) return null;
-  const pendentes = (revisoesPorAssunto.get(assuntoId) ?? []).filter((r) => !r.concluida_em).length;
-  const outros = correlacoes.assuntos.get(assuntoId) ?? [];
+  // Estudado só via outro plano: o novo estudo continua aquele ciclo (as revisões seguem uma só).
+  const fonte = fonteEstudo(assuntoId);
+  const alvo = fonte?.id ?? assuntoId;
+  const pendentes = (revisoesPorAssunto.get(alvo) ?? []).filter((r) => !r.concluida_em).length;
+  const outros = (correlacoes.assuntos.get(assuntoId) ?? []).filter((c) => c.assunto);
 
   const salvar = async () => {
     const p = lerPercentual(pct);
@@ -27,10 +29,7 @@ export function RegistrarEstudo({ assuntoId, aoFechar }: { assuntoId: string; ao
     if (!data) return setErro('Informe a data do estudo.');
     setSalvando(true);
     const base = { data, percentual: p, questoes: lerInteiro(questoes), observacao: obs.trim() || null, substituirPendentes: substituir };
-    await executar(async () => {
-      await acoes.registrarEstudo({ ...base, assunto_id: assuntoId });
-      for (const c of outros) if (c.assunto && correlatos.has(c.assunto.id)) await acoes.registrarEstudo({ ...base, assunto_id: c.assunto.id });
-    });
+    await executar(() => acoes.registrarEstudo({ ...base, assunto_id: alvo }));
     setSalvando(false);
     aoFechar();
   };
@@ -82,30 +81,21 @@ export function RegistrarEstudo({ assuntoId, aoFechar }: { assuntoId: string; ao
         </label>
       )}
 
-      {outros.some((c) => c.assunto) && (
-        <fieldset className="correlatos">
-          <legend>Este assunto também está em outros editais. Registrar o estudo neles também?</legend>
-          {outros.map(
-            (c) =>
-              c.assunto && (
-                <label className="check" key={c.assunto.id}>
-                  <input
-                    type="checkbox"
-                    checked={correlatos.has(c.assunto.id)}
-                    onChange={(e) => {
-                      const s = new Set(correlatos);
-                      e.target.checked ? s.add(c.assunto!.id) : s.delete(c.assunto!.id);
-                      setCorrelatos(s);
-                    }}
-                  />
-                  <span className="tag" style={{ ['--cor' as string]: c.plano.cor }}>
-                    {c.plano.nome}
-                  </span>
-                  {c.assunto.nome}
-                </label>
-              ),
-          )}
-        </fieldset>
+      {outros.length > 0 && (
+        <div className="correlatos">
+          <p className="pequeno">
+            {fonte?.via ? 'Este assunto já foi estudado em ' : 'Este assunto também está em '}
+            {outros.map((c, k) => (
+              <span key={c.assunto!.id}>
+                {k > 0 && ', '}
+                <span className="tag" style={{ ['--cor' as string]: c.plano.cor }}>
+                  {c.plano.nome}
+                </span>
+              </span>
+            ))}
+            . O estudo vale para todos automaticamente, com um só ciclo de revisões.
+          </p>
+        </div>
       )}
 
       {erro && <p className="erro-texto">{erro}</p>}
