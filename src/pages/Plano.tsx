@@ -13,6 +13,7 @@ import { MenuAcoes } from '../components/MenuAcoes';
 import { AdicionarAssuntos } from '../components/AdicionarAssuntos';
 import { NavegaSecoes } from '../components/NavegaSecoes';
 import { OrdenarDisciplinas } from '../components/OrdenarDisciplinas';
+import { useArrastarOrdem } from '../lib/arrastar';
 import { StatusRevisoes, estadoRevisao } from '../components/StatusRevisoes';
 import { backend } from '../lib/backend';
 import { diasEntre, formatarData, hoje } from '../lib/datas';
@@ -49,6 +50,13 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
   const disciplinas = useMemo(
     () => dados.disciplinas.filter((d) => d.plano_id === id).sort((a, b) => a.ordem - b.ordem),
     [dados.disciplinas, id],
+  );
+  const porIdDisc = useMemo(() => new Map(disciplinas.map((d) => [d.id, d])), [disciplinas]);
+  // Arrastar as matérias direto na página, pela alça do cartão.
+  const arraste = useArrastarOrdem(
+    disciplinas.map((d) => d.id),
+    (ids) => executar(() => acoes.ordenarDisciplinas(id, ids)),
+    { topo: () => (document.querySelector('.topo') as HTMLElement | null)?.offsetHeight ?? 0 },
   );
   const assuntosPorDisc = useMemo(() => {
     const m = new Map<string, Assunto[]>();
@@ -206,28 +214,41 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
         </div>
       )}
 
-      {disciplinas.map((d) => {
+      <div ref={arraste.lista as React.RefObject<HTMLDivElement>} className={arraste.arrastando ? 'reordenando' : ''}>
+      {arraste.ordem.map((did) => {
+        const d = porIdDisc.get(did)!;
         const lista = assuntosPorDisc.get(d.id) ?? [];
         const visiveis = lista.filter(passa);
         if ((termo || filtro !== 'todos') && !visiveis.length) return null;
         const est = lista.filter((a) => fonteEstudo(a.id)).length;
-        const aberta = !fechadas.has(d.id);
+        const aberta = !fechadas.has(d.id) && !arraste.arrastando;
+        const alternar = () => {
+          const s = new Set(fechadas);
+          aberta ? s.add(d.id) : s.delete(d.id);
+          setFechadas(s);
+        };
+        const podeArrastar = !termo && filtro === 'todos' && disciplinas.length > 1;
         return (
-          <section key={d.id} id={`d-${d.id}`} className="disciplina com-cor" style={{ ['--cor-disc' as string]: d.cor ?? corMateria(d.nome) }}>
-            <header>
-              <button
-                className="icone"
-                aria-expanded={aberta}
-                onClick={() => {
-                  const s = new Set(fechadas);
-                  aberta ? s.add(d.id) : s.delete(d.id);
-                  setFechadas(s);
-                }}
-              >
+          <section
+            key={d.id}
+            id={`d-${d.id}`}
+            data-ordem-id={d.id}
+            className={`disciplina com-cor ${arraste.arrastando === d.id ? 'arrastando' : ''}`}
+            style={{ ['--cor-disc' as string]: d.cor ?? corMateria(d.nome) }}
+          >
+            {/* Tocar no cartão abre/fecha; os botões dentro dele fazem a própria ação. */}
+            <header className="cab-disc" onClick={(e) => (e.target as HTMLElement).closest('button, a') || alternar()}>
+              {podeArrastar && (
+                <button className="alca" aria-label={`Arrastar ${d.nome} para mudar a ordem`} title="Arraste para mudar a ordem" {...arraste.alca(d.id)}>
+                  <Icone nome="arrastar" tamanho={22} />
+                </button>
+              )}
+              <button className="icone" aria-expanded={aberta} aria-label={aberta ? `Recolher ${d.nome}` : `Expandir ${d.nome}`} onClick={alternar}>
                 {aberta ? '▾' : '▸'}
               </button>
-              <button className="nome-disc" onClick={() => setMenu({ tipo: 'disciplina', id: d.id })} aria-haspopup="dialog" title="Opções da disciplina">
-                <h2>{d.nome}</h2>
+              <h2 className="nome-disc">{d.nome}</h2>
+              <button className="botao-icone opcoes-disc" onClick={() => setMenu({ tipo: 'disciplina', id: d.id })} aria-haspopup="dialog" aria-label={`Opções de ${d.nome}`} title="Opções da disciplina">
+                <Icone nome="opcoes" tamanho={22} />
               </button>
               <ChipsCorrelacao itens={correlacoes.disciplinas.get(d.id)} />
               <span className="progresso-disc">
@@ -305,6 +326,7 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
           </section>
         );
       })}
+      </div>
 
       <form
         className="nova-disc"

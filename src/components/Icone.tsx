@@ -11,6 +11,7 @@ const CAMINHOS: Record<string, string> = {
   lista: 'M8 6h13 M8 12h13 M8 18h13 M3.5 6h.01 M3.5 12h.01 M3.5 18h.01',
   estudo: 'M4 19.5V5a2 2 0 0 1 2-2h14v16H6a2 2 0 0 0-2 2z M8 7h8',
   arrastar: 'M9 5h.01 M15 5h.01 M9 12h.01 M15 12h.01 M9 19h.01 M15 19h.01',
+  opcoes: 'M5 12h.01 M12 12h.01 M19 12h.01',
   ordenar: 'M7 4v16 M3 8l4-4 4 4 M17 20V4 M13 16l4 4 4-4',
 };
 

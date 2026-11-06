@@ -521,8 +521,21 @@ main { padding-bottom: 6rem; }
 .lista-ordenar { list-style: none; margin: 0.6rem 0 0; padding: 0; display: grid; gap: 0.35rem; }
 .lista-ordenar li { display: flex; align-items: center; gap: 0.5rem; background: var(--superficie-2); border: 1px solid var(--borda); border-radius: 10px; padding: 0.25rem 0.4rem; user-select: none; -webkit-user-select: none; }
 .lista-ordenar li.arrastando { border-color: var(--primaria, #2f6fdf); box-shadow: 0 6px 18px rgb(0 0 0 / 22%); transform: scale(1.02); position: relative; z-index: 1; }
-.lista-ordenar .alca { background: none; border: none; color: var(--texto-suave); padding: 0.45rem 0.3rem; min-width: 44px; min-height: 44px; display: grid; place-items: center; cursor: grab; touch-action: none; }
+
 .lista-ordenar li.arrastando .alca { cursor: grabbing; }
 .lista-ordenar .nome { flex: 1; min-width: 0; font-weight: 500; }
 .lista-ordenar .quad { width: 0.8rem; height: 0.8rem; border-radius: 3px; flex: none; }
 .aviso-cronometro { border-left: 4px solid var(--amarelo, #e8a400); }
+
+/* Cartão da matéria: tocar abre/fecha; alça para arrastar; ⋯ para opções */
+.cab-disc { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.cab-disc { gap: 0.3rem 0.4rem; }
+.cab-disc .nome-disc { flex: 1 1 8rem; min-width: 0; margin: 0; padding: 0.35rem 0; min-height: 0; font-size: 1.05rem; font-weight: 700; }
+.cab-disc > .icone { min-width: 32px; padding: 0.3rem 0.2rem; }
+.cab-disc .opcoes-disc { color: var(--texto-suave); background: none; border: none; padding: 0; flex: none; }
+.cab-disc .opcoes-disc:hover { background: color-mix(in srgb, var(--texto) 8%, transparent); }
+.alca { background: none; border: none; color: var(--texto-suave); padding: 0; min-width: 40px; min-height: 44px; margin-left: -0.4rem; display: grid; place-items: center; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.alca svg, .opcoes-disc svg { stroke-width: 3.4; }
+.reordenando { user-select: none; -webkit-user-select: none; }
+.reordenando .alca { cursor: grabbing; }
+.disciplina.arrastando { outline: 2px solid var(--primaria); box-shadow: 0 10px 28px rgb(0 0 0 / 30%); transform: scale(1.015); position: relative; z-index: 2; }
