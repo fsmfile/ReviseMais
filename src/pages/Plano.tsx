@@ -538,6 +538,7 @@ function EditarPlano({ plano, aoFechar }: { plano: TPlano; aoFechar: () => void 
           Mover aba →
         </button>
       </div>
+      <p className="suave pequeno">Dica: você também pode segurar a aba do plano e arrastar para o lado.</p>
       <footer>
         <button
           className="perigo"

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { modoLocal, supabase, tabelasFaltando } from './lib/backend';
+import { nomeCurto } from './lib/abreviar';
+import { useArrastarOrdem } from './lib/arrastar';
 import { hoje } from './lib/datas';
 import { href, useRota, type Rota } from './lib/rota';
 import { ProvedorDados, useDados } from './lib/store';
@@ -39,8 +41,16 @@ export function App() {
 
 function Estrutura({ email }: { email?: string }) {
   const rota = useRota();
-  const { dados, carregando } = useDados();
+  const { dados, carregando, acoes, executar } = useDados();
   const planos = [...dados.planos].sort((a, b) => a.ordem - b.ordem);
+  const porId = new Map(planos.map((p) => [p.id, p]));
+  const nomes = planos.map((p) => p.nome);
+  // Abas dos planos: segurar e arrastar (toque) ou arrastar com o mouse para mudar a ordem.
+  const arraste = useArrastarOrdem(
+    planos.map((p) => p.id),
+    (ids) => executar(() => acoes.ordenarPlanos(ids)),
+    { eixo: 'x', rolador: () => arraste.lista.current },
+  );
   const [menuAberto, setMenuAberto] = useState(false);
   useEffect(() => setMenuAberto(false), [rota]);
   const pendHoje = dados.revisoes.filter((r) => !r.concluida_em && r.data_prevista <= hoje()).length;
@@ -64,24 +74,31 @@ function Estrutura({ email }: { email?: string }) {
             ☰
           </button>
         </div>
-        <nav className="abas" aria-label="Planos de estudo">
+        <nav className={`abas ${arraste.arrastando ? 'reordenando' : ''}`} aria-label="Planos de estudo" ref={arraste.lista as React.RefObject<HTMLElement>}>
           <a href={href({ tela: 'hoje' })} className={`aba ${rota.tela === 'hoje' ? 'ativa' : ''}`}>
             Hoje {pendHoje > 0 && <span className="contador">{pendHoje}</span>}
           </a>
           <a href={href({ tela: 'painel' })} className={`aba ${rota.tela === 'painel' ? 'ativa' : ''}`}>
             📊 Painel
           </a>
-          {planos.map((p) => (
-            <a
-              key={p.id}
-              href={href({ tela: 'plano', id: p.id })}
-              className={`aba ${rota.tela === 'plano' && rota.id === p.id ? 'ativa' : ''}`}
-              style={{ ['--cor' as string]: p.cor }}
-            >
-              <span className="bolinha" />
-              {p.nome}
-            </a>
-          ))}
+          {arraste.ordem.map((id) => {
+            const p = porId.get(id)!;
+            return (
+              <a
+                key={p.id}
+                data-ordem-id={p.id}
+                href={href({ tela: 'plano', id: p.id })}
+                className={`aba ${rota.tela === 'plano' && rota.id === p.id ? 'ativa' : ''} ${arraste.arrastando === p.id ? 'arrastando' : ''}`}
+                style={{ ['--cor' as string]: p.cor }}
+                title={`${p.nome} — segure e arraste para mudar a ordem`}
+                draggable={false}
+                {...arraste.segurar(p.id)}
+              >
+                <span className="bolinha" />
+                {nomeCurto(p.nome, nomes)}
+              </a>
+            );
+          })}
           <a href={href({ tela: 'novo' })} className={`aba nova ${rota.tela === 'novo' ? 'ativa' : ''}`}>
             + Novo plano
           </a>

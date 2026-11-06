@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { dividirBlocos, editalSemConteudo, interpretarLista, pareceLista, interpretarCargo, interpretarEdital, limparTexto, listarCargos, recortarConteudo } from './editalParser';
 import { REVISOES, somarMeses } from './datas';
+import { abreviarPalavra, nomeCurto } from './abreviar';
 import { calcularCorrelacoes, fontesDeEstudo, normalizar } from './correlacao';
 import type { Assunto, Disciplina, Plano } from './types';
 
@@ -273,5 +274,26 @@ describe('correlação entre editais', () => {
     // O estudo próprio tem prioridade.
     f = fontesDeEstudo(ids, c, (id) => ({ a1: '2026-03-01', a2: '2026-02-01' })[id as 'a1']);
     expect(f.get('a2')).toEqual({ id: 'a2' });
+  });
+});
+
+describe('nome curto das abas', () => {
+  it('abrevia palavras longas', () => {
+    expect(abreviarPalavra('Professor')).toBe('Prof.');
+    expect(abreviarPalavra('Residência')).toBe('Res.');
+    expect(abreviarPalavra('Município')).toBe('Mun.');
+    expect(abreviarPalavra('Docente')).toBe('Docente');
+  });
+  it('usa órgão + ano e só acrescenta o cargo quando precisa diferenciar', () => {
+    expect(nomeCurto('Saquarema/RJ 2026 – Professor Docente II')).toBe('Saquarema/RJ 2026');
+    expect(nomeCurto('TRF3 2026')).toBe('TRF3 2026');
+    const dois = ['PGE 2026 – Residência Jurídica', 'PGE 2026 – Procurador do Estado'];
+    expect(nomeCurto(dois[0], dois)).toBe('PGE 2026 · Res. Jurídica');
+    expect(nomeCurto(dois[1], dois)).toBe('PGE 2026 · Proc. Estado');
+    expect(nomeCurto('Procuradoria Geral do Município de Niterói 2026')).toBe("PGMN '26");
+    expect(nomeCurto('Prefeitura Municipal de Saquarema/RJ 2026 – Professor')).toBe('Saquarema/RJ 2026');
+    expect(nomeCurto('Câmara Municipal de São Gonçalo 2026')).toBe("Câm. São Gonçalo '26");
+    expect(nomeCurto('Tribunal Regional Federal da 3ª Região 2026')).toBe("TRF3 '26");
+    expect(nomeCurto('Procuradoria Geral do Estado do Rio de Janeiro 2026')).toBe("PGERJ '26");
   });
 });

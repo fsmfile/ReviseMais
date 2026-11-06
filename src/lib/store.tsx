@@ -121,6 +121,16 @@ function useAcoes(dados: Dados, setDados: (f: (d: Dados) => Dados) => void) {
           setDados((d) => ({ ...d, planos: d.planos.map((p) => (p.id === id ? { ...p, pdf_path: caminho } : p)) }));
         }
       },
+      /** Nova ordem das abas dos planos (lista de ids na ordem desejada); fica salva na conta. */
+      async ordenarPlanos(ids: string[]) {
+        const nova = new Map(ids.map((id, k) => [id, k]));
+        let k = ids.length;
+        for (const p of [...dados.planos].sort((a, b) => a.ordem - b.ordem)) if (!nova.has(p.id)) nova.set(p.id, k++);
+        const mudaram = dados.planos.filter((p) => nova.get(p.id) !== p.ordem);
+        if (!mudaram.length) return;
+        setDados((d) => ({ ...d, planos: d.planos.map((p) => (nova.has(p.id) ? { ...p, ordem: nova.get(p.id)! } : p)) }));
+        await Promise.all(mudaram.map((p) => backend.atualizar('planos', p.id, { ordem: nova.get(p.id)! })));
+      },
       async moverPlano(id: string, direcao: -1 | 1) {
         const ordenados = [...dados.planos].sort((a, b) => a.ordem - b.ordem);
         const i = ordenados.findIndex((p) => p.id === id);
