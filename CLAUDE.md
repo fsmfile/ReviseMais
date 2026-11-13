@@ -46,3 +46,18 @@ Os PDFs recebidos ficam fora do repositório; guarde só o `texto.txt` extraído
 Formatos de banca ainda sem edital real estão **simulados** em `src/lib/formatos.test.ts` (Cebraspe, Vunesp, FCC).
 Quando chegar um edital real dessas bancas, ele tem prioridade: se divergir da simulação, ajuste a simulação.
 Para comparar o resultado novo com o guardado de um edital antigo, liste as diferenças por cargo antes de rodar `--atualizar`.
+
+## Ponte com o Advogando
+
+O EstudeMais e o Advogando (repositório `fsmfile/AdvogandoGame`, simulador de advogado, https://advogandogame.fsmfile.workers.dev)
+se completam sem virar um app só. O documento completo é o `docs/ECOSSISTEMA.md` do Advogando. Aqui:
+
+- `src/lib/advogando.ts`: catálogo dos casos, ligação assunto → casos, links de ida e volta, "comprovado" (registro com
+  observação começando por `Advogando ·`, a partir de 60%) e o foco do plano (casos que viram os próximos clientes de lá).
+- `src/lib/advogando-catalogo.json`: cópia do catálogo (o app busca a versão publicada em `<advogando>/catalogo.json`).
+  Para atualizar, no repositório do Advogando: `npx vite-node scripts/gerar-catalogo.ts -- --saida <este repo>/src/lib/advogando-catalogo.json`.
+- `src/pages/Advogando.tsx` (rota `#/advogando?...`): recebe o resultado do caso e registra no assunto.
+- `src/components/Advogando.tsx`: "⚖ Provar no escritório" (Hoje), chip de clientes e selo (Plano), "Estudado × comprovado" (Painel).
+- Para testar os dois juntos no computador: `VITE_ADVOGANDO_URL=http://localhost:<porta do Advogando>/ npm run dev`.
+- No Windows, com `core.autocrlf=true`, os testes dos editais falham por causa do fim de linha (CRLF) dos `texto.txt`.
+  Use `git config core.autocrlf false` e baixe os editais de novo.

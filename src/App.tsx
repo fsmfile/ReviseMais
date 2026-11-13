@@ -19,6 +19,7 @@ import { Historico } from './pages/Historico';
 import { Painel } from './pages/Painel';
 import { Tempo } from './pages/Tempo';
 import { Plano } from './pages/Plano';
+import { ResultadoAdvogando } from './pages/Advogando';
 
 export function App() {
   const [sessao, setSessao] = useState<Session | null | undefined>(modoLocal ? null : undefined);
@@ -136,6 +137,8 @@ function Estrutura({ email }: { email?: string }) {
           <Desempenho />
         ) : rota.tela === 'comparar' ? (
           <Comparar />
+        ) : rota.tela === 'advogando' ? (
+          <ResultadoAdvogando key={rota.busca} busca={rota.busca} />
         ) : rota.tela === 'calendario' ? (
           <Calendario />
         ) : (

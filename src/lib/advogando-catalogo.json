@@ -1,0 +1,499 @@
+{
+ "versao": 1,
+ "geradoEm": "2026-11-13T12:35:50.111Z",
+ "endereco": "https://advogandogame.fsmfile.workers.dev/",
+ "modulos": [
+  {
+   "id": "etica",
+   "nome": "Ética Profissional",
+   "disciplinas": [
+    "etica",
+    "estatuto da advocacia"
+   ],
+   "nao": []
+  },
+  {
+   "id": "constitucional-1",
+   "nome": "Direito Constitucional",
+   "disciplinas": [
+    "constitucional"
+   ],
+   "nao": []
+  },
+  {
+   "id": "civil",
+   "nome": "Direito Civil",
+   "disciplinas": [
+    "direito civil"
+   ],
+   "nao": [
+    "processual",
+    "processo"
+   ]
+  },
+  {
+   "id": "processo-civil",
+   "nome": "Processo Civil",
+   "disciplinas": [
+    "processual civil",
+    "processo civil"
+   ],
+   "nao": []
+  },
+  {
+   "id": "penal",
+   "nome": "Direito Penal",
+   "disciplinas": [
+    "direito penal"
+   ],
+   "nao": [
+    "processual",
+    "processo"
+   ]
+  },
+  {
+   "id": "processo-penal",
+   "nome": "Processo Penal",
+   "disciplinas": [
+    "processual penal",
+    "processo penal"
+   ],
+   "nao": []
+  }
+ ],
+ "casos": [
+  {
+   "id": "etica-c1",
+   "titulo": "A primeira cliente",
+   "resumo": "Captação, patrono constituído, conflito de interesses, quota litis e publicidade num único atendimento.",
+   "modulo": "etica",
+   "itens": 18,
+   "temas": [
+    {
+     "id": "mandato",
+     "nome": "Mandato e procuração",
+     "palavras": [
+      "mandato",
+      "procuracao",
+      "renuncia",
+      "substabelec"
+     ]
+    },
+    {
+     "id": "conflito",
+     "nome": "Conflito de interesses",
+     "palavras": [
+      "conflito de interesse",
+      "relacao com clientes",
+      "relacao com o cliente",
+      "deveres do advogado"
+     ]
+    },
+    {
+     "id": "honorarios",
+     "nome": "Honorários",
+     "palavras": [
+      "honorario"
+     ]
+    },
+    {
+     "id": "publicidade",
+     "nome": "Publicidade",
+     "palavras": [
+      "publicidade"
+     ]
+    },
+    {
+     "id": "infracoes",
+     "nome": "Infrações e sanções",
+     "palavras": [
+      "infrac",
+      "sanc"
+     ]
+    },
+    {
+     "id": "sigilo",
+     "nome": "Sigilo profissional",
+     "palavras": [
+      "sigilo"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "etica-c2",
+   "titulo": "O cliente confessou",
+   "resumo": "Sigilo profissional, dever de depor, justa causa e defesa própria, numa defesa criminal.",
+   "modulo": "etica",
+   "itens": 17,
+   "temas": [
+    {
+     "id": "sigilo",
+     "nome": "Sigilo profissional",
+     "palavras": [
+      "sigilo"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "etica-c3",
+   "titulo": "Quem pode advogar?",
+   "resumo": "Incompatibilidade × impedimento: servidor, policial, docente e legislador. A diferença de uma palavra decide.",
+   "modulo": "etica",
+   "itens": 17,
+   "temas": [
+    {
+     "id": "incompatibilidade",
+     "nome": "Incompatibilidade e impedimento",
+     "palavras": [
+      "incompatib",
+      "impedimento",
+      "inscricao"
+     ]
+    },
+    {
+     "id": "infracoes",
+     "nome": "Infrações e sanções",
+     "palavras": [
+      "infrac",
+      "sanc"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "etica-c4",
+   "titulo": "O processo disciplinar",
+   "resumo": "Competência, prescrição (cinco e três anos), interrupção e as sanções do Estatuto, com os números que a banca troca.",
+   "modulo": "etica",
+   "itens": 17,
+   "temas": [
+    {
+     "id": "disciplinar",
+     "nome": "Processo disciplinar",
+     "palavras": [
+      "processo disciplinar",
+      "infrac",
+      "sanc"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "etica-c5",
+   "titulo": "O pagamento em terreno",
+   "resumo": "Honorários: pagamento em bens, quota litis, contrato escrito e moderação. Atendimento em forma de conversa.",
+   "modulo": "etica",
+   "itens": 8,
+   "temas": [
+    {
+     "id": "honorarios",
+     "nome": "Honorários",
+     "palavras": [
+      "honorario"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "etica-c6",
+   "titulo": "A sociedade de advogados",
+   "resumo": "Sociedade de advogados e sociedade unipessoal: quem pode ser sócio, nome, registro, advogado associado, responsabilidade e conflito de interesses.",
+   "modulo": "etica",
+   "itens": 19,
+   "temas": [
+    {
+     "id": "sociedade",
+     "nome": "Sociedade de advogados",
+     "palavras": [
+      "sociedade"
+     ]
+    },
+    {
+     "id": "conflito",
+     "nome": "Conflito de interesses",
+     "palavras": [
+      "conflito de interesse",
+      "relacao com clientes",
+      "relacao com o cliente",
+      "deveres do advogado"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "etica-c7",
+   "titulo": "O post nas redes",
+   "resumo": "Publicidade e marketing jurídico: impulsionamento, promessa de resultado, ostentação, vídeos e divulgação conjunta (CED e Provimento 205/2021).",
+   "modulo": "etica",
+   "itens": 19,
+   "temas": [
+    {
+     "id": "publicidade",
+     "nome": "Publicidade",
+     "palavras": [
+      "publicidade"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "const1-c1",
+   "titulo": "A lei estadual do emprego",
+   "resumo": "Controle de constitucionalidade: vício de competência, quem propõe ADI, reserva de plenário, cautelar, efeitos e a lei municipal.",
+   "modulo": "constitucional-1",
+   "itens": 20,
+   "temas": [
+    {
+     "id": "competencia",
+     "nome": "Repartição de competências",
+     "palavras": [
+      "competencia",
+      "federalismo",
+      "organizacao do estado",
+      "reparticao"
+     ]
+    },
+    {
+     "id": "controle",
+     "nome": "Controle de constitucionalidade",
+     "palavras": [
+      "controle de constitucionalidade"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "const1-c2",
+   "titulo": "O calendário do escritório",
+   "resumo": "Ritos de ADI, ADPF, MS e habeas data, o incidente de inconstitucionalidade e seis prazos para contar no calendário.",
+   "modulo": "constitucional-1",
+   "itens": 12,
+   "temas": [
+    {
+     "id": "ritos",
+     "nome": "Prazos e ritos",
+     "palavras": [
+      "controle de constitucionalidade",
+      "remedios constitucionais",
+      "acoes constitucionais"
+     ]
+    },
+    {
+     "id": "controle",
+     "nome": "Controle de constitucionalidade",
+     "palavras": [
+      "controle de constitucionalidade"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "const1-c3",
+   "titulo": "O candidato naturalizado",
+   "resumo": "Nacionalidade e direitos políticos: nato e naturalizado, cargos privativos, perda da nacionalidade (EC 131/2023), extradição, voto, elegibilidade e inelegibilidades.",
+   "modulo": "constitucional-1",
+   "itens": 21,
+   "temas": [
+    {
+     "id": "nacionalidade",
+     "nome": "Nacionalidade e direitos políticos",
+     "palavras": [
+      "nacionalidade",
+      "direitos politicos"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "processo-penal-c1",
+   "titulo": "A prisão em flagrante",
+   "resumo": "Prisão em flagrante, nota de culpa, fiança, audiência de custódia, preventiva e cautelares, inquérito, ação penal e acordo de não persecução penal.",
+   "modulo": "processo-penal",
+   "itens": 20,
+   "temas": [
+    {
+     "id": "flagrante",
+     "nome": "Prisão em flagrante e audiência de custódia",
+     "palavras": [
+      "prisao",
+      "flagrante",
+      "custodia"
+     ]
+    },
+    {
+     "id": "cautelares",
+     "nome": "Prisão preventiva e medidas cautelares",
+     "palavras": [
+      "prisao",
+      "cautelar",
+      "liberdade provisoria"
+     ]
+    },
+    {
+     "id": "inquerito",
+     "nome": "Inquérito policial",
+     "palavras": [
+      "inquerito",
+      "investigacao"
+     ]
+    },
+    {
+     "id": "acao-penal",
+     "nome": "Ação penal",
+     "palavras": [
+      "acao penal"
+     ]
+    },
+    {
+     "id": "anpp",
+     "nome": "Acordo de não persecução penal",
+     "palavras": [
+      "nao persecucao",
+      "justica negociada",
+      "acao penal"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "penal-c1",
+   "titulo": "O cliente que se arrependeu",
+   "resumo": "Teoria do crime: consumação e tentativa, desistência voluntária, arrependimento eficaz e posterior, crime impossível, erro de tipo e de proibição, legítima defesa, estado de necessidade e concurso de pessoas.",
+   "modulo": "penal",
+   "itens": 20,
+   "temas": [
+    {
+     "id": "iter-criminis",
+     "nome": "Consumação, tentativa e arrependimento",
+     "palavras": [
+      "tentativa",
+      "consumacao",
+      "iter criminis",
+      "teoria do crime",
+      "teoria geral do crime"
+     ]
+    },
+    {
+     "id": "concurso-pessoas",
+     "nome": "Concurso de pessoas",
+     "palavras": [
+      "concurso de pessoas",
+      "teoria do crime",
+      "teoria geral do crime"
+     ]
+    },
+    {
+     "id": "erro",
+     "nome": "Erro de tipo e erro de proibição",
+     "palavras": [
+      "erro de tipo",
+      "erro de proibicao",
+      "teoria do crime",
+      "teoria geral do crime",
+      "culpabilidade"
+     ]
+    },
+    {
+     "id": "excludentes",
+     "nome": "Excludentes de ilicitude",
+     "palavras": [
+      "ilicitude",
+      "antijuridicidade",
+      "excludente",
+      "teoria do crime",
+      "teoria geral do crime"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "civil-c1",
+   "titulo": "A herança da Dona Lúcia",
+   "resumo": "Capacidade civil, sucessão legítima e união estável (Tema 809), meação, herdeiros necessários e testamento, prescrição e decadência.",
+   "modulo": "civil",
+   "itens": 20,
+   "temas": [
+    {
+     "id": "civil-capacidade",
+     "nome": "Capacidade civil",
+     "palavras": [
+      "capacidade",
+      "pessoas naturais",
+      "pessoa natural"
+     ]
+    },
+    {
+     "id": "civil-sucessao",
+     "nome": "Sucessão legítima",
+     "palavras": [
+      "sucess",
+      "heranca"
+     ]
+    },
+    {
+     "id": "civil-legitima",
+     "nome": "Herdeiros necessários e testamento",
+     "palavras": [
+      "sucess",
+      "testamento",
+      "heranca"
+     ]
+    },
+    {
+     "id": "civil-prescricao",
+     "nome": "Prescrição e decadência",
+     "palavras": [
+      "prescricao",
+      "decadencia"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "processo-civil-c1",
+   "titulo": "A citação que não chegou",
+   "resumo": "Citação (inclusive a eletrônica), revelia, contestação e reconvenção, tutela provisória de urgência e de evidência, e os recursos cabíveis: apelação, agravo de instrumento e embargos de declaração.",
+   "modulo": "processo-civil",
+   "itens": 20,
+   "temas": [
+    {
+     "id": "pc-citacao",
+     "nome": "Citação e revelia",
+     "palavras": [
+      "citacao",
+      "revelia",
+      "comunicacao dos atos"
+     ]
+    },
+    {
+     "id": "pc-defesa",
+     "nome": "Contestação e reconvenção",
+     "palavras": [
+      "contestacao",
+      "reconvencao",
+      "resposta do reu",
+      "defesa do reu"
+     ]
+    },
+    {
+     "id": "pc-tutela",
+     "nome": "Tutela provisória",
+     "palavras": [
+      "tutela provisoria",
+      "tutela de urgencia",
+      "tutelas provisorias"
+     ]
+    },
+    {
+     "id": "pc-recursos",
+     "nome": "Recursos",
+     "palavras": [
+      "recurso"
+     ]
+    }
+   ]
+  }
+ ]
+}

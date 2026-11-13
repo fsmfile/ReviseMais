@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Percentual } from '../components/Campos';
+import { FichaCandidato } from '../components/Advogando';
 import { deISO, diasEntre, formatarCurto, formatarData, hoje, paraISO, somarDias } from '../lib/datas';
 import { href } from '../lib/rota';
 import { useCorMateria } from '../lib/cores';
@@ -230,6 +231,8 @@ export function Painel() {
           <span className="kpi-sub">{p.prova ? `${p.prova.nome} · ${formatarData(p.prova.data_prova)}` : 'cadastre a data no plano'}</span>
         </div>
       </div>
+
+      <FichaCandidato planoId={planoId} />
 
       <section className="cartao">
         <h2>Constância</h2>

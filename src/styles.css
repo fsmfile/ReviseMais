@@ -544,3 +544,32 @@ main { padding-bottom: 6rem; }
 .aba { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 .abas.reordenando { scroll-behavior: auto; }
 .aba.arrastando { background: var(--superficie-2); color: var(--texto); outline: 2px solid var(--cor); outline-offset: -2px; box-shadow: 0 6px 16px rgb(0 0 0 / 25%); transform: scale(1.04); }
+
+/* ───────── Ponte com o Advogando (docs/ECOSSISTEMA.md) ───────── */
+.chip-advogando {
+  margin-left: 0.4rem; padding: 0 0.5rem; min-height: 0; font-size: 0.75rem; font-weight: 700; line-height: 1.5;
+  border-radius: 99px; background: color-mix(in srgb, var(--primaria) 12%, var(--superficie)); color: var(--primaria);
+  border: 1px solid color-mix(in srgb, var(--primaria) 40%, transparent); white-space: nowrap; vertical-align: 1px;
+}
+.selo-comprovado { margin-left: 0.4rem; font-size: 0.75rem; font-weight: 700; border-radius: 99px; padding: 0 0.45rem; white-space: nowrap; }
+.selo-comprovado.ok { color: var(--verde); background: var(--verde-fundo); }
+.selo-comprovado.abaixo { color: var(--texto-suave); background: var(--superficie-2); }
+.botao.provar { font-weight: 700; }
+.lista-casos-advogando { list-style: none; padding: 0; margin: 0.75rem 0 0; display: grid; gap: 0.5rem; }
+.lista-casos-advogando a { display: grid; gap: 0.15rem; padding: 0.7rem 0.8rem; border: 1px solid var(--borda); border-radius: 10px; text-decoration: none; color: var(--texto); }
+.lista-casos-advogando a:hover { border-color: var(--primaria); }
+.pagina-advogando { display: grid; gap: 1rem; max-width: 640px; margin: 0 auto; }
+.pagina-advogando select { width: 100%; margin: 0.5rem 0; }
+.pagina-advogando .acoes { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+.advogando-resultado { padding: 1rem; border-radius: 12px; background: var(--superficie); border: 1px solid var(--borda); }
+.advogando-resultado.ok { border-color: color-mix(in srgb, var(--verde) 50%, transparent); }
+.advogando-resultado h1 { margin: 0.35rem 0 0.25rem; font-size: 1.3rem; }
+.advogando-resultado p { margin: 0.2rem 0; }
+.selo-advogando { font-size: 0.75rem; font-weight: 700; color: var(--primaria); letter-spacing: 0.02em; }
+.tabela-ficha { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.tabela-ficha th, .tabela-ficha td { text-align: left; padding: 0.4rem 0.3rem; border-bottom: 1px solid var(--borda); vertical-align: top; }
+.tabela-ficha th { font-size: 0.78rem; color: var(--texto-suave); font-weight: 600; }
+.barra-dupla { position: relative; display: block; height: 6px; margin-top: 0.3rem; border-radius: 99px; background: var(--superficie-2); overflow: hidden; }
+.barra-dupla span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 99px; }
+.barra-dupla .estudado { background: color-mix(in srgb, var(--primaria) 35%, transparent); }
+.barra-dupla .comprovado { background: var(--verde); }

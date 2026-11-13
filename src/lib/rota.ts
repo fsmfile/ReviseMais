@@ -11,7 +11,9 @@ export type Rota =
   | { tela: 'importar'; id: string }
   | { tela: 'desempenho' }
   | { tela: 'comparar' }
-  | { tela: 'calendario' };
+  | { tela: 'calendario' }
+  /** Resultado de um caso atendido no Advogando (a busca leva os dados). */
+  | { tela: 'advogando'; busca: string };
 
 function ler(): Rota {
   const [caminho, busca = ''] = location.hash.replace(/^#/, '').split('?');
@@ -27,6 +29,8 @@ function ler(): Rota {
       const assunto = new URLSearchParams(busca).get('a') ?? undefined;
       return { tela, assunto };
     }
+    case 'advogando':
+      return { tela, busca };
     case 'historico':
     case 'tempo':
     case 'painel':
@@ -42,6 +46,7 @@ function ler(): Rota {
 
 export function href(r: Rota): string {
   if (r.tela === 'estudar') return `#/estudar${r.assunto ? `?a=${r.assunto}` : ''}`;
+  if (r.tela === 'advogando') return `#/advogando?${r.busca}`;
   if (r.tela === 'plano') return `#/plano/${r.id}${r.assunto ? `?a=${r.assunto}` : ''}`;
   return 'id' in r ? `#/${r.tela}/${r.id}` : `#/${r.tela}`;
 }

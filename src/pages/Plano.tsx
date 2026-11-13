@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Percentual } from '../components/Campos';
 import { ChipsCorrelacao } from '../components/Correlacao';
+import { ChipClientes, SeloComprovado, useComprovacoes } from '../components/Advogando';
 import { HistoricoAssunto } from '../components/HistoricoAssunto';
 import { Modal } from '../components/Modal';
 import { RegistrarEstudo } from '../components/RegistrarEstudo';
@@ -37,6 +38,7 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
   const [colorindo, setColorindo] = useState<{ tipo: 'disciplina' | 'assunto'; id: string } | null>(null);
   const [comSubitens, setComSubitens] = useState(true);
   const corMateria = useCorMateria();
+  const comprovados = useComprovacoes();
   const [adicionando, setAdicionando] = useState<string | null>(null);
   const [ordenando, setOrdenando] = useState(false);
   const [menu, setMenu] = useState<{ tipo: 'disciplina' | 'assunto'; id: string } | null>(null);
@@ -290,6 +292,8 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
                         >
                           {a.codigo && <span className="codigo">{a.codigo}</span>} {a.nome}
                           <ChipsCorrelacao itens={correlacoes.assuntos.get(a.id)} compacto />
+                          <SeloComprovado c={comprovados.get(a.id)} />
+                          <ChipClientes assuntoId={a.id} />
                           {outro && (
                             <span className="nota-outro" title={`Estudado em ${outro.plano.nome}: ${outro.assunto?.nome}`}>
                               via {outro.plano.nome}

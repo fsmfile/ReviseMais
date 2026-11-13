@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { BotaoProvar } from '../components/Advogando';
 import { ConcluirRevisao } from '../components/ConcluirRevisao';
 import { Percentual } from '../components/Campos';
 import { ResumoTempo } from '../components/ResumoTempo';
@@ -59,6 +60,7 @@ export function Hoje() {
           <ConcluirRevisao revisao={r} aoTerminar={() => setAberta(null)} />
         ) : (
           <div className="acoes">
+            <BotaoProvar revisao={r} />
             <button onClick={() => setAberta(r.id)}>✓ Revisei</button>
             <button className="secundario" onClick={() => executar(() => acoes.reagendarRevisao(r.id, somarDias(ref, 1)))}>
               Adiar p/ amanhã
