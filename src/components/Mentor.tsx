@@ -1,7 +1,7 @@
 // Mentor de foco em ação: percebe quando a pessoa sai do app com o cronômetro rodando,
 // conversa quando ela volta e lembra das pausas longas. Fica montado em todas as telas.
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { casosDoAssunto, useCatalogoAdvogando, type CatalogoAdvogando } from '../lib/advogando';
+import { casosDoAssunto, pausadoPeloEscritorio, useCatalogoAdvogando, type CatalogoAdvogando } from '../lib/advogando';
 import { cronometro, decorridoSeg, type EstadoCronometro } from '../lib/cronometro';
 import { hoje } from '../lib/datas';
 import { duracaoFalada, falar, type Contexto, type Nivel, type Situacao } from '../lib/foco/falas';
@@ -118,6 +118,8 @@ export function Mentor() {
     const verificarPausa = () => {
       const c = cronometro.estado();
       if (!c || c.rodandoDesde || !c.pausadoEm) return;
+      // Pausado porque foi atender no Advogando: é estudo, não se cobra.
+      if (pausadoPeloEscritorio()) return;
       const st = lerEstado();
       if (st.avisouPausa === c.pausadoEm) return;
       const agora = Date.now();
