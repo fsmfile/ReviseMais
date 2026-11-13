@@ -1,8 +1,12 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { trazerSessaoDoProjetoAntigo } from './sessaoAntiga';
 import type { Dados, Tabela } from './types';
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const chave = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+
+// Antes de criar o cliente: quem estava logado no projeto antigo continua logado no novo.
+if (url && typeof localStorage !== 'undefined') trazerSessaoDoProjetoAntigo(localStorage, url);
 
 export const supabase: SupabaseClient | null = url && chave ? createClient(url, chave) : null;
 export const modoLocal = !supabase;
