@@ -14,6 +14,19 @@ as chaves internas (`revisemais:*` no localStorage, UIDs do calendário) continu
 - Atenção: na primeira importação a Vercel tinha criado uma cópia do projeto (`fsmfile/revisemaisconcursos`) e publicava
   dela; o projeto foi religado a este repositório. Não atualize a cópia.
 
+## Supabase (troca de projeto em 13/11/2026)
+
+- Projeto atual: `xqojqdxbvndzftpbpdmy` (organização EleveSystem), com as migrações 0001 a 0005. Endereço e chave pública
+  em `.env.production` e no `api/calendario.ts`.
+- O projeto antigo `haknwtvxvlgxagfvzkny` só é **lido**: na primeira entrada de cada pessoa, `src/lib/migracaoAntiga.ts`
+  confere o e-mail e a senha lá, cria a conta no novo com a mesma senha e traz os dados dela (planos, matérias, assuntos,
+  estudos, revisões, sessões, calendário, modo integrado, progresso do Advogando e PDFs). O `user_id` muda; os ids das
+  linhas e o token do calendário continuam. **Não apague o projeto antigo** até todos terem entrado e a conferência ser
+  feita pelo script `../migracao-supabase/migrar.mjs` (fora do repositório; ver o LEIA-ME de lá).
+- O projeto novo cria a conta sem confirmação de e-mail (necessário para essa troca). Os e-mails de "esqueci a senha" usam
+  o servidor padrão do Supabase, que só entrega para membros da organização.
+- `VITE_MANUTENCAO=1` no build mostra só a tela de manutenção (`src/pages/Manutencao.tsx`), sem falar com o banco.
+
 ## Comandos
 
 - `npm test` — testes (lógica + **todos os editais de referência**). Precisa passar antes de qualquer commit.

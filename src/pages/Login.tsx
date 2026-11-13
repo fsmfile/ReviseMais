@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { supabase } from '../lib/backend';
+import { supabase, supabaseChave, supabaseUrl } from '../lib/backend';
+import { entrarTrazendoDados, temSessaoAntiga, type Resultado } from '../lib/migracaoAntiga';
 
 export function Login() {
   const [email, setEmail] = useState('');
@@ -7,22 +8,29 @@ export function Login() {
   const [modo, setModo] = useState<'entrar' | 'cadastrar'>('entrar');
   const [msg, setMsg] = useState<{ tipo: 'ok' | 'erro'; texto: string } | null>(null);
   const [enviando, setEnviando] = useState(false);
+  const [etapa, setEtapa] = useState('');
+  // Quem usava o app antes da troca de servidor vê o porquê de entrar de novo.
+  const [veioDoAntigo] = useState(() => temSessaoAntiga(localStorage));
 
   const enviar = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!supabase) return;
     setEnviando(true);
     setMsg(null);
-    const r =
-      modo === 'entrar'
-        ? await supabase.auth.signInWithPassword({ email, password: senha })
-        : await supabase.auth.signUp({ email, password: senha, options: { emailRedirectTo: location.origin + location.pathname } });
-    setEnviando(false);
-    if (r.error) {
-      const t = r.error.message.includes('Invalid login') ? 'E-mail ou senha incorretos.' : r.error.message;
-      return setMsg({ tipo: 'erro', texto: t });
+    setEtapa('');
+    const r: Resultado = await entrarTrazendoDados(supabaseUrl, supabaseChave, modo, email, senha, setEtapa).catch(
+      (x: Error): Resultado => ({ erro: x.message }),
+    );
+    if (r.sessao) {
+      if (r.aviso) alert(r.aviso);
+      const { error } = await supabase.auth.setSession({ access_token: r.sessao.access_token, refresh_token: r.sessao.refresh_token });
+      if (!error) return; // o App troca para a tela principal
+      r.erro = error.message;
     }
-    if (modo === 'cadastrar' && !r.data.session) setMsg({ tipo: 'ok', texto: 'Conta criada! Confirme pelo link enviado ao seu e-mail e depois entre.' });
+    setEnviando(false);
+    setEtapa('');
+    if (r.erro) return setMsg({ tipo: 'erro', texto: r.erro });
+    if (r.aviso) setMsg({ tipo: 'ok', texto: r.aviso });
   };
 
   const esqueci = async () => {
@@ -39,6 +47,11 @@ export function Login() {
           Estude<span className="nome-mais">Mais</span>
         </h1>
         <p className="suave">Seus estudos e revisões para concursos, sincronizados em todos os aparelhos.</p>
+        {veioDoAntigo && (
+          <p className="ok-texto">
+            O EstudeMais mudou de servidor. Entre com seu e-mail e senha de sempre: seus planos, revisões e PDFs vêm junto.
+          </p>
+        )}
         <label>
           E-mail
           <input type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -55,6 +68,7 @@ export function Login() {
           />
         </label>
         {msg && <p className={msg.tipo === 'erro' ? 'erro-texto' : 'ok-texto'}>{msg.texto}</p>}
+        {enviando && etapa && <p className="suave">{etapa}</p>}
         <button type="submit" disabled={enviando}>
           {enviando ? 'Aguarde…' : modo === 'entrar' ? 'Entrar' : 'Criar conta'}
         </button>

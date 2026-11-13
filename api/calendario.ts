@@ -6,8 +6,8 @@
 export const config = { runtime: 'edge' };
 
 // Configuração pública (a mesma de .env.production); pode ser sobrescrita por variáveis de ambiente.
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://haknwtvxvlgxagfvzkny.supabase.co';
-const SUPABASE_KEY = process.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_VEoAPQZnPbvyQM4C1la0MA_HYKAgViv';
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://xqojqdxbvndzftpbpdmy.supabase.co';
+const SUPABASE_KEY = process.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_Pg_srnwUofAEK-Fiekm79A_SfmuEbhO';
 
 const ROTULO: Record<string, string> = {
   '48h': 'Revisão de 48 horas',

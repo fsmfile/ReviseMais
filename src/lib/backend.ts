@@ -1,5 +1,4 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { trazerSessaoDoProjetoAntigo } from './sessaoAntiga';
 import type { Dados, Tabela } from './types';
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
@@ -8,10 +7,8 @@ const chave = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 /** Build de manutenção (VITE_MANUTENCAO=1): o app só mostra o aviso e não fala com o banco. */
 export const emManutencao = import.meta.env.VITE_MANUTENCAO === '1';
 
-// Antes de criar o cliente: quem estava logado no projeto antigo continua logado no novo.
-if (url && !emManutencao && typeof localStorage !== 'undefined') trazerSessaoDoProjetoAntigo(localStorage, url);
-
 export const supabase: SupabaseClient | null = url && chave && !emManutencao ? createClient(url, chave) : null;
+export const supabaseChave = chave ?? '';
 export const modoLocal = !supabase;
 export const supabaseUrl = url ?? '';
 
