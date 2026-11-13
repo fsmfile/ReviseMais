@@ -2,6 +2,8 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { registerSW } from 'virtual:pwa-register';
 import { App } from './App';
+import { emManutencao } from './lib/backend';
+import { Manutencao } from './pages/Manutencao';
 import './styles.css';
 import './repaginacao.css';
 
@@ -19,7 +21,5 @@ const atualizar = registerSW({
 void atualizar;
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
+  <StrictMode>{emManutencao ? <Manutencao /> : <App />}</StrictMode>,
 );
