@@ -145,12 +145,12 @@ export function falar(sit: Situacao, nivel: Nivel, ctx: Contexto, opcoes: { sort
       if (comApp.length) lista = comApp;
     }
     const novos = lista.filter((x) => !recentes.has(x.chave));
-    // Tudo já foi usado há pouco: volta o que não aparece há mais tempo (nunca o mesmo duas vezes seguidas).
     const ordem = memoria.recentes();
-    const escolhido = novos.length
-      ? novos[Math.floor(sorteio() * novos.length)]
-      : lista.reduce((a, b) => (ordem.indexOf(b.chave) > ordem.indexOf(a.chave) ? b : a));
-    if (escolhido.t !== '') memoria.lembrar(escolhido.chave);
+    // Sorteia entre a metade usada há mais tempo: nunca a última, e sem ordem fixa entre os pedaços.
+    const antigos = [...lista].sort((a, b) => ordem.indexOf(b.chave) - ordem.indexOf(a.chave)).slice(0, Math.max(1, Math.ceil(lista.length / 2)));
+    const escolhido = novos.length ? novos[Math.floor(sorteio() * novos.length)] : antigos[Math.floor(sorteio() * antigos.length)];
+    // O "sem lembrete" também entra na memória: senão ele pareceria sempre novo e venceria os outros.
+    memoria.lembrar(escolhido.chave);
     if (escolhido.texto) frases.push(escolhido.texto);
   });
   const texto = frases.join(' ').replace(/\s+/g, ' ').trim();

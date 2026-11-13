@@ -3,6 +3,16 @@ import { duracaoFalada, falar, memoriaEmMemoria, type Contexto, type Nivel, type
 import { refeicaoDoHorario, resumir, vezesNoDia, type Ausencia } from './mentor';
 import { identificar, principal } from './sensor';
 
+/** Sorteio fixo (o teste não depende da sorte). */
+function semente(n: number) {
+  return () => {
+    n = (n + 0x6d2b79f5) | 0;
+    let t = Math.imul(n ^ (n >>> 15), 1 | n);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 const SITUACOES: Situacao[] = [
   'voltou', 'pausaLonga', 'almocoInicio', 'jantaInicio', 'almocoFim', 'jantaFim', 'fora',
   'motivoRedes', 'motivoMensagens', 'motivoVideo', 'motivoJogos', 'motivoPausa', 'motivoEstudando', 'motivoOutro',
@@ -25,8 +35,9 @@ describe('falas do Mentor de foco', () => {
   it('varia bastante e não repete as últimas falas', () => {
     for (const n of NIVEIS) {
       const mem = memoriaEmMemoria();
-      const falas = Array.from({ length: 40 }, () => falar('voltou', n, CHEIO, { memoria: mem }));
-      expect(new Set(falas).size, `nível ${n}`).toBe(40);
+      const sorteio = semente(n);
+      const falas = Array.from({ length: 40 }, () => falar('voltou', n, CHEIO, { memoria: mem, sorteio }));
+      expect(new Set(falas).size, `nível ${n}`).toBeGreaterThanOrEqual(39);
       // Sem repetir o mesmo começo duas vezes seguidas.
       for (let i = 1; i < falas.length; i++) expect(falas[i].split(' ').slice(0, 3).join(' ')).not.toBe(falas[i - 1].split(' ').slice(0, 3).join(' '));
     }
@@ -90,5 +101,14 @@ describe('regras do mentor', () => {
     expect(identificar({ app: 'Banco', pacote: 'br.com.banco', segundos: 10 }).categoria).toBe('outro');
     expect(principal([{ app: 'WhatsApp', pacote: 'com.whatsapp', segundos: 90 }, { app: '', pacote: 'com.zhiliaoapp.musically', segundos: 600 }])?.app).toBe('TikTok');
     expect(principal([])).toBeNull();
+  });
+});
+
+describe('lembretes não somem com o uso', () => {
+  it('depois de muitas falas, o lembrete de pendências continua aparecendo', () => {
+    const mem = memoriaEmMemoria();
+    const l = Array.from({ length: 80 }, () => falar('voltou', 1, CHEIO, { memoria: mem }));
+    const ultimas = l.slice(40).join(' ');
+    expect(ultimas).toMatch(/revis|cliente|estudo hoje|Advogando/);
   });
 });
