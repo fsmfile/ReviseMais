@@ -2,11 +2,22 @@
 // conversa quando ela volta e lembra das pausas longas. Fica montado em todas as telas.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { casosDoAssunto, pausadoPeloEscritorio, useCatalogoAdvogando, type CatalogoAdvogando } from '../lib/advogando';
-import { cronometro, decorridoSeg, type EstadoCronometro } from '../lib/cronometro';
+import { cronometro, decorridoSeg, useCronometro, type EstadoCronometro } from '../lib/cronometro';
 import { hoje } from '../lib/datas';
 import { duracaoFalada, falar, type Contexto, type Nivel, type Situacao } from '../lib/foco/falas';
 import { desconta, gravarEstado, lerConfig, lerEstado, NIVEIS, ROTULO_MOTIVO, useConfigMentor, vezesNoDia, type Ausencia } from '../lib/foco/mentor';
 import { appsUsados, type Motivo } from '../lib/foco/sensor';
+import {
+  iniciarEco,
+  jaCobradaNoOutro,
+  lerEco,
+  mesaDoEscritorio,
+  publicarResumo,
+  registrarCobranca,
+  tempoNoOutroApp,
+  useEco,
+  type Eco,
+} from '../lib/ecossistema';
 import { href } from '../lib/rota';
 import { useDados } from '../lib/store';
 import type { Dados } from '../lib/types';
@@ -30,6 +41,21 @@ export function montarContexto(c: EstadoCronometro | null, dados: Dados, cat: Ca
   }
   ctx.hojeSeg = dados.sessoes.filter((s) => s.data === ref).reduce((t, s) => t + s.duracao_seg, 0) + decorridoSeg(c);
   return ctx;
+}
+
+/** No modo integrado, o cobrador é o Sócio do escritório, e ele sabe o que está na mesa de lá. */
+function comMesa(ctx: Contexto, eco: Eco): Contexto {
+  return eco.integrado ? { ...ctx, mesa: mesaDoEscritorio(eco.resumoAdvogando) } : ctx;
+}
+
+/** Rigor que vale agora: o do ecossistema (se a pessoa ligou os dois apps) ou o deste app. */
+export function nivelEfetivo(eco: Eco, local: 0 | Nivel): 0 | Nivel {
+  return eco.disponivel && eco.integrado ? (eco.nivel as 0 | Nivel) : local;
+}
+
+/** Nome do cobrador: Mentor de foco, ou o Sócio (modo integrado com o Advogando). */
+export function nomeDoCobrador(eco: Eco): string {
+  return eco.disponivel && eco.integrado ? 'Sócio' : 'Mentor';
 }
 
 const SITUACAO_DO_MOTIVO: Record<Motivo, Situacao> = {
@@ -63,13 +89,25 @@ interface Retorno {
 
 export function Mentor() {
   const config = useConfigMentor();
+  const eco = useEco();
   const { dados } = useDados();
   const cat = useCatalogoAdvogando();
+  const crono = useCronometro();
   const [retorno, setRetorno] = useState<Retorno | null>(null);
   const [recado, setRecado] = useState<Recado | null>(null);
   const base = useRef({ dados, cat });
   base.current = { dados, cat };
-  const nivel = config.nivel || null;
+  const nivel = nivelEfetivo(eco, config.nivel) || null;
+
+  // Modo integrado: presença e resumo para o Advogando (mesmo com o cobrador desligado).
+  useEffect(() => iniciarEco(), []);
+  useEffect(() => {
+    const ref = hoje();
+    publicarResumo({
+      revisoesHoje: dados.revisoes.filter((r) => !r.concluida_em && r.data_prevista <= ref).length,
+      cronometro: crono ? { materia: crono.materia, rodando: !!crono.rodandoDesde } : null,
+    });
+  }, [dados.revisoes, crono, eco.integrado]);
 
   useEffect(() => {
     mostrarRecado = (r) => setRecado(r);
@@ -85,7 +123,7 @@ export function Mentor() {
     return () => clearTimeout(id);
   }, [recado]);
 
-  const contexto = useCallback((c: EstadoCronometro | null, extra: Contexto = {}) => montarContexto(c, base.current.dados, base.current.cat, extra), []);
+  const contexto = useCallback((c: EstadoCronometro | null, extra: Contexto = {}) => comMesa(montarContexto(c, base.current.dados, base.current.cat, extra), lerEco()), []);
 
   useEffect(() => {
     if (!nivel) return;
@@ -115,7 +153,7 @@ export function Mentor() {
         );
     };
 
-    const verificarPausa = () => {
+    const verificarPausa = async () => {
       const c = cronometro.estado();
       if (!c || c.rodandoDesde || !c.pausadoEm) return;
       // Pausado porque foi atender no Advogando: é estudo, não se cobra.
@@ -123,6 +161,11 @@ export function Mentor() {
       const st = lerEstado();
       if (st.avisouPausa === c.pausadoEm) return;
       const agora = Date.now();
+      // Modo integrado: a pausa foi passada no escritório? Também não se cobra.
+      if ((await tempoNoOutroApp(c.pausadoEm, agora)) >= 0.6) {
+        gravarEstado({ ...lerEstado(), avisouPausa: c.pausadoEm });
+        return;
+      }
       if (c.refeicao) {
         if (agora < c.refeicao.ate + 2 * 60000) return;
         setRecado({ texto: falar(c.refeicao.tipo === 'almoco' ? 'almocoFim' : 'jantaFim', n, contexto(c, { min: (agora - c.refeicao.ate) / 60000 })), continuar: true });
@@ -143,6 +186,14 @@ export function Mentor() {
         gravarEstado({ ...st, saiuEm: null, sessao: null });
         const min = (fim - inicio) / 60000;
         if (c && c.rodandoDesde && c.iniciadoEm === st.sessao && min >= NIVEIS[n].tolerancia) {
+          // Modo integrado: estava no Advogando? É estudo (elogio, sem desconto). Já cobrado lá? Não cobra de novo.
+          const noOutro = await tempoNoOutroApp(inicio, fim);
+          if (noOutro >= 0.6) {
+            setRecado({ texto: falar('estudouNoOutro', n, contexto(c, { min: min * noOutro })) });
+            return;
+          }
+          if (await jaCobradaNoOutro(inicio, fim)) return;
+          registrarCobranca(inicio, fim);
           const dia = hoje();
           const vez = vezesNoDia(st.ausencias, dia) + 1;
           const uso = await appsUsados(inicio, fim);
@@ -155,7 +206,7 @@ export function Mentor() {
           return;
         }
       }
-      verificarPausa();
+      void verificarPausa();
     };
 
     const aoMudar = () => {
@@ -174,7 +225,7 @@ export function Mentor() {
     document.addEventListener('visibilitychange', aoMudar);
     // O celular pode fechar a página enquanto a pessoa está fora: confere ao abrir.
     void aoVoltar();
-    const relogio = setInterval(() => document.visibilityState === 'visible' && verificarPausa(), 30000);
+    const relogio = setInterval(() => document.visibilityState === 'visible' && void verificarPausa(), 30000);
     return () => {
       document.removeEventListener('visibilitychange', aoMudar);
       clearInterval(relogio);
@@ -231,7 +282,7 @@ export function Mentor() {
         </div>
       )}
       {retorno && perfil && (
-        <Modal titulo={`${perfil.icone} Mentor ${perfil.nome.toLowerCase()}`} aoFechar={fechar}>
+        <Modal titulo={`${perfil.icone} ${nomeDoCobrador(eco)} ${perfil.nome.toLowerCase()}`} aoFechar={fechar}>
           <div className="retorno-mentor">
             <p className="fala-mentor">{retorno.fala}</p>
             {!retorno.resposta ? (
@@ -268,7 +319,7 @@ export function Mentor() {
                 <div className="acoes">
                   <button onClick={fechar}>Continuar estudando</button>
                   <a className="botao secundario" href={href({ tela: 'foco' })} onClick={fechar}>
-                    Ajustar o mentor
+                    Ajustar o {nomeDoCobrador(eco) === 'Sócio' ? 'sócio' : 'mentor'}
                   </a>
                 </div>
               </>

@@ -95,3 +95,19 @@ ou Linha-dura (😤, 3 min). Pausas curtas (água, café) passam sem comentário
   a Play Store exige declarar que o app é de foco/bem-estar). iPhone: Screen Time API (FamilyControls + DeviceActivity):
   a Apple não entrega o nome do app ao código, mas permite saber quando a pessoa passou do limite nos apps que ela marcou e
   bloquear esses apps durante o estudo.
+
+## Modo integrado com o Advogando (conta única, um cobrador)
+
+Detalhes e passo a passo do dono: `docs/ECOSSISTEMA.md` no repositório do Advogando. Resumo:
+
+- A pessoa **escolhe** ligar os dois apps (convite no Mentor de foco e depois de registrar um resultado do escritório).
+  Ligados, o Advogando usa **este** projeto Supabase (tabelas dele em `supabase/migrations/0004_advogando.sql`) e as
+  tabelas compartilhadas `ecossistema`, `atividade` e `cobrancas` (`0005_ecossistema.sql`).
+- `src/lib/ecossistema.ts`: escolha e rigor compartilhados, resumo de cada app para o outro, presença a cada minuto,
+  cobranças registradas. Com os apps ligados, o cobrador é **o Sócio** (mesmo rigor nos dois), a saída passada no
+  Advogando é reconhecida e não cobrada, e a saída já cobrada lá não é cobrada de novo.
+- Sem conta, sem as tabelas ou com os apps desligados, nada muda. Sem as tabelas, o app para de consultar até reabrir.
+- Teste de navegador sem Supabase: `window.__ECO_TESTE__ = true` (via `addInitScript`) usa `localStorage`
+  (`revisemais:eco-teste`) para simular o Advogando.
+- **Tempo em dobro:** ir para o Advogando pelos botões daqui pausa o cronômetro (`pausarParaOEscritorio`); se ele rodou
+  durante o atendimento, o registro do resultado desconta o tempo que já entrou pela sessão do escritório.

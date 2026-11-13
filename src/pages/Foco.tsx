@@ -6,14 +6,23 @@ import { duracaoFalada, falar, memoriaEmMemoria, type Nivel } from '../lib/foco/
 import { mudarConfig, NIVEIS, REFEICOES, resumir, ROTULO_MOTIVO, useAusencias, useConfigMentor } from '../lib/foco/mentor';
 import { temSensorNativo } from '../lib/foco/sensor';
 import { useDados } from '../lib/store';
-import { montarContexto } from '../components/Mentor';
+import { montarContexto, nivelEfetivo, nomeDoCobrador } from '../components/Mentor';
+import { mudarNivelEco, responderIntegracao, useEco } from '../lib/ecossistema';
 
 const NIVEIS_LISTA: Nivel[] = [1, 2, 3];
 const OPCOES_REFEICAO = [30, 45, 60, 75, 90];
 
 /** Configuração do Mentor de foco e placar de distração. */
 export function Foco() {
-  const config = useConfigMentor();
+  const configLocal = useConfigMentor();
+  const eco = useEco();
+  const integrado = eco.disponivel && eco.integrado === true;
+  // O rigor que vale: o do ecossistema (apps ligados) ou o deste app.
+  const config = { ...configLocal, nivel: nivelEfetivo(eco, configLocal.nivel) };
+  const escolherNivel = (n: 0 | Nivel) => {
+    mudarConfig({ nivel: n, escolhido: true });
+    if (integrado) void mudarNivelEco(n);
+  };
   const ausencias = useAusencias();
   const { dados } = useDados();
   const cat = useCatalogoAdvogando();
@@ -26,9 +35,9 @@ export function Foco() {
   const exemplo = useMemo(() => {
     if (!config.nivel) return null;
     const ctx = montarContexto(crono, dados, cat, { min: NIVEIS[config.nivel].tolerancia + 5, materia: crono?.materia ?? 'Direito Constitucional' });
-    return falar('voltou', config.nivel, ctx, { memoria: memoria.current });
+    return falar('voltou', config.nivel, integrado ? { ...ctx, mesa: '2 prazos vencem hoje' } : ctx, { memoria: memoria.current });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [config.nivel, amostra]);
+  }, [config.nivel, amostra, integrado]);
 
   const semana = resumir(ausencias, somarDias(hoje(), -6));
   const doDia = resumir(ausencias, hoje());
@@ -43,16 +52,47 @@ export function Foco() {
 
   return (
     <div className="pagina-foco">
-      <h1>🎯 Mentor de foco</h1>
+      <h1>🎯 {integrado ? 'Cobrança de foco' : 'Mentor de foco'}</h1>
+      {eco.disponivel && (
+        <section className={`cartao ligar-apps ${integrado ? 'ligado' : ''}`}>
+          <h2>{integrado ? '⚖️ Ligado ao Advogando' : '⚖️ Ligar com o Advogando'}</h2>
+          {integrado ? (
+            <>
+              <p>
+                Os dois apps usam a mesma conta. Quem cobra é <strong>o Sócio do escritório</strong>, nos dois apps e com o mesmo rigor: ele fala no app que você
+                estiver usando, sabe o que está pendente no outro e não cobra o tempo que você passou estudando lá.
+              </p>
+              <button className="link" onClick={() => void responderIntegracao(false, config.nivel)}>
+                Desligar os dois apps
+              </button>
+            </>
+          ) : (
+            <>
+              <p>
+                Quer ligar o EstudeMais e o Advogando? Os resultados do escritório chegam aqui, e um cobrador só (o Sócio do escritório) acompanha você nos dois
+                apps: fala onde você estiver, lembra do que está pendente no outro e entende que estudar no Advogando não é distração.
+              </p>
+              <div className="acoes">
+                <button onClick={() => void responderIntegracao(true, config.nivel)}>Ligar os dois apps</button>
+                {eco.integrado === null && (
+                  <button className="secundario" onClick={() => void responderIntegracao(false, config.nivel)}>
+                    Agora não
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+        </section>
+      )}
       <p className="suave">
-        Quer alguém cobrando o seu foco? Enquanto o cronômetro roda, o mentor percebe quando você sai do EstudeMais e por quanto tempo. Ele{' '}
+        {integrado ? 'Enquanto o cronômetro roda, o Sócio' : 'Quer alguém cobrando o seu foco? Enquanto o cronômetro roda, o mentor'} percebe quando você sai do EstudeMais e por quanto tempo. Ele{' '}
         <strong>não vê o que você faz fora do app</strong>: quando você volta, ele pergunta. Pausas curtas (água, café) passam sem comentário.
       </p>
 
       <section className="cartao">
-        <h2>Quem vai te cobrar?</h2>
+        <h2>{integrado ? 'Com que rigor o Sócio cobra?' : 'Quem vai te cobrar?'}</h2>
         <div className="niveis-mentor" role="radiogroup" aria-label="Nível do mentor">
-          <button role="radio" aria-checked={!config.nivel} className={`nivel-mentor ${!config.nivel ? 'ativo' : ''}`} onClick={() => mudarConfig({ nivel: 0, escolhido: true })}>
+          <button role="radio" aria-checked={!config.nivel} className={`nivel-mentor ${!config.nivel ? 'ativo' : ''}`} onClick={() => escolherNivel(0)}>
             <strong>🔕 Ninguém</strong>
             <span className="suave pequeno">Sem cobrança. O cronômetro funciona como sempre.</span>
           </button>
@@ -63,7 +103,7 @@ export function Foco() {
               aria-checked={config.nivel === n}
               className={`nivel-mentor ${config.nivel === n ? 'ativo' : ''}`}
               onClick={() => {
-                mudarConfig({ nivel: n, escolhido: true });
+                escolherNivel(n);
                 setAmostra((x) => x + 1);
               }}
             >
@@ -79,7 +119,7 @@ export function Foco() {
         </div>
         {exemplo && (
           <div className="amostra-mentor">
-            <p className="suave pequeno">Assim ele fala quando você some:</p>
+            <p className="suave pequeno">Assim {nomeDoCobrador(eco) === 'Sócio' ? 'o Sócio' : 'ele'} fala quando você some:</p>
             <p className="fala-mentor">“{exemplo}”</p>
             <button className="link" onClick={() => setAmostra((x) => x + 1)}>
               Ouvir outra

@@ -6,7 +6,8 @@ import { href, ir } from '../lib/rota';
 import { useDados, useIndices } from '../lib/store';
 import { relogio, TIPOS_ESTUDO } from '../lib/tempo';
 import type { TipoEstudo } from '../lib/types';
-import { recadoDoMentor, montarContexto } from '../components/Mentor';
+import { recadoDoMentor, montarContexto, nivelEfetivo } from '../components/Mentor';
+import { useEco } from '../lib/ecossistema';
 import { useCatalogoAdvogando } from '../lib/advogando';
 import { falar } from '../lib/foco/falas';
 import { mudarConfig, refeicaoDoHorario, REFEICOES, useConfigMentor } from '../lib/foco/mentor';
@@ -291,7 +292,9 @@ function CronometroAtivo({ estado }: { estado: EstadoCronometro }) {
 
 /** Convite para o Mentor de foco e pausas para almoço e janta (só no horário). */
 function PainelMentor({ estado }: { estado: EstadoCronometro }) {
-  const config = useConfigMentor();
+  const configLocal = useConfigMentor();
+  const eco = useEco();
+  const config = { ...configLocal, nivel: nivelEfetivo(eco, configLocal.nivel), escolhido: configLocal.escolhido || eco.integrado === true };
   const { dados } = useDados();
   const cat = useCatalogoAdvogando();
   if (!config.escolhido)

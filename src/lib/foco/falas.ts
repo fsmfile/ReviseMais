@@ -14,6 +14,7 @@ export type Situacao =
   | 'almocoFim'
   | 'jantaFim'
   | 'fora'
+  | 'estudouNoOutro'
   | 'motivoRedes'
   | 'motivoMensagens'
   | 'motivoVideo'
@@ -39,6 +40,8 @@ export interface Contexto {
   vez?: number;
   /** Duração combinada da pausa longa, em minutos. */
   lim?: number;
+  /** Modo integrado: o que está pendente no escritório do Advogando ("2 prazos vencem hoje"). */
+  mesa?: string;
 }
 
 /** Pedaços de uma fala, em ordem. Um '' na lista torna aquele pedaço opcional. */
@@ -68,6 +71,7 @@ function variaveis(c: Contexto): Record<string, string> {
   if (c.hojeSeg && c.hojeSeg >= 60) v.hoje = duracaoFalada(c.hojeSeg / 60);
   if (c.vez && c.vez >= 2) v.vez = String(c.vez);
   if (c.lim) v.lim = duracaoFalada(c.lim);
+  if (c.mesa) v.mesa = c.mesa;
   return v;
 }
 
@@ -167,6 +171,7 @@ function partesDa(sit: Situacao, nivel: Nivel, ctx: Contexto): Partes {
   }
   if (sit === 'pausaLonga') return [PAUSA_LONGA[nivel], GANCHO[nivel], FECHO_PAUSA[nivel]];
   if (sit === 'fora') return [FORA[nivel]];
+  if (sit === 'estudouNoOutro') return [NO_OUTRO[nivel], GANCHO[nivel].filter((g) => !g.includes('{cliente}') && !g.includes('{assunto}')), FECHO_PAUSA[nivel]];
   if (sit === 'almocoInicio' || sit === 'jantaInicio' || sit === 'almocoFim' || sit === 'jantaFim') return [REFEICAO[sit][nivel]];
   return [MOTIVO[sit][nivel], ['', '', ...FECHO_MOTIVO[nivel]]];
 }
@@ -286,6 +291,8 @@ const GANCHO: Record<Nivel, string[]> = {
     'No Advogando, “{cliente}” está esperando você provar {assunto}.',
     'Tem cliente no escritório querendo falar de {assunto}.',
     'Você já tem {hoje} de estudo hoje. Bora somar mais?',
+    'E no escritório, {mesa}.',
+    'Ah, e lá no escritório: {mesa}.',
   ],
   2: [
     '',
@@ -295,6 +302,8 @@ const GANCHO: Record<Nivel, string[]> = {
     'No Advogando, “{cliente}” continua esperando você comprovar {assunto}.',
     'Tem cliente na recepção do escritório por causa de {assunto}.',
     'Hoje até agora: {hoje}. Dá para fazer melhor.',
+    'No escritório, {mesa}.',
+    'E não esqueça do escritório: {mesa}.',
   ],
   3: [
     '',
@@ -303,6 +312,8 @@ const GANCHO: Record<Nivel, string[]> = {
     'Tem cliente no Advogando (“{cliente}”) parado na recepção por sua causa.',
     'O escritório tem cliente esperando parecer sobre {assunto}.',
     'Hoje você soma {hoje}. É pouco.',
+    'E o escritório? {mesa}.',
+    'Enquanto isso, no escritório, {mesa}.',
   ],
 };
 
@@ -334,6 +345,26 @@ const FECHO_PAUSA: Record<Nivel, string[]> = {
   1: ['', 'Continuamos?', 'Bora?'],
   2: ['', 'Continue o estudo.', 'Vamos?'],
   3: ['Aperte continuar.', 'Volta já.', ''],
+};
+
+/** Modo integrado: a pessoa saiu daqui, mas estava trabalhando no Advogando. Não é distração. */
+const NO_OUTRO: Record<Nivel, string[]> = {
+  1: [
+    'Boa! {min} no escritório contam como estudo.',
+    'Voltou do escritório! Esse tempo vale, e muito.',
+    'Atendendo cliente no Advogando? Isso é estudo de verdade.',
+    'Que orgulho: {min} provando no escritório o que você estudou.',
+  ],
+  2: [
+    'Tempo no escritório é estudo. {min} bem gastos.',
+    'Vi que você estava no Advogando. Ótimo, isso conta.',
+    'Escritório conta como estudo. Agora, de volta ao plano.',
+  ],
+  3: [
+    '{min} no escritório. Aceito.',
+    'Estava no Advogando. Desta vez passa.',
+    'Escritório é estudo. Não é desculpa para parar depois.',
+  ],
 };
 
 const FORA: Record<Nivel, string[]> = {
@@ -375,7 +406,7 @@ const REFEICAO: Record<'almocoInicio' | 'jantaInicio' | 'almocoFim' | 'jantaFim'
   },
 };
 
-type SituacaoMotivo = Exclude<Situacao, 'voltou' | 'pausaLonga' | 'fora' | 'almocoInicio' | 'jantaInicio' | 'almocoFim' | 'jantaFim'>;
+type SituacaoMotivo = Exclude<Situacao, 'voltou' | 'pausaLonga' | 'fora' | 'estudouNoOutro' | 'almocoInicio' | 'jantaInicio' | 'almocoFim' | 'jantaFim'>;
 
 const MOTIVO: Record<SituacaoMotivo, Record<Nivel, string[]>> = {
   motivoRedes: {

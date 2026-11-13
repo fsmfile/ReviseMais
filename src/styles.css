@@ -613,3 +613,7 @@ main { padding-bottom: 6rem; }
 .placar-motivos .barra { height: 8px; border-radius: 99px; background: var(--superficie-2); overflow: hidden; display: block; }
 .placar-motivos .barra span { display: block; height: 100%; background: var(--primaria); border-radius: 99px; }
 .lista-ausencias { padding-left: 1.1rem; font-size: 0.88rem; color: var(--texto-suave); }
+.ligar-apps { border: 1px dashed var(--primaria); }
+.ligar-apps.ligado { border-style: solid; border-color: color-mix(in srgb, var(--verde) 55%, transparent); }
+.ligar-apps p { margin: 0.25rem 0 0.5rem; }
+.ligar-apps .acoes { display: flex; flex-wrap: wrap; gap: 0.5rem; }

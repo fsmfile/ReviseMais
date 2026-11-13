@@ -14,7 +14,7 @@ function semente(n: number) {
 }
 
 const SITUACOES: Situacao[] = [
-  'voltou', 'pausaLonga', 'almocoInicio', 'jantaInicio', 'almocoFim', 'jantaFim', 'fora',
+  'voltou', 'pausaLonga', 'almocoInicio', 'jantaInicio', 'almocoFim', 'jantaFim', 'fora', 'estudouNoOutro',
   'motivoRedes', 'motivoMensagens', 'motivoVideo', 'motivoJogos', 'motivoPausa', 'motivoEstudando', 'motivoOutro',
 ];
 const NIVEIS: Nivel[] = [1, 2, 3];
@@ -24,7 +24,7 @@ describe('falas do Mentor de foco', () => {
   it('toda situação, em todo nível, fala algo sem deixar {variável} para trás, com ou sem contexto', () => {
     for (const s of SITUACOES)
       for (const n of NIVEIS)
-        for (const ctx of [CHEIO, { min: 7 }, {}, { ...CHEIO, app: 'Instagram' }])
+        for (const ctx of [CHEIO, { min: 7 }, {}, { ...CHEIO, app: 'Instagram' }, { ...CHEIO, mesa: '2 prazos vencem hoje' }])
           for (let i = 0; i < 30; i++) {
             const f = falar(s, n, ctx, { memoria: memoriaEmMemoria() });
             expect(f.length, `${s} ${n}`).toBeGreaterThan(2);
@@ -110,5 +110,23 @@ describe('lembretes não somem com o uso', () => {
     const l = Array.from({ length: 80 }, () => falar('voltou', 1, CHEIO, { memoria: mem }));
     const ultimas = l.slice(40).join(' ');
     expect(ultimas).toMatch(/revis|cliente|estudo hoje|Advogando/);
+  });
+});
+
+describe('modo integrado nas falas', () => {
+  it('a mesa do escritório só aparece quando os apps estão ligados', () => {
+    const mem = memoriaEmMemoria();
+    const sem = Array.from({ length: 60 }, () => falar('voltou', 2, CHEIO, { memoria: mem })).join(' ');
+    expect(sem).not.toMatch(/escritório: |No escritório, /);
+    const com = Array.from({ length: 60 }, () => falar('voltou', 2, { ...CHEIO, mesa: '2 prazos vencem hoje' }, { memoria: mem })).join(' ');
+    expect(com).toMatch(/2 prazos vencem hoje/);
+  });
+
+  it('estudar no Advogando é elogiado, nunca cobrado', () => {
+    for (const n of [1, 2, 3] as Nivel[]) {
+      const f = falar('estudouNoOutro', n, { min: 12, materia: 'Ética Profissional', pend: 1 }, { memoria: memoriaEmMemoria() });
+      expect(f).toMatch(/[Ee]scritório|Advogando/);
+      expect(f).not.toMatch(/descont|Sumiu|sumiu/);
+    }
   });
 });

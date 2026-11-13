@@ -12,6 +12,8 @@ import {
 } from '../lib/advogando';
 import { tabelasFaltando } from '../lib/backend';
 import { cronometro, useCronometro } from '../lib/cronometro';
+import { responderIntegracao, useEco } from '../lib/ecossistema';
+import { useConfigMentor } from '../lib/foco/mentor';
 import { formatarDuracao } from '../lib/tempo';
 import { formatarData, hoje, rotuloRevisao } from '../lib/datas';
 import { href } from '../lib/rota';
@@ -75,6 +77,8 @@ function Registrar({ r, busca }: { r: Resultado; busca: string }) {
   /** Minutos tirados do cronômetro, que rodou durante o atendimento (para o tempo não contar duas vezes). */
   const [descontado, setDescontado] = useState(0);
   const crono = useCronometro();
+  const eco = useEco();
+  const configMentor = useConfigMentor();
   const voltarAoCrono = crono && !crono.rodandoDesde && pausadoPeloEscritorio();
   const alvo = escolhido ? contexto(escolhido) : null;
 
@@ -183,6 +187,21 @@ function Registrar({ r, busca }: { r: Resultado; busca: string }) {
             </a>
           </div>
         </section>
+        {eco.disponivel && eco.integrado === null && (
+          <section className="cartao ligar-apps">
+            <h2>⚖️ Ligar os dois apps?</h2>
+            <p>
+              Com o EstudeMais e o Advogando ligados, um cobrador só (o Sócio do escritório) acompanha você nos dois: fala no app que você estiver usando, lembra do que
+              está pendente no outro e entende que estudar no escritório não é distração.
+            </p>
+            <div className="acoes">
+              <button onClick={() => void responderIntegracao(true, configMentor.nivel)}>Ligar os dois apps</button>
+              <button className="secundario" onClick={() => void responderIntegracao(false, configMentor.nivel)}>
+                Agora não
+              </button>
+            </div>
+          </section>
+        )}
       </div>
     );
   }
