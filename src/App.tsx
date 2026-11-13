@@ -20,6 +20,8 @@ import { Painel } from './pages/Painel';
 import { Tempo } from './pages/Tempo';
 import { Plano } from './pages/Plano';
 import { ResultadoAdvogando } from './pages/Advogando';
+import { Foco } from './pages/Foco';
+import { Mentor } from './components/Mentor';
 import { Icone } from './components/Icone';
 
 export function App() {
@@ -61,6 +63,7 @@ const PRINCIPAIS: ItemMenu[] = [
   { rota: { tela: 'tempo' }, icone: 'cronometro', rotulo: 'Tempo de estudo' },
   { rota: { tela: 'desempenho' }, icone: 'evolucao', rotulo: 'Evolução dos acertos' },
   { rota: { tela: 'historico' }, icone: 'historico', rotulo: 'Histórico' },
+  { rota: { tela: 'foco' }, icone: 'foco', rotulo: 'Mentor de foco' },
 ];
 const FERRAMENTAS: ItemMenu[] = [
   { rota: { tela: 'comparar' }, icone: 'comparar', rotulo: 'Comparar editais' },
@@ -211,6 +214,8 @@ function Estrutura({ email }: { email?: string }) {
             <Comparar />
           ) : rota.tela === 'advogando' ? (
             <ResultadoAdvogando key={rota.busca} busca={rota.busca} />
+          ) : rota.tela === 'foco' ? (
+            <Foco />
           ) : rota.tela === 'calendario' ? (
             <Calendario />
           ) : (
@@ -224,6 +229,7 @@ function Estrutura({ email }: { email?: string }) {
         )}
       </div>
       {rota.tela !== 'estudar' && <BarraCronometro />}
+      <Mentor />
       {!larga && (
         <nav className="barra-inferior" aria-label="Principal">
           <LinkBarra item={PRINCIPAIS[0]} rotulo="Hoje" rota={rota} contador={pendHoje} />

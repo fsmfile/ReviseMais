@@ -1,6 +1,6 @@
 {
  "versao": 1,
- "geradoEm": "2026-11-13T12:35:50.111Z",
+ "geradoEm": "2026-11-13T15:00:58.247Z",
  "endereco": "https://advogandogame.fsmfile.workers.dev/",
  "modulos": [
   {
@@ -57,6 +57,42 @@
    "disciplinas": [
     "processual penal",
     "processo penal"
+   ],
+   "nao": []
+  },
+  {
+   "id": "trabalho",
+   "nome": "Direito do Trabalho",
+   "disciplinas": [
+    "direito do trabalho"
+   ],
+   "nao": [
+    "processual",
+    "processo"
+   ]
+  },
+  {
+   "id": "processo-trabalho",
+   "nome": "Processo do Trabalho",
+   "disciplinas": [
+    "processual do trabalho",
+    "processo do trabalho"
+   ],
+   "nao": []
+  },
+  {
+   "id": "administrativo",
+   "nome": "Direito Administrativo",
+   "disciplinas": [
+    "administrativo"
+   ],
+   "nao": []
+  },
+  {
+   "id": "tributario",
+   "nome": "Direito Tributário",
+   "disciplinas": [
+    "tributario"
    ],
    "nao": []
   }
@@ -491,6 +527,211 @@
      "nome": "Recursos",
      "palavras": [
       "recurso"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "trib-c1",
+   "titulo": "O auto de infração da padaria",
+   "resumo": "Lançamento e decadência, suspensão, extinção e exclusão do crédito, prescrição, responsabilidade do sócio e do sucessor, denúncia espontânea, anterioridade, legalidade e imunidades.",
+   "modulo": "tributario",
+   "itens": 20,
+   "temas": [
+    {
+     "id": "credito",
+     "nome": "Lançamento, suspensão, extinção e exclusão do crédito",
+     "palavras": [
+      "credito tributario",
+      "lancamento",
+      "suspensao",
+      "extincao",
+      "exclusao"
+     ]
+    },
+    {
+     "id": "prescricao",
+     "nome": "Decadência e prescrição",
+     "palavras": [
+      "prescricao",
+      "decadencia"
+     ]
+    },
+    {
+     "id": "principios",
+     "nome": "Legalidade, anterioridade e irretroatividade",
+     "palavras": [
+      "principio",
+      "limitacoes ao poder de tributar",
+      "legalidade",
+      "anterioridade"
+     ]
+    },
+    {
+     "id": "responsabilidade-tributaria",
+     "nome": "Responsabilidade tributária",
+     "palavras": [
+      "responsabilidade tributaria",
+      "sujeicao passiva",
+      "responsabilidade"
+     ]
+    },
+    {
+     "id": "imunidades",
+     "nome": "Imunidades",
+     "palavras": [
+      "imunidade",
+      "limitacoes ao poder de tributar"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "adm-c1",
+   "titulo": "O fiscal da obra",
+   "resumo": "Improbidade depois da Lei 14.230/2021 (dolo, prescrição, legitimidade, sanções, nepotismo), anulação e revogação, decadência, recurso administrativo, responsabilidade do Estado e licitações.",
+   "modulo": "administrativo",
+   "itens": 20,
+   "temas": [
+    {
+     "id": "improbidade",
+     "nome": "Improbidade administrativa",
+     "palavras": [
+      "improbidade"
+     ]
+    },
+    {
+     "id": "atos",
+     "nome": "Atos administrativos: anulação e revogação",
+     "palavras": [
+      "ato administrativo",
+      "atos administrativos",
+      "anulacao",
+      "revogacao"
+     ]
+    },
+    {
+     "id": "responsabilidade",
+     "nome": "Responsabilidade civil do Estado",
+     "palavras": [
+      "responsabilidade civil do estado",
+      "responsabilidade do estado",
+      "responsabilidade extracontratual"
+     ]
+    },
+    {
+     "id": "licitacoes",
+     "nome": "Licitações",
+     "palavras": [
+      "licitac",
+      "contratos administrativos"
+     ]
+    },
+    {
+     "id": "processo-adm",
+     "nome": "Processo administrativo",
+     "palavras": [
+      "processo administrativo"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "trabalho-c1",
+   "titulo": "O freelancer dispensado",
+   "resumo": "Relação de emprego, jornada e horas extras, intervalo, banco de horas, verbas rescisórias, extinção por acordo, rescisão indireta, justa causa, prescrição, estabilidades e terceirização.",
+   "modulo": "trabalho",
+   "itens": 19,
+   "temas": [
+    {
+     "id": "vinculo",
+     "nome": "Relação de emprego",
+     "palavras": [
+      "relacao de emprego",
+      "vinculo",
+      "empregado",
+      "empregador"
+     ]
+    },
+    {
+     "id": "jornada",
+     "nome": "Jornada e horas extras",
+     "palavras": [
+      "jornada",
+      "duracao do trabalho",
+      "horas extras",
+      "banco de horas"
+     ]
+    },
+    {
+     "id": "rescisao",
+     "nome": "Extinção do contrato e verbas rescisórias",
+     "palavras": [
+      "rescisao",
+      "extincao do contrato",
+      "verbas rescisorias",
+      "justa causa"
+     ]
+    },
+    {
+     "id": "estabilidade",
+     "nome": "Garantias de emprego",
+     "palavras": [
+      "estabilidade",
+      "garantia de emprego",
+      "gestante"
+     ]
+    },
+    {
+     "id": "terceirizacao",
+     "nome": "Terceirização",
+     "palavras": [
+      "terceirizacao",
+      "trabalho temporario"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "processo-trabalho-c1",
+   "titulo": "A notificação da padaria",
+   "resumo": "Notificação, rito sumaríssimo, petição inicial, preposto, revelia e arquivamento, audiência, recursos, depósito recursal, honorários e execução.",
+   "modulo": "processo-trabalho",
+   "itens": 20,
+   "temas": [
+    {
+     "id": "pt-reclamacao",
+     "nome": "Reclamação e rito sumaríssimo",
+     "palavras": [
+      "peticao inicial",
+      "reclamacao trabalhista",
+      "sumarissimo",
+      "procedimento"
+     ]
+    },
+    {
+     "id": "pt-audiencia",
+     "nome": "Audiência, revelia e arquivamento",
+     "palavras": [
+      "audiencia",
+      "revelia",
+      "arquivamento",
+      "conciliacao"
+     ]
+    },
+    {
+     "id": "pt-recursos",
+     "nome": "Recursos e depósito recursal",
+     "palavras": [
+      "recurso",
+      "deposito recursal"
+     ]
+    },
+    {
+     "id": "pt-execucao",
+     "nome": "Execução",
+     "palavras": [
+      "execucao"
      ]
     }
    ]

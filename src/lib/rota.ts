@@ -12,6 +12,7 @@ export type Rota =
   | { tela: 'desempenho' }
   | { tela: 'comparar' }
   | { tela: 'calendario' }
+  | { tela: 'foco' }
   /** Resultado de um caso atendido no Advogando (a busca leva os dados). */
   | { tela: 'advogando'; busca: string };
 
@@ -38,6 +39,7 @@ function ler(): Rota {
     case 'desempenho':
     case 'comparar':
     case 'calendario':
+    case 'foco':
       return { tela };
     default:
       return { tela: 'hoje' };

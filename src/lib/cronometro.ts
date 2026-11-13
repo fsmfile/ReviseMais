@@ -14,6 +14,10 @@ export interface EstadoCronometro {
   rodandoDesde: number | null;
   /** Tempo já acumulado antes do último play (ms). */
   acumuladoMs: number;
+  /** Quando foi pausado (ms), para o Mentor de foco saber há quanto tempo. */
+  pausadoEm?: number | null;
+  /** Pausa para almoço ou janta: o Mentor fica quieto até `ate` (ms). */
+  refeicao?: { tipo: 'almoco' | 'janta'; ate: number } | null;
 }
 
 const CHAVE = 'revisemais:cronometro';
@@ -59,11 +63,34 @@ export const cronometro = {
   },
   pausar() {
     if (!atual?.rodandoDesde) return;
-    gravar({ ...atual, acumuladoMs: atual.acumuladoMs + (Date.now() - atual.rodandoDesde), rodandoDesde: null });
+    const agora = Date.now();
+    gravar({ ...atual, acumuladoMs: atual.acumuladoMs + (agora - atual.rodandoDesde), rodandoDesde: null, pausadoEm: agora, refeicao: null });
+  },
+  /** Pausa para almoço ou janta: o Mentor de foco não cobra até o fim do tempo combinado. */
+  pausarParaRefeicao(tipo: 'almoco' | 'janta', minutos: number) {
+    if (!atual?.rodandoDesde) return;
+    const agora = Date.now();
+    gravar({ ...atual, acumuladoMs: atual.acumuladoMs + (agora - atual.rodandoDesde), rodandoDesde: null, pausadoEm: agora, refeicao: { tipo, ate: agora + minutos * 60000 } });
   },
   retomar() {
     if (!atual || atual.rodandoDesde) return;
-    gravar({ ...atual, rodandoDesde: Date.now() });
+    gravar({ ...atual, rodandoDesde: Date.now(), pausadoEm: null, refeicao: null });
+  },
+  /** Tira do tempo contado (ex.: os minutos fora do app); nunca deixa negativo. */
+  descontar(ms: number) {
+    if (!atual || ms <= 0) return;
+    const agora = Date.now();
+    const total = Math.max(0, atual.acumuladoMs + (atual.rodandoDesde ? agora - atual.rodandoDesde : 0) - ms);
+    gravar({ ...atual, acumuladoMs: total, rodandoDesde: atual.rodandoDesde ? agora : null });
+  },
+  /** Devolve tempo descontado (a pessoa disse para não descontar). */
+  devolver(ms: number) {
+    if (!atual || ms <= 0) return;
+    gravar({ ...atual, acumuladoMs: atual.acumuladoMs + ms });
+  },
+  /** Estado atual, fora do React (para os ouvintes de saída e volta do app). */
+  estado(): EstadoCronometro | null {
+    return atual;
   },
   descartar() {
     gravar(null);

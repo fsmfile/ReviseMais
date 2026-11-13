@@ -6,6 +6,10 @@ import { href, ir } from '../lib/rota';
 import { useDados, useIndices } from '../lib/store';
 import { relogio, TIPOS_ESTUDO } from '../lib/tempo';
 import type { TipoEstudo } from '../lib/types';
+import { recadoDoMentor, montarContexto } from '../components/Mentor';
+import { useCatalogoAdvogando } from '../lib/advogando';
+import { falar } from '../lib/foco/falas';
+import { mudarConfig, refeicaoDoHorario, REFEICOES, useConfigMentor } from '../lib/foco/mentor';
 
 /** Escolha de plano → disciplina → assunto (opcional) e tipo de estudo. */
 export interface Escolha {
@@ -242,6 +246,7 @@ function CronometroAtivo({ estado }: { estado: EstadoCronometro }) {
       <div className={`relogio ${estado.rodandoDesde ? '' : 'pausado'}`} role="timer" aria-live="off">
         {relogio(seg)}
       </div>
+      {!concluindo && <PainelMentor estado={estado} />}
       {!concluindo ? (
         <div className="acoes centralizado">
           {estado.rodandoDesde ? (
@@ -281,6 +286,56 @@ function CronometroAtivo({ estado }: { estado: EstadoCronometro }) {
         />
       )}
     </section>
+  );
+}
+
+/** Convite para o Mentor de foco e pausas para almoço e janta (só no horário). */
+function PainelMentor({ estado }: { estado: EstadoCronometro }) {
+  const config = useConfigMentor();
+  const { dados } = useDados();
+  const cat = useCatalogoAdvogando();
+  if (!config.escolhido)
+    return (
+      <div className="convite-mentor">
+        <p>
+          🎯 <strong>Quer alguém cobrando o seu foco?</strong> O Mentor de foco percebe quando você sai do app com o cronômetro rodando e te chama de volta, do jeito que você
+          escolher.
+        </p>
+        <div className="acoes centralizado">
+          <a className="botao pequeno" href={href({ tela: 'foco' })}>
+            Escolher meu mentor
+          </a>
+          <button className="secundario pequeno" onClick={() => mudarConfig({ escolhido: true })}>
+            Agora não
+          </button>
+        </div>
+      </div>
+    );
+  if (!config.nivel) return null;
+  if (estado.refeicao) {
+    const r = REFEICOES[estado.refeicao.tipo];
+    return (
+      <p className="status-refeicao">
+        {r.icone} Pausa para {r.nome} até {new Date(estado.refeicao.ate).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}. O mentor está quieto.
+      </p>
+    );
+  }
+  const tipo = estado.rodandoDesde ? refeicaoDoHorario() : null;
+  if (!tipo) return null;
+  const r = REFEICOES[tipo];
+  const minutos = tipo === 'almoco' ? config.almocoMin : config.jantaMin;
+  return (
+    <div className="acoes centralizado">
+      <button
+        className="secundario"
+        onClick={() => {
+          cronometro.pausarParaRefeicao(tipo, minutos);
+          recadoDoMentor({ texto: falar(tipo === 'almoco' ? 'almocoInicio' : 'jantaInicio', config.nivel || 1, montarContexto(estado, dados, cat, { lim: minutos })) });
+        }}
+      >
+        {r.icone} Pausa para {r.nome} ({minutos} min)
+      </button>
+    </div>
   );
 }
 

@@ -73,3 +73,25 @@ se completam sem virar um app só. O documento completo é o `docs/ECOSSISTEMA.m
 - Para testar os dois juntos no computador: `VITE_ADVOGANDO_URL=http://localhost:<porta do Advogando>/ npm run dev`.
 - No Windows, com `core.autocrlf=true`, os testes dos editais falham por causa do fim de linha (CRLF) dos `texto.txt`.
   Use `git config core.autocrlf false` e baixe os editais de novo.
+
+## Mentor de foco (cobrança opcional)
+
+A pessoa escolhe se quer ser cobrada e por quem: Ninguém, Parceiro (😄, fala depois de 12 min fora), Exigente (🧐, 6 min)
+ou Linha-dura (😤, 3 min). Pausas curtas (água, café) passam sem comentário. A tela é a rota `#/foco` (menu › Mentor de foco).
+
+- `src/lib/foco/falas.ts`: as falas. **O app não usa IA**: cada fala junta abertura + recado + lembrete (revisões de hoje,
+  cliente do Advogando, tempo de hoje) + fecho, por nível, sem repetir as últimas 60 escolhas. Ao escrever fala nova:
+  trate por "você" (sem gênero), não acuse de algo que o app não sabe (no navegador ele só sabe que a pessoa SAIU do app)
+  e cuide da concordância com a matéria ("Direito Civil" é masculino). O teste `foco.test.ts` pega {variável} sem valor.
+- `src/lib/foco/mentor.ts`: níveis, configuração, saídas registradas e placar. `src/components/Mentor.tsx`: percebe a saída
+  e a volta (evento `visibilitychange`; a saída fica gravada, então funciona mesmo se o celular fechar a página), pergunta
+  "onde você estava?", desconta do cronômetro o que não era estudo (com "Não descontar") e lembra das pausas longas.
+- Pausa para almoço (11h às 15h) e janta (18h às 22h) aparecem na tela do cronômetro só nesses horários; durante elas o
+  mentor fica quieto (`cronometro.pausarParaRefeicao`).
+- Notificação com o app em segundo plano: só funciona no computador (outra aba ou janela). No celular o sistema congela a
+  página; o aviso com o app fechado precisa de push pelo servidor (próximo passo, junto com a conta única com o Advogando).
+- `src/lib/foco/sensor.ts`: **preparado para o app de loja**. Se existir `window.EstudeMaisNativo.usosEntre(inicio, fim)`,
+  o mentor diz o app exato (Instagram, WhatsApp...) e não pergunta. Android: UsageStatsManager (permissão "Acesso ao uso";
+  a Play Store exige declarar que o app é de foco/bem-estar). iPhone: Screen Time API (FamilyControls + DeviceActivity):
+  a Apple não entrega o nome do app ao código, mas permite saber quando a pessoa passou do limite nos apps que ela marcou e
+  bloquear esses apps durante o estudo.

@@ -573,3 +573,43 @@ main { padding-bottom: 6rem; }
 .barra-dupla span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 99px; }
 .barra-dupla .estudado { background: color-mix(in srgb, var(--primaria) 35%, transparent); }
 .barra-dupla .comprovado { background: var(--verde); }
+
+/* ───────── Mentor de foco ───────── */
+.recado-mentor {
+  position: fixed; top: max(0.75rem, env(safe-area-inset-top)); left: 0.75rem; right: 0.75rem; z-index: 60; max-width: 560px; margin: 0 auto;
+  display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.75rem 0.8rem; border-radius: 14px;
+  background: var(--superficie); border: 1px solid var(--primaria); box-shadow: 0 10px 30px rgb(0 0 0 / 20%);
+  animation: recado-entra 0.25s ease-out;
+}
+.recado-mentor p { margin: 0; flex: 1; line-height: 1.4; }
+.recado-icone { font-size: 1.5rem; line-height: 1; }
+.recado-acoes { display: flex; align-items: center; gap: 0.25rem; }
+@keyframes recado-entra { from { transform: translateY(-12px); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .recado-mentor { animation: none; } }
+.retorno-mentor { display: grid; gap: 0.6rem; }
+.fala-mentor { font-size: 1.08rem; line-height: 1.45; margin: 0; }
+.fala-mentor.resposta { padding: 0.6rem 0.75rem; border-radius: 10px; background: var(--superficie-2); }
+.motivos { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.4rem; }
+.motivos .motivo { justify-content: flex-start; text-align: left; font-size: 0.92rem; }
+.retorno-mentor .acoes { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.convite-mentor { margin: 0 0 1rem; padding: 0.75rem; border-radius: 12px; border: 1px dashed var(--primaria); background: color-mix(in srgb, var(--primaria) 6%, var(--superficie)); text-align: left; }
+.convite-mentor p { margin: 0 0 0.5rem; }
+.status-refeicao { margin: 0 0 0.75rem; color: var(--texto-suave); }
+.pagina-foco { display: grid; gap: 1rem; max-width: 720px; margin: 0 auto; }
+.pagina-foco h1 { margin-bottom: 0; }
+.niveis-mentor { display: grid; gap: 0.5rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); }
+.nivel-mentor, .motivos .motivo { white-space: normal; min-width: 0; width: 100%; box-sizing: border-box; }
+.nivel-mentor span { overflow-wrap: anywhere; }
+.nivel-mentor { display: grid; gap: 0.25rem; justify-items: start; text-align: left; padding: 0.75rem; border-radius: 12px; background: var(--superficie); color: var(--texto); border: 1px solid var(--borda); }
+.nivel-mentor.ativo { border: 2px solid var(--primaria); background: color-mix(in srgb, var(--primaria) 8%, var(--superficie)); }
+.amostra-mentor { margin-top: 0.75rem; padding: 0.75rem; border-radius: 10px; background: var(--superficie-2); }
+.amostra-mentor p { margin: 0 0 0.35rem; }
+.campos-refeicao { display: flex; flex-wrap: wrap; gap: 1rem; }
+.campos-refeicao label { display: grid; gap: 0.25rem; }
+.linha-check { display: flex; gap: 0.5rem; align-items: flex-start; }
+.kpis-foco { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.placar-motivos { list-style: none; padding: 0; margin: 0.75rem 0 0; display: grid; gap: 0.45rem; }
+.placar-motivos li { display: grid; grid-template-columns: minmax(0, 11rem) 1fr auto; align-items: center; gap: 0.5rem; font-size: 0.9rem; }
+.placar-motivos .barra { height: 8px; border-radius: 99px; background: var(--superficie-2); overflow: hidden; display: block; }
+.placar-motivos .barra span { display: block; height: 100%; background: var(--primaria); border-radius: 99px; }
+.lista-ausencias { padding-left: 1.1rem; font-size: 0.88rem; color: var(--texto-suave); }

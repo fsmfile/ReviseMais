@@ -24,6 +24,7 @@ const CAMINHOS: Record<string, string> = {
   fechar: 'M6 6l12 12 M18 6L6 18',
   check: 'M5 12l5 5 9-10',
   adiar: 'M5 12h14 M13 6l6 6-6 6',
+  foco: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12z M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z',
   balanca: 'M12 4v16 M7 20h10 M5 7h14 M5 7l-3 7a3 3 0 0 0 6 0z M19 7l-3 7a3 3 0 0 0 6 0z',
   ordenar: 'M7 4v16 M3 8l4-4 4 4 M17 20V4 M13 16l4 4 4-4',
 };
