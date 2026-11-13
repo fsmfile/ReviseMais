@@ -5,6 +5,7 @@
 //   Advogando → EstudeMais:  <estudemais>#/advogando?v=1&caso=…&t=…&m=…&disc=…&ac=…&tot=…&seg=…&d=…&a=…&r=…
 import { useEffect, useState } from 'react';
 import copia from './advogando-catalogo.json';
+import { cronometro } from './cronometro';
 import { hoje, somarDias } from './datas';
 import type { Assunto, Dados, Disciplina } from './types';
 
@@ -115,6 +116,33 @@ export function useCatalogoAdvogando(): CatalogoAdvogando {
     };
   }, []);
   return cat;
+}
+
+const CHAVE_PAUSA = 'revisemais:pausado-pelo-escritorio';
+
+/**
+ * Ao ir para o Advogando com o cronômetro rodando, ele pausa: o tempo do atendimento volta pelo resultado
+ * do caso (sessão "Advogando ·"), e não pode contar duas vezes.
+ */
+export function pausarParaOEscritorio() {
+  const c = cronometro.estado();
+  if (!c?.rodandoDesde) return;
+  cronometro.pausar();
+  try {
+    localStorage.setItem(CHAVE_PAUSA, c.iniciadoEm);
+  } catch {
+    /* sem armazenamento: só não oferece "continuar" na volta */
+  }
+}
+
+/** O cronômetro atual foi pausado pela ida ao escritório (e continua pausado)? */
+export function pausadoPeloEscritorio(): boolean {
+  const c = cronometro.estado();
+  try {
+    return !!c && !c.rodandoDesde && localStorage.getItem(CHAVE_PAUSA) === c.iniciadoEm;
+  } catch {
+    return false;
+  }
 }
 
 export interface Ida {

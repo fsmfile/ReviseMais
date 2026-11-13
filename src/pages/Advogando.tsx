@@ -5,11 +5,14 @@ import {
   lerResultado,
   MARCA,
   MINIMO_COMPROVADO,
+  pausadoPeloEscritorio,
   percentual,
   useCatalogoAdvogando,
   type ResultadoAdvogando as Resultado,
 } from '../lib/advogando';
 import { tabelasFaltando } from '../lib/backend';
+import { cronometro, useCronometro } from '../lib/cronometro';
+import { formatarDuracao } from '../lib/tempo';
 import { formatarData, hoje, rotuloRevisao } from '../lib/datas';
 import { href } from '../lib/rota';
 import { useDados, useIndices } from '../lib/store';
@@ -69,6 +72,10 @@ function Registrar({ r, busca }: { r: Resultado; busca: string }) {
 
   const [escolhido, setEscolhido] = useState<string>(sugestoes[0]?.id ?? '');
   const [feito, setFeito] = useState<string | null>(() => (jaRegistrado(busca) ? 'antes' : null));
+  /** Minutos tirados do cronômetro, que rodou durante o atendimento (para o tempo não contar duas vezes). */
+  const [descontado, setDescontado] = useState(0);
+  const crono = useCronometro();
+  const voltarAoCrono = crono && !crono.rodandoDesde && pausadoPeloEscritorio();
   const alvo = escolhido ? contexto(escolhido) : null;
 
   // O que acontece ao registrar: conclui a revisão (a do link ou a que já venceu) ou começa o ciclo.
@@ -108,6 +115,12 @@ function Registrar({ r, busca }: { r: Resultado; busca: string }) {
       else if (!plano.estudado || !temSessoes)
         await acoes.registrarEstudo({ assunto_id: alvo.assunto.id, data, percentual: pct, questoes: r.total, observacao, substituirPendentes: plano.estudado });
     });
+    // O cronômetro do EstudeMais rodou durante o atendimento? O tempo já entrou pela sessão do Advogando.
+    const c = cronometro.estado();
+    if (temSessoes && r.segundos && c?.rodandoDesde) {
+      cronometro.descontar(r.segundos * 1000);
+      setDescontado(r.segundos);
+    }
     marcarRegistrado(busca);
     setFeito(alvo.assunto.id);
   };
@@ -148,9 +161,20 @@ function Registrar({ r, busca }: { r: Resultado; busca: string }) {
               {prox ? `Próxima: ${rotuloRevisao(prox.tipo).toLowerCase()}, em ${formatarData(prox.data_prevista)}.` : 'Sem revisão pendente.'}
             </p>
           )}
+          {descontado > 0 && crono && (
+            <p className="pequeno">
+              ⏱ O cronômetro de {crono.materia} estava rodando durante o atendimento: tirei {formatarDuracao(descontado)} dele, que já entraram pelo escritório.
+            </p>
+          )}
+          {voltarAoCrono && (
+            <p className="pequeno">⏸ O cronômetro de {crono!.materia} ficou pausado enquanto você estava no escritório, para o tempo não contar duas vezes.</p>
+          )}
           <div className="acoes">
+            {voltarAoCrono && (
+              <button onClick={() => cronometro.retomar()}>▶ Continuar o cronômetro</button>
+            )}
             {ctx && (
-              <a className="botao" href={href({ tela: 'plano', id: ctx.plano.id, assunto: ctx.assunto.id })}>
+              <a className={`botao ${voltarAoCrono ? 'secundario' : ''}`} href={href({ tela: 'plano', id: ctx.plano.id, assunto: ctx.assunto.id })}>
                 Ver no plano
               </a>
             )}

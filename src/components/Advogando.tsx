@@ -7,6 +7,7 @@ import {
   comprovacoes,
   focoDoPlano,
   linkAdvogando,
+  pausarParaOEscritorio,
   MINIMO_COMPROVADO,
   modulosDaDisciplina,
   useCatalogoAdvogando,
@@ -94,7 +95,7 @@ function ListaCasos({ assuntoId, revisaoId, casos, aoFechar }: { assuntoId: stri
       <ul className="lista-casos-advogando">
         {casos.map((caso) => (
           <li key={caso.id}>
-            <a href={link(caso, assuntoId, revisaoId)}>
+            <a href={link(caso, assuntoId, revisaoId)} onClick={pausarParaOEscritorio}>
               <strong>{caso.titulo}</strong>
               <span className="suave pequeno">
                 {caso.resumo} · {caso.itens} itens
@@ -121,7 +122,7 @@ export function BotaoProvar({ revisao }: { revisao: Revisao }) {
   const caso = (candidatos.length ? candidatos : casos)[Math.max(0, ordem) % (candidatos.length || casos.length)];
   return (
     <>
-      <a className="botao provar" href={link(caso, revisao.assunto_id, revisao.id)} title={caso.titulo}>
+      <a className="botao provar" href={link(caso, revisao.assunto_id, revisao.id)} title={caso.titulo} onClick={pausarParaOEscritorio}>
         <Icone nome="balanca" tamanho={18} /> Provar no escritório
       </a>
       {casos.length > 1 && (
@@ -201,7 +202,10 @@ export function FichaCandidato({ planoId }: { planoId: string }) {
       {nenhumComprovado && (
         <p className="pequeno">
           Nada comprovado ainda. Nas revisões de hoje, toque em <strong>⚖ Provar no escritório</strong>, ou abra o{' '}
-          <a href={cat.endereco}>Advogando</a>.
+          <a href={cat.endereco} onClick={pausarParaOEscritorio}>
+            Advogando
+          </a>
+          .
         </p>
       )}
     </section>
