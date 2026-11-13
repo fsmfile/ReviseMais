@@ -2,7 +2,9 @@ import { useMemo, useState } from 'react';
 import { BotaoProvar } from '../components/Advogando';
 import { ConcluirRevisao } from '../components/ConcluirRevisao';
 import { Percentual } from '../components/Campos';
+import { Icone } from '../components/Icone';
 import { ResumoTempo } from '../components/ResumoTempo';
+import { nomeCurto } from '../lib/abreviar';
 import { descreverPrazo, formatarCurto, hoje, rotuloRevisao, somarDias } from '../lib/datas';
 import { href } from '../lib/rota';
 import { useDados, useIndices } from '../lib/store';
@@ -13,6 +15,7 @@ export function Hoje() {
   const { contexto } = useIndices();
   const [aberta, setAberta] = useState<string | null>(null);
   const ref = hoje();
+  const nomes = useMemo(() => dados.planos.map((p) => p.nome), [dados.planos]);
 
   const { atrasadas, deHoje, proximas, feitasSemana, mediaSemana, estudosSemana } = useMemo(() => {
     const pend = dados.revisoes.filter((r) => !r.concluida_em).sort((a, b) => a.data_prevista.localeCompare(b.data_prevista));
@@ -47,23 +50,28 @@ export function Hoje() {
     return (
       <li className={`item-rev ${r.data_prevista < ref ? 'atrasada' : ''}`}>
         <div className="item-rev-topo">
-          <span className="tag" style={{ ['--cor' as string]: c.plano.cor }}>
-            {c.plano.nome}
+          <span className="tag" style={{ ['--cor' as string]: c.plano.cor }} title={c.plano.nome}>
+            {nomeCurto(c.plano.nome, nomes)}
           </span>
           <span className="tipo-rev">{rotuloRevisao(r.tipo)}</span>
           <span className="prazo">{descreverPrazo(r.data_prevista, ref)}</span>
         </div>
         <a className="item-rev-titulo" href={href({ tela: 'plano', id: c.plano.id, assunto: c.assunto.id })}>
-          <span className="suave">{c.disciplina.nome} ›</span> {c.assunto.codigo && <span className="codigo">{c.assunto.codigo}</span>} {c.assunto.nome}
+          <span className="item-rev-disc">{c.disciplina.nome}</span>
+          <span className="item-rev-nome">
+            {c.assunto.codigo && <span className="codigo">{c.assunto.codigo}</span>} {c.assunto.nome}
+          </span>
         </a>
         {aberta === r.id ? (
           <ConcluirRevisao revisao={r} aoTerminar={() => setAberta(null)} />
         ) : (
-          <div className="acoes">
+          <div className="acoes acoes-rev">
+            <button className="revisei" onClick={() => setAberta(r.id)}>
+              <Icone nome="check" tamanho={18} /> Revisei
+            </button>
             <BotaoProvar revisao={r} />
-            <button onClick={() => setAberta(r.id)}>✓ Revisei</button>
-            <button className="secundario" onClick={() => executar(() => acoes.reagendarRevisao(r.id, somarDias(ref, 1)))}>
-              Adiar p/ amanhã
+            <button className="fantasma adiar" title="Passar esta revisão para amanhã" onClick={() => executar(() => acoes.reagendarRevisao(r.id, somarDias(ref, 1)))}>
+              Adiar para amanhã
             </button>
           </div>
         )}
@@ -73,8 +81,8 @@ export function Hoje() {
 
   return (
     <div className="pagina-hoje">
-      <ResumoTempo />
-      <div className="resumo">
+      <h1 className="titulo-pagina">Hoje</h1>
+      <div className="resumo resumo-hoje">
         <div className={`cartao-num ${atrasadas.length ? 'alerta' : ''}`}>
           <strong>{atrasadas.length}</strong>
           <span>atrasadas</span>
@@ -89,17 +97,22 @@ export function Hoje() {
         </div>
         <div className="cartao-num">
           <strong>{estudosSemana + feitasSemana}</strong>
-          <span>estudos + revisões na semana</span>
+          <span>feitos na semana</span>
         </div>
         <div className="cartao-num">
           <Percentual valor={mediaSemana} />
-          <span>média de acertos (7 dias)</span>
+          <span>acertos (7 dias)</span>
         </div>
       </div>
 
+      <div className="hoje-grade">
+      <div className="hoje-principal">
+
       {atrasadas.length > 0 && (
         <section>
-          <h2 className="titulo-secao vermelho">⚠️ Revisões atrasadas</h2>
+          <h2 className="titulo-secao vermelho">
+            <Icone nome="alerta" /> Revisões atrasadas <span className="conta-secao">{atrasadas.length}</span>
+          </h2>
           <ul className="lista-revisoes">
             {atrasadas.map((r) => (
               <Item key={r.id} r={r} />
@@ -109,7 +122,9 @@ export function Hoje() {
       )}
 
       <section>
-        <h2 className="titulo-secao">🔔 Revisões de hoje</h2>
+        <h2 className="titulo-secao">
+          <Icone nome="hoje" /> Revisões de hoje {deHoje.length > 0 && <span className="conta-secao">{deHoje.length}</span>}
+        </h2>
         {deHoje.length ? (
           <ul className="lista-revisoes">
             {deHoje.map((r) => (
@@ -117,12 +132,18 @@ export function Hoje() {
             ))}
           </ul>
         ) : (
-          <p className="suave">Nenhuma revisão para hoje. {atrasadas.length ? 'Aproveite para colocar as atrasadas em dia.' : 'Bom momento para avançar em assuntos novos!'}</p>
+          <p className="vazio-secao">Nenhuma revisão para hoje. {atrasadas.length ? 'Aproveite para colocar as atrasadas em dia.' : 'Bom momento para avançar em assuntos novos!'}</p>
         )}
       </section>
+      </div>
 
-      <section>
-        <h2 className="titulo-secao">📅 Próximos 7 dias</h2>
+      <aside className="hoje-lateral">
+      <ResumoTempo />
+
+      <section className="cartao">
+        <h2 className="titulo-secao">
+          <Icone nome="calendario" /> Próximos 7 dias
+        </h2>
         {proximas.length ? (
           <ul className="agenda">
             {[...new Set(proximas.map((r) => r.data_prevista))].map((dia) => (
@@ -135,12 +156,10 @@ export function Hoje() {
                       const c = contexto(r.assunto_id);
                       return (
                         c && (
-                          <span key={r.id}>
-                            <span className="tag" style={{ ['--cor' as string]: c.plano.cor }}>
-                              {c.plano.nome}
-                            </span>{' '}
-                            {c.assunto.nome}
-                          </span>
+                          <a key={r.id} className="item-agenda" style={{ ['--cor' as string]: c.plano.cor }} href={href({ tela: 'plano', id: c.plano.id, assunto: c.assunto.id })} title={c.plano.nome}>
+                            <span className="bolinha" />
+                            <span>{c.assunto.nome}</span>
+                          </a>
                         )
                       );
                     })}
@@ -151,10 +170,12 @@ export function Hoje() {
         ) : (
           <p className="suave">Nada agendado na próxima semana.</p>
         )}
-        <p className="pequeno">
+        <p className="pequeno suave">
           Quer ser avisado no celular? <a href={href({ tela: 'calendario' })}>Envie as revisões para o seu calendário</a>.
         </p>
       </section>
+      </aside>
+      </div>
     </div>
   );
 }

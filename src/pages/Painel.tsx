@@ -217,7 +217,7 @@ export function Painel() {
           <span className="kpi-rotulo">Revisões</span>
           <strong className="kpi-valor">{p.paraHoje + p.atrasadas}</strong>
           <span className="kpi-sub">
-            {p.paraHoje} para hoje{p.atrasadas ? ` · ⚠️ ${p.atrasadas} atrasadas` : ''}
+            {p.paraHoje} para hoje{p.atrasadas ? ` · ${p.atrasadas} atrasadas` : ''}
           </span>
         </a>
         <div className="kpi">
@@ -350,7 +350,7 @@ export function Painel() {
                 <span className="quad aviso" />⏱ Feitas com atraso <strong>{p.comAtraso}</strong>
               </li>
               <li>
-                <span className="quad critico" />⚠️ Atrasadas pendentes <strong>{p.atrasadas}</strong>
+                <span className="quad critico" />Atrasadas pendentes <strong>{p.atrasadas}</strong>
               </li>
             </ul>
           </>

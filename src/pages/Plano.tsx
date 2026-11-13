@@ -307,7 +307,14 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
                         </span>
                         <span className="acoes-assunto">
                           <button className="pequeno" onClick={() => setEstudando(a.id)}>
-                            {ult ? 'Estudei de novo' : 'Estudei'}
+                            {ult ? (
+                              <>
+                                <span className="so-largo">Estudei de novo</span>
+                                <span className="so-estreito">Estudei</span>
+                              </>
+                            ) : (
+                              'Estudei'
+                            )}
                           </button>
                           <a className="botao-icone" href={href({ tela: 'estudar', assunto: a.id })} aria-label="Cronometrar estudo deste assunto" title="Cronometrar">
                             <Icone nome="cronometro" tamanho={22} />

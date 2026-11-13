@@ -20,6 +20,18 @@ as chaves internas (`revisemais:*` no localStorage, UIDs do calendário) continu
 - `npx tsc -b` — checagem de tipos. `npm run build` — build de produção.
 - `npm run edital -- arquivo.pdf` — mostra como o leitor interpreta um edital (cargos, disciplinas, nº de assuntos).
 
+- `npm run navegar` — abre o app num navegador sem janela (Edge/Chrome instalado), com dados de exemplo em modo local, e fotografa
+  cada tela em celular (390), tablet (820) e PC (1440) em `capturas/`; o `relatorio.txt` acusa rolagem para o lado e erros de
+  console. `-- hoje,plano` limita as telas; `-- --escuro` usa o tema escuro. **Rode antes de entregar mudança de tela.**
+
+## Visual e navegação
+
+- Celular e tablet (até 1023px): marca + planos no topo e **barra inferior** (Hoje, Painel, Estudar, Tempo, Mais).
+  PC (1024px ou mais): **menu fixo na lateral** com tudo à vista. A troca é feita em `Estrutura` (`src/App.tsx`, `useTelaLarga`).
+- `src/repaginacao.css` é carregado depois de `src/styles.css` e prevalece: estilo novo entra nele.
+- Ícones são SVG (`src/components/Icone.tsx`), não emojis, para ficarem iguais em todo aparelho.
+- Hierarquia dos botões: uma ação principal por cartão (cheio), a secundária em contorno claro, o resto como texto (`.fantasma`).
+
 ## Memória de editais — procedimento obrigatório a cada edital novo
 
 O usuário vai enviar editais de formatos diferentes. Cada um deve virar parte permanente da memória do leitor

@@ -1,6 +1,7 @@
 // Pontos de contato com o Advogando (docs/ECOSSISTEMA.md): clientes ao lado do assunto, "provar no escritório"
 // nas revisões, selo de comprovado e a ficha do candidato (estudado × comprovado).
 import { useCallback, useMemo, useState } from 'react';
+import { Icone } from './Icone';
 import {
   casosDoAssunto,
   comprovacoes,
@@ -121,10 +122,10 @@ export function BotaoProvar({ revisao }: { revisao: Revisao }) {
   return (
     <>
       <a className="botao provar" href={link(caso, revisao.assunto_id, revisao.id)} title={caso.titulo}>
-        ⚖ Provar no escritório
+        <Icone nome="balanca" tamanho={18} /> Provar no escritório
       </a>
       {casos.length > 1 && (
-        <button className="secundario pequeno" onClick={() => setAberto(true)}>
+        <button className="fantasma" onClick={() => setAberto(true)}>
           Outro cliente
         </button>
       )}

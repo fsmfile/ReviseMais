@@ -1,0 +1,172 @@
+/* ═════════ Repaginação (nov/2026): navegação, hierarquia e ajuste por aparelho ═════════
+   Carregado depois do styles.css (ver main.tsx) e prevalece sobre ele.
+   Celular e tablet: planos no topo e barra de navegação no rodapé (ao alcance do polegar).
+   PC (1024px ou mais): menu fixo na lateral, com tudo à vista. */
+:root { --raio: 12px; --barra-inferior: 64px; }
+body { -webkit-font-smoothing: antialiased; }
+h1 { font-size: 1.45rem; letter-spacing: -0.01em; }
+.cartao, .kpi, .cartao-num, .item-rev, .disciplina { min-width: 0; }
+button, .botao { min-height: 40px; justify-content: center; }
+button.pequeno, .botao.pequeno { min-height: 34px; }
+button.link, button.icone, .aba, .mapa-cel, .cor, .matriz-cel, .botao-cor, .botao-cor-mini, .nome-disc, .alca, .opcoes-disc, .chip-advogando { min-height: 0; }
+.chip { min-height: 36px; }
+.folha-item, .nome-disc, .sessao-corpo, .cor-sugerida { justify-content: flex-start; }
+button.fantasma, .botao.fantasma { background: none; border-color: transparent; color: var(--texto-suave); font-weight: 600; padding-inline: 0.6rem; }
+button.fantasma:hover, .botao.fantasma:hover { background: var(--superficie-2); color: var(--texto); }
+.botao.provar { background: color-mix(in srgb, var(--primaria) 10%, var(--superficie)); color: var(--primaria); border-color: color-mix(in srgb, var(--primaria) 35%, transparent); }
+.botao.provar:hover { background: color-mix(in srgb, var(--primaria) 18%, var(--superficie)); }
+.so-estreito { display: none; }
+.aviso-local { font-size: 0.8rem; padding: 0.3rem 1rem; }
+.contador { font-weight: 700; line-height: 1.25rem; }
+@media (max-width: 1023px) { input, select, textarea { font-size: 16px; } }
+
+/* Itens de menu (lateral do PC e "Mais" do celular) */
+.link-menu { display: flex; align-items: center; justify-content: flex-start; gap: 0.7rem; width: 100%; min-height: 40px; padding: 0.5rem 0.65rem; border: 0; border-radius: 8px; background: none; color: var(--texto); font-weight: 500; font-size: 0.95rem; text-align: left; text-decoration: none; white-space: normal; }
+.link-menu .icone-svg { color: var(--texto-suave); }
+.link-menu:hover { background: var(--superficie-2); }
+.link-menu.ativa { background: color-mix(in srgb, var(--primaria) 12%, var(--superficie)); color: var(--primaria); font-weight: 700; }
+.link-menu.ativa .icone-svg { color: var(--primaria); }
+.link-menu .contador { margin-left: auto; }
+.menu-lateral .link-menu { border-radius: 0; padding: 0.7rem 1rem; min-height: 48px; font-size: 1rem; }
+.menu-lateral a.ativa { box-shadow: inset 3px 0 0 var(--primaria); }
+.menu-cab { font-size: 1.1rem; }
+
+/* PC: menu fixo na lateral */
+.casca.larga { display: grid; grid-template-columns: 264px minmax(0, 1fr); min-height: 100vh; }
+.lateral { position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; gap: 0.9rem; padding: 1rem 0.75rem 0.75rem; background: var(--superficie); border-right: 1px solid var(--borda); }
+.lateral .marca-app { padding: 0.15rem 0.5rem; font-size: 1.2rem; }
+.lateral .botao-estudar { margin: 0; padding: 0.65rem; font-size: 1rem; }
+.lateral-nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.lateral .menu-titulo { margin: 1rem 0.65rem 0.3rem; }
+.lateral-planos { display: flex; flex-direction: column; gap: 2px; }
+.lateral .aba { border-radius: 8px; border-bottom: 0; padding: 0.5rem 0.65rem; gap: 0.7rem; white-space: normal; font-weight: 500; color: var(--texto); min-height: 40px; cursor: pointer; }
+.lateral .aba .bolinha { width: 10px; height: 10px; margin: 0 4px; }
+.lateral .aba.ativa { background: color-mix(in srgb, var(--cor) 14%, var(--superficie)); font-weight: 700; box-shadow: inset 3px 0 0 var(--cor); }
+.lateral .aba.nova { color: var(--primaria); font-weight: 600; }
+.lateral .aba.nova .icone-svg { margin: 0 1px; }
+.lateral .aba-nome { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.lateral-rodape { border-top: 1px solid var(--grade); padding-top: 0.5rem; }
+.lateral .menu-email { margin: 0.2rem 0.65rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lateral .rodape-versao { padding: 0.4rem 0.65rem 0; text-align: left; margin: 0; font-size: 0.7rem; }
+.casca.larga main { max-width: 1180px; padding: 1.5rem 2rem 5rem; }
+.casca.larga .barra-cronometro { left: calc(264px + 2rem); right: 2rem; }
+.casca.larga .disciplina { scroll-margin-top: 1rem; }
+
+/* Celular e tablet: marca + planos no topo, navegação no rodapé */
+.estreita .topo-linha { max-width: none; flex-wrap: nowrap; align-items: center; gap: 0.25rem; padding: 0 0 0 0.75rem; }
+.estreita .nome-app { display: none; }
+.estreita .abas { flex: 1; min-width: 0; max-width: none; margin: 0; padding: 0.3rem 0.5rem 0 0.25rem; scrollbar-width: none; }
+.estreita .abas::-webkit-scrollbar { display: none; }
+.estreita .aba { min-height: 46px; padding: 0.5rem 0.75rem; }
+.estreita .aba.nova { gap: 0.2rem; }
+.estreita .conteudo { padding-bottom: calc(var(--barra-inferior) + env(safe-area-inset-bottom)); }
+.estreita main { padding-bottom: 2.5rem; }
+.estreita .rodape-versao { padding-bottom: 1rem; }
+@media (min-width: 600px) {
+  .estreita .nome-app { display: inline; }
+  .estreita .topo-linha { gap: 0.75rem; padding-left: 1rem; }
+}
+.barra-inferior { position: fixed; left: 0; right: 0; bottom: 0; z-index: 45; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: var(--superficie); border-top: 1px solid var(--borda); padding: 4px max(4px, calc((100vw - 640px) / 2)) calc(4px + env(safe-area-inset-bottom)); box-shadow: 0 -2px 12px rgb(16 24 40 / 6%); }
+.barra-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 54px; padding: 0; border: 0; border-radius: 10px; background: none; color: var(--texto-suave); font-size: 0.72rem; font-weight: 600; text-decoration: none; white-space: nowrap; -webkit-tap-highlight-color: transparent; }
+.barra-item.ativa { color: var(--primaria); }
+.barra-icone { position: relative; display: grid; place-items: center; width: 52px; height: 28px; border-radius: 99px; }
+.barra-item.ativa .barra-icone { background: color-mix(in srgb, var(--primaria) 14%, transparent); }
+.barra-icone .contador { position: absolute; top: -5px; right: 0; }
+.barra-central { display: grid; place-items: center; width: 50px; height: 50px; margin-top: -24px; border-radius: 50%; background: var(--primaria); color: var(--primaria-texto); border: 3px solid var(--superficie); box-shadow: 0 4px 12px color-mix(in srgb, var(--primaria) 40%, transparent); }
+.barra-central .icone-svg { fill: currentColor; }
+.barra-central.rodando { background: var(--vermelho); color: #fff; box-shadow: 0 4px 12px color-mix(in srgb, var(--vermelho) 40%, transparent); }
+.barra-item.central:has(.icone-svg) .barra-central:not(:has(path[d^='M8 5'])) .icone-svg { fill: none; }
+.botao-estudar .icone-svg { fill: currentColor; }
+.estreita .barra-cronometro { bottom: calc(var(--barra-inferior) + 12px + env(safe-area-inset-bottom)); }
+.estreita .navega-secoes { bottom: calc(var(--barra-inferior) + 5rem + env(safe-area-inset-bottom)); }
+.estreita .toast { bottom: calc(var(--barra-inferior) + 1rem + env(safe-area-inset-bottom)); }
+.menu-fundo { z-index: 70; }
+
+/* Hoje */
+.titulo-pagina { margin: 0 0 0.75rem; }
+.resumo-hoje { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.6rem; margin-bottom: 0.5rem; }
+.hoje-grade { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 1.5rem; }
+.hoje-lateral { margin-top: 1.5rem; }
+@media (min-width: 1200px) {
+  .hoje-grade { grid-template-columns: minmax(0, 1fr) 360px; align-items: start; }
+  .hoje-lateral { position: sticky; top: 1rem; margin-top: 1.25rem; }
+}
+.titulo-secao { display: flex; align-items: center; gap: 0.45rem; }
+.cartao > .titulo-secao { margin-top: 0; }
+.conta-secao { font-size: 0.78rem; font-weight: 700; padding: 0.05rem 0.5rem; border-radius: 99px; background: var(--superficie-2); color: var(--texto-suave); }
+.titulo-secao.vermelho .conta-secao { background: var(--vermelho-fundo); color: var(--vermelho); }
+.item-rev { padding: 0.85rem 1rem; gap: 0.55rem; box-shadow: var(--sombra); }
+.item-rev-titulo { display: grid; gap: 0.1rem; }
+.item-rev-disc { font-size: 0.8rem; font-weight: 600; color: var(--texto-suave); }
+.item-rev-nome { font-size: 1.02rem; line-height: 1.35; }
+.item-rev-titulo:hover { text-decoration: none; }
+.item-rev-titulo:hover .item-rev-nome { text-decoration: underline; }
+.tipo-rev { color: var(--texto-suave); font-weight: 500; }
+.acoes-rev { align-items: center; }
+.acoes-rev .adiar { margin-left: auto; }
+.vazio-secao { margin: 0; padding: 1rem; border: 1px dashed var(--borda); border-radius: var(--raio); color: var(--texto-suave); }
+.agenda li { display: grid; grid-template-columns: 4.3rem minmax(0, 1fr); gap: 0.6rem; padding: 0.55rem 0; }
+.agenda li:last-child { border-bottom: 0; }
+.agenda .dia { min-width: 0; font-size: 0.85rem; }
+.itens-dia { display: grid; gap: 0.35rem; }
+.item-agenda { display: flex; gap: 0.5rem; align-items: baseline; color: var(--texto); text-decoration: none; font-size: 0.93rem; }
+.item-agenda:hover { text-decoration: underline; }
+.item-agenda .bolinha { transform: translateY(-1px); }
+
+/* Listas e gráficos que estouravam a largura no celular */
+.barras-h, .dia-historico ul, .lista-revisoes, .fracos { grid-template-columns: minmax(0, 1fr); }
+.barras-h-rotulo > :last-child { flex: none; }
+.grade-graficos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grafico { min-width: 0; }
+.sessao-corpo, .dia-historico li { min-width: 0; }
+.filtros select, .filtros input { min-width: 0; max-width: 100%; }
+.cartao:has(> .tabela) { overflow-x: auto; }
+.fracos { list-style: none; padding: 0; gap: 0; }
+.fracos li { display: grid; grid-template-columns: 3.4rem minmax(0, 1fr); gap: 0.1rem 0.6rem; padding: 0.6rem 0; border-bottom: 1px solid var(--grade); align-items: baseline; }
+.fracos li:last-child { border-bottom: 0; }
+.fracos li > :first-child { grid-row: span 2; font-size: 1.05rem; font-weight: 800; }
+.fracos li > a { color: var(--texto); font-weight: 600; text-decoration: none; }
+.fracos li > a:hover { text-decoration: underline; }
+.fracos li > .suave { grid-column: 2; }
+
+@media (max-width: 720px) {
+  main { padding: 0.85rem 0.75rem 2.5rem; }
+  .grade-graficos { grid-template-columns: minmax(0, 1fr); }
+  .resumo-hoje { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0.5rem; }
+  .resumo-hoje > * { grid-column: span 2; padding: 0.55rem 0.7rem; }
+  .resumo-hoje > :nth-child(n + 4) { grid-column: span 3; flex-direction: row; align-items: baseline; gap: 0.5rem; }
+  .resumo-hoje > * > strong, .resumo-hoje > * > .pct, .resumo-hoje > * > .suave:first-child { font-size: 1.35rem; }
+  .acoes-rev > button, .acoes-rev > .botao { padding-inline: 0.75rem; }
+  .acoes-rev .fantasma { padding-inline: 0.4rem; font-size: 0.9rem; }
+  /* Plano: nome e botão na 1ª linha; data, ciclo e acertos na 2ª (só para o que já foi estudado) */
+  .linha-assunto { grid-template-columns: auto auto minmax(0, 1fr) auto; grid-template-areas: 'exp marca nome acoes' '. . info info'; align-items: start; gap: 0.15rem 0.45rem; padding: 0.5rem 0.4rem 0.5rem 0.25rem; }
+  .linha-assunto > button.icone.mini { grid-area: exp; }
+  .linha-assunto > .marca { grid-area: marca; margin-top: 0.5rem; }
+  .linha-assunto > .nome-assunto { grid-area: nome; padding-top: 0.4rem; }
+  .linha-assunto > .info-assunto { grid-area: info; justify-content: flex-start; padding-bottom: 0.2rem; }
+  .linha-assunto > .acoes-assunto { grid-area: acoes; gap: 0; }
+  .assunto:not(.estudado) .info-assunto { display: none; }
+  .so-largo { display: none; }
+  .so-estreito { display: inline; }
+  .cab-plano { border-left-width: 4px; padding-left: 0.7rem; }
+  .cab-plano .acoes { width: 100%; }
+  .cab-plano .acoes > * { flex: 1; }
+  .legenda { gap: 0.3rem 0.8rem; }
+  .nova-disc { flex-direction: column; }
+}
+
+/* Cartões de número: três por linha no celular (sem cartão órfão) */
+@media (max-width: 720px) {
+  .resumo:not(.resumo-hoje) { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
+  .resumo:not(.resumo-hoje) > * { padding: 0.6rem 0.65rem; }
+  .resumo:not(.resumo-hoje) > * > strong, .resumo:not(.resumo-hoje) > * > .pct { font-size: 1.3rem; }
+}
+/* PC: formulários e telas de leitura não precisam da largura toda */
+.casca.larga main:has(> .pagina-advogando) { max-width: 760px; }
+.casca.larga main:has(.tipos-estudo), .casca.larga main:has(.abas-origem), .casca.larga main:has(.linha-hora) { max-width: 900px; }
+/* Plano: "Estudei" (assunto novo) é a ação principal; "Estudei de novo" fica discreto */
+.assunto.estudado .acoes-assunto > button.pequeno { background: var(--superficie); color: var(--primaria); border-color: color-mix(in srgb, var(--primaria) 40%, transparent); }
+.assunto.estudado .acoes-assunto > button.pequeno:hover { background: color-mix(in srgb, var(--primaria) 10%, var(--superficie)); }
+/* O ícone da marca é azul-escuro: no tema escuro ganha contorno para não sumir no fundo */
+.marca-app img { border-radius: 8px; }
+@media (prefers-color-scheme: dark) { .marca-app img { box-shadow: 0 0 0 1px var(--texto-suave); } }

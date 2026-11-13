@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc -b",
-    "edital": "vite-node scripts/analisar-edital.ts --"
+    "edital": "vite-node scripts/analisar-edital.ts --",
+    "navegar": "node scripts/navegar.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",

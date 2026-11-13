@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { registerSW } from 'virtual:pwa-register';
 import { App } from './App';
 import './styles.css';
+import './repaginacao.css';
 
 // App instalado (PWA): quando sai uma versão nova, ela é ativada e a página recarrega sozinha.
 // Também procura atualização ao voltar para o app e a cada 30 minutos.
