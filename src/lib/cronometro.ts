@@ -95,17 +95,6 @@ export const cronometro = {
   descartar() {
     gravar(null);
   },
-  /** Tira do tempo contado (ex.: o tempo de um atendimento no Advogando, que já entra pela sessão dele). */
-  descontar(ms: number) {
-    if (!atual || ms <= 0) return;
-    const agora = Date.now();
-    const total = Math.max(0, atual.acumuladoMs + (atual.rodandoDesde ? agora - atual.rodandoDesde : 0) - ms);
-    gravar({ ...atual, acumuladoMs: total, rodandoDesde: atual.rodandoDesde ? agora : null });
-  },
-  /** Estado atual, fora do React. */
-  estado(): EstadoCronometro | null {
-    return atual;
-  },
 };
 
 export function decorridoSeg(e: EstadoCronometro, agora = Date.now()): number {
