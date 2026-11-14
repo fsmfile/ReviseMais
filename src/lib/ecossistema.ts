@@ -61,8 +61,9 @@ const ms = (s: string) => new Date(s).getTime();
 function fonteSupabase(): Fonte | null {
   if (!supabase) return null;
   const sb = supabase;
-  let uid: string | null = null;
-  const usuario = async () => (uid ??= (await sb.auth.getSession()).data.session?.user.id ?? null);
+  // A conta é lida a cada chamada (não guardar): a pessoa pode sair e entrar com outra sem fechar o app.
+  // Guardar o id da primeira conta fazia a conta nova ler a linha da anterior e ter as gravações recusadas (403).
+  const usuario = async () => (await sb.auth.getSession()).data.session?.user.id ?? null;
   const erro = (e: { message: string } | null) => {
     if (e) throw new Error(e.message);
   };
@@ -76,7 +77,7 @@ function fonteSupabase(): Fonte | null {
     },
     async gravar(patch) {
       const id = await usuario();
-      if (!id) return;
+      if (!id) throw new Error('sem conta');
       erro((await sb.from('ecossistema').upsert({ user_id: id, ...patch, atualizado_em: iso(Date.now()) }, { onConflict: 'user_id' })).error);
     },
     async atividade(app, desde, ate) {
@@ -135,7 +136,10 @@ declare global {
 let fonte: Fonte | null = null;
 /** Primeira leitura do ecossistema: as checagens esperam por ela (o app pode abrir já com uma saída para avaliar). */
 let pronto: Promise<unknown> = Promise.resolve();
-let eco: Eco = { disponivel: false, integrado: null, nivel: 0, resumoAdvogando: {} };
+const SEM_ECO: Eco = { disponivel: false, integrado: null, nivel: 0, resumoAdvogando: {} };
+let eco: Eco = SEM_ECO;
+/** Sobe a cada escolha da pessoa e a cada troca de conta: leitura que começou antes é descartada (não desfaz a escolha). */
+let versao = 0;
 const ouvintes = new Set<() => void>();
 const mudar = (e: Partial<Eco>) => {
   eco = { ...eco, ...e };
@@ -157,10 +161,13 @@ export function useEco(): Eco {
 /** Lê a escolha da pessoa e o resumo do Advogando. Falhou (sem conta ou sem tabelas): fica indisponível. */
 export async function atualizarEco(): Promise<Eco> {
   if (!fonte) return eco;
+  const v = versao;
   try {
     const l = await fonte.ler();
+    if (v !== versao) return eco;
     mudar({ disponivel: true, integrado: l?.integrado ?? null, nivel: (l?.nivel ?? 0) as NivelEco, resumoAdvogando: l?.resumo_advogando ?? {} });
   } catch (e) {
+    if (v !== versao) return eco;
     mudar({ disponivel: false });
     // Tabelas ainda não criadas no Supabase: para de tentar até o app ser aberto de novo.
     if (/does not exist|find the table|schema cache/i.test(String((e as Error)?.message ?? ''))) fonte = null;
@@ -168,19 +175,35 @@ export async function atualizarEco(): Promise<Eco> {
   return eco;
 }
 
-/** Liga ou não os dois apps. Ao ligar, o rigor escolhido aqui passa a valer nos dois. */
-export async function responderIntegracao(sim: boolean, nivelAtual: NivelEco) {
-  if (!fonte) return;
-  const nivel = sim ? (eco.nivel || nivelAtual || 2) : eco.nivel;
-  mudar({ integrado: sim, nivel: nivel as NivelEco });
-  await fonte.gravar({ integrado: sim, nivel }).catch(() => {});
+/** Mostra a escolha na hora e grava; se o servidor recusar, desfaz e devolve false (a tela avisa que não salvou). */
+async function gravarEscolha(patch: Partial<Linha>, agora: Partial<Eco>): Promise<boolean> {
+  if (!fonte) return false;
+  const antes: Partial<Eco> = { integrado: eco.integrado, nivel: eco.nivel };
+  versao++;
+  mudar(agora);
+  try {
+    await fonte.gravar(patch);
+    return true;
+  } catch {
+    versao++;
+    mudar(antes);
+    return false;
+  }
 }
 
-export async function mudarNivelEco(n: NivelEco) {
-  if (!fonte) return;
-  mudar({ nivel: n });
-  await fonte.gravar({ nivel: n }).catch(() => {});
+/** Liga ou não os dois apps. Ao ligar, o rigor escolhido aqui passa a valer nos dois. Devolve se salvou. */
+export function responderIntegracao(sim: boolean, nivelAtual: NivelEco): Promise<boolean> {
+  const nivel = (sim ? eco.nivel || nivelAtual || 2 : eco.nivel) as NivelEco;
+  return gravarEscolha({ integrado: sim, nivel }, { integrado: sim, nivel });
 }
+
+/** Muda o rigor dos dois apps. Devolve se salvou. */
+export function mudarNivelEco(n: NivelEco): Promise<boolean> {
+  return gravarEscolha({ nivel: n }, { nivel: n });
+}
+
+/** Texto para a tela quando a escolha não foi salva. */
+export const NAO_SALVOU = 'Não consegui salvar agora. A escolha voltou ao que estava; confira a internet e tente de novo.';
 
 let resumoPendente: ReturnType<typeof setTimeout> | undefined;
 let ultimoResumo = '';
@@ -267,6 +290,22 @@ function aoMudarVisibilidade() {
   }
 }
 
+let conta: string | null | undefined;
+/** Saiu da conta ou entrou com outra sem fechar o app: esquece tudo da anterior e lê o da nova. */
+export function aoTrocarConta(id: string | null) {
+  if (id === conta) return;
+  const primeira = conta === undefined;
+  conta = id;
+  if (primeira) return;
+  versao++;
+  clearTimeout(resumoPendente);
+  ultimoResumo = '';
+  clearInterval(batida);
+  presenca = null;
+  mudar(SEM_ECO);
+  if (id && fonte && document.visibilityState === 'visible') aoMudarVisibilidade();
+}
+
 let iniciado = false;
 /** Começa o modo integrado (chamado quando há conta). */
 export function iniciarEco() {
@@ -275,6 +314,11 @@ export function iniciarEco() {
   if (!fonte) return;
   iniciado = true;
   document.addEventListener('visibilitychange', aoMudarVisibilidade);
+  // Fora do aviso do Supabase (ele pede para não chamar o banco dentro do próprio aviso).
+  if (!window.__ECO_TESTE__) supabase?.auth.onAuthStateChange((_e, s) => {
+    const id = s?.user.id ?? null;
+    setTimeout(() => aoTrocarConta(id), 0);
+  });
   if (document.visibilityState === 'visible') aoMudarVisibilidade();
 }
 

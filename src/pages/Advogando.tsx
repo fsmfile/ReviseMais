@@ -12,7 +12,7 @@ import {
 } from '../lib/advogando';
 import { tabelasFaltando } from '../lib/backend';
 import { cronometro, useCronometro } from '../lib/cronometro';
-import { responderIntegracao, useEco } from '../lib/ecossistema';
+import { NAO_SALVOU, responderIntegracao, useEco } from '../lib/ecossistema';
 import { useConfigMentor } from '../lib/foco/mentor';
 import { formatarDuracao } from '../lib/tempo';
 import { formatarData, hoje, rotuloRevisao } from '../lib/datas';
@@ -79,6 +79,11 @@ function Registrar({ r, busca }: { r: Resultado; busca: string }) {
   const crono = useCronometro();
   const eco = useEco();
   const configMentor = useConfigMentor();
+  const [naoLigou, setNaoLigou] = useState(false);
+  const ligar = async (sim: boolean) => {
+    setNaoLigou(false);
+    if (!(await responderIntegracao(sim, configMentor.nivel))) setNaoLigou(true);
+  };
   const voltarAoCrono = crono && !crono.rodandoDesde && pausadoPeloEscritorio();
   const alvo = escolhido ? contexto(escolhido) : null;
 
@@ -195,11 +200,16 @@ function Registrar({ r, busca }: { r: Resultado; busca: string }) {
               está pendente no outro e entende que estudar no escritório não é distração.
             </p>
             <div className="acoes">
-              <button onClick={() => void responderIntegracao(true, configMentor.nivel)}>Ligar os dois apps</button>
-              <button className="secundario" onClick={() => void responderIntegracao(false, configMentor.nivel)}>
+              <button onClick={() => void ligar(true)}>Ligar os dois apps</button>
+              <button className="secundario" onClick={() => void ligar(false)}>
                 Agora não
               </button>
             </div>
+            {naoLigou && (
+              <p className="erro-texto" role="alert">
+                {NAO_SALVOU}
+              </p>
+            )}
           </section>
         )}
       </div>

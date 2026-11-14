@@ -120,6 +120,11 @@ Detalhes e passo a passo do dono: `docs/ECOSSISTEMA.md` no repositório do Advog
   cobranças registradas. Com os apps ligados, o cobrador é **o Sócio** (mesmo rigor nos dois), a saída passada no
   Advogando é reconhecida e não cobrada, e a saída já cobrada lá não é cobrada de novo.
 - Sem conta, sem as tabelas ou com os apps desligados, nada muda. Sem as tabelas, o app para de consultar até reabrir.
+- **A conta é lida a cada chamada, nunca guardada.** A pessoa pode sair e entrar com outra sem fechar o app
+  (`aoTrocarConta`, ligado ao `onAuthStateChange`). Guardar o id da primeira conta fez a conta nova ler a linha da
+  anterior e ter as gravações recusadas (403), e a escolha "voltava desmarcada" (13/11/2026, num iPhone).
+- Escolha (ligar, rigor) que o servidor recusa **volta ao que estava e a tela avisa** (`NAO_SALVOU`). Leitura que
+  começou antes de uma escolha é descartada (`versao`), para não desfazer a escolha.
 - Teste de navegador sem Supabase: `window.__ECO_TESTE__ = true` (via `addInitScript`) usa `localStorage`
   (`revisemais:eco-teste`) para simular o Advogando.
 - **Tempo em dobro:** ir para o Advogando pelos botões daqui pausa o cronômetro (`pausarParaOEscritorio`); se ele rodou

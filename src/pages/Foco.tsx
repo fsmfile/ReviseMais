@@ -7,7 +7,7 @@ import { mudarConfig, NIVEIS, REFEICOES, resumir, ROTULO_MOTIVO, useAusencias, u
 import { temSensorNativo } from '../lib/foco/sensor';
 import { useDados } from '../lib/store';
 import { montarContexto, nivelEfetivo, nomeDoCobrador } from '../components/Mentor';
-import { mudarNivelEco, responderIntegracao, useEco } from '../lib/ecossistema';
+import { mudarNivelEco, NAO_SALVOU, responderIntegracao, useEco } from '../lib/ecossistema';
 
 const NIVEIS_LISTA: Nivel[] = [1, 2, 3];
 const OPCOES_REFEICAO = [30, 45, 60, 75, 90];
@@ -19,10 +19,17 @@ export function Foco() {
   const integrado = eco.disponivel && eco.integrado === true;
   // O rigor que vale: o do ecossistema (apps ligados) ou o deste app.
   const config = { ...configLocal, nivel: nivelEfetivo(eco, configLocal.nivel) };
+  // Escolha que o servidor recusou: a tela diz, em vez de a escolha "voltar" sem explicação.
+  const [naoSalvou, setNaoSalvou] = useState<'ligar' | 'nivel' | null>(null);
+  const salvar = async (onde: 'ligar' | 'nivel', gravacao: Promise<boolean>) => {
+    setNaoSalvou(null);
+    if (!(await gravacao)) setNaoSalvou(onde);
+  };
   const escolherNivel = (n: 0 | Nivel) => {
     mudarConfig({ nivel: n, escolhido: true });
-    if (integrado) void mudarNivelEco(n);
+    if (integrado) void salvar('nivel', mudarNivelEco(n));
   };
+  const ligar = (sim: boolean) => void salvar('ligar', responderIntegracao(sim, config.nivel));
   const ausencias = useAusencias();
   const { dados } = useDados();
   const cat = useCatalogoAdvogando();
@@ -62,7 +69,7 @@ export function Foco() {
                 Os dois apps usam a mesma conta. Quem cobra é <strong>o Sócio do escritório</strong>, nos dois apps e com o mesmo rigor: ele fala no app que você
                 estiver usando, sabe o que está pendente no outro e não cobra o tempo que você passou estudando lá.
               </p>
-              <button className="link" onClick={() => void responderIntegracao(false, config.nivel)}>
+              <button className="link" onClick={() => ligar(false)}>
                 Desligar os dois apps
               </button>
             </>
@@ -73,14 +80,19 @@ export function Foco() {
                 apps: fala onde você estiver, lembra do que está pendente no outro e entende que estudar no Advogando não é distração.
               </p>
               <div className="acoes">
-                <button onClick={() => void responderIntegracao(true, config.nivel)}>Ligar os dois apps</button>
+                <button onClick={() => ligar(true)}>Ligar os dois apps</button>
                 {eco.integrado === null && (
-                  <button className="secundario" onClick={() => void responderIntegracao(false, config.nivel)}>
+                  <button className="secundario" onClick={() => ligar(false)}>
                     Agora não
                   </button>
                 )}
               </div>
             </>
+          )}
+          {naoSalvou === 'ligar' && (
+            <p className="erro-texto" role="alert">
+              {NAO_SALVOU}
+            </p>
           )}
         </section>
       )}
@@ -117,6 +129,11 @@ export function Foco() {
             </button>
           ))}
         </div>
+        {naoSalvou === 'nivel' && (
+          <p className="erro-texto" role="alert">
+            {NAO_SALVOU}
+          </p>
+        )}
         {exemplo && (
           <div className="amostra-mentor">
             <p className="suave pequeno">Assim {nomeDoCobrador(eco) === 'Sócio' ? 'o Sócio' : 'ele'} fala quando você some:</p>
