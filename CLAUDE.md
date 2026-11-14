@@ -101,8 +101,15 @@ ou Linha-dura (😤, 3 min). Pausas curtas (água, café) passam sem comentário
   "onde você estava?", desconta do cronômetro o que não era estudo (com "Não descontar") e lembra das pausas longas.
 - Pausa para almoço (11h às 15h) e janta (18h às 22h) aparecem na tela do cronômetro só nesses horários; durante elas o
   mentor fica quieto (`cronometro.pausarParaRefeicao`).
-- Notificação com o app em segundo plano: só funciona no computador (outra aba ou janela). No celular o sistema congela a
-  página; o aviso com o app fechado precisa de push pelo servidor (próximo passo, junto com a conta única com o Advogando).
+- **Recado no celular com o app fechado** (`src/lib/foco/avisos.ts`, `public/sw-avisos.js`): usa o **mesmo servidor de
+  avisos do Advogando** (Worker da Cloudflare, a cada minuto). Ao sair com o cronômetro rodando, numa pausa (antes da
+  pausa longa) ou na refeição, o app guarda o recado no cache `estudemais-recados` e grava em `chamados_socio`
+  (`app: 'estudemais'`, `avisar_em` = saída + tolerância, ou fim da pausa/refeição). O Worker manda só o toque, e o
+  service worker mostra o recado. Ao voltar antes, tudo é apagado. O Worker não chama se a pessoa está no Advogando.
+  A inscrição usa a **chave pública VAPID do Advogando** (`CHAVE_PUBLICA`; inscrição com outra chave é refeita).
+  Sem inscrição (navegador sem push), o aviso sai do próprio app, só no computador. iPhone: só com o app na Tela de Início.
+  Sites não escolhem o som; a vibração é a do ecossistema (`[90, 70, 90, 70, 260]`, a mesma do Advogando).
+  Teste de navegador: o modo anônimo recusa a inscrição; use `launchPersistentContext`. A primeira inscrição leva uns 5 s.
 - `src/lib/foco/sensor.ts`: **preparado para o app de loja**. Se existir `window.EstudeMaisNativo.usosEntre(inicio, fim)`,
   o mentor diz o app exato (Instagram, WhatsApp...) e não pergunta. Android: UsageStatsManager (permissão "Acesso ao uso";
   a Play Store exige declarar que o app é de foco/bem-estar). iPhone: Screen Time API (FamilyControls + DeviceActivity):

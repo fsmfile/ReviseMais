@@ -5,6 +5,7 @@ import { hoje, somarDias } from '../lib/datas';
 import { duracaoFalada, falar, memoriaEmMemoria, type Nivel } from '../lib/foco/falas';
 import { mudarConfig, NIVEIS, REFEICOES, resumir, ROTULO_MOTIVO, useAusencias, useConfigMentor } from '../lib/foco/mentor';
 import { temSensorNativo } from '../lib/foco/sensor';
+import { ativarAvisos, iPhoneSemInstalar, suportaAvisos } from '../lib/foco/avisos';
 import { useDados } from '../lib/store';
 import { montarContexto, nivelEfetivo, nomeDoCobrador } from '../components/Mentor';
 import { mudarNivelEco, NAO_SALVOU, responderIntegracao, useEco } from '../lib/ecossistema';
@@ -50,12 +51,17 @@ export function Foco() {
   const doDia = resumir(ausencias, hoje());
   const ultimas = [...ausencias].reverse().slice(0, 8);
 
+  const [erroAviso, setErroAviso] = useState<string | null>(null);
   const pedirPermissao = async () => {
     if (typeof Notification === 'undefined') return;
-    const p = await Notification.requestPermission();
-    setPermissao(p);
-    if (p === 'granted') mudarConfig({ notificar: true });
+    setErroAviso(null);
+    // Com suporte, inscreve o aparelho no servidor de avisos (chega mesmo com o app fechado); senão, só a permissão.
+    const erro = suportaAvisos() ? await ativarAvisos() : (await Notification.requestPermission()) === 'granted' ? null : 'As notificações ficaram bloqueadas.';
+    setPermissao(Notification.permission);
+    if (erro) setErroAviso(erro);
+    else mudarConfig({ notificar: true });
   };
+  const cobrador = nomeDoCobrador(eco) === 'Sócio' ? 'sócio' : 'mentor';
 
   return (
     <div className="pagina-foco">
@@ -179,22 +185,41 @@ export function Foco() {
 
           <section className="cartao">
             <h2>Avisos enquanto você está fora</h2>
-            {permissao === 'indisponivel' ? (
-              <p className="suave pequeno">Este navegador não mostra notificações.</p>
+            {iPhoneSemInstalar() ? (
+              <p className="suave pequeno">
+                No iPhone, o recado chega pela notificação com o EstudeMais na Tela de Início: no Safari, toque em Compartilhar e depois em “Adicionar à Tela de
+                Início”. Abra por lá e volte aqui.
+              </p>
+            ) : permissao === 'indisponivel' ? (
+              <p className="suave pequeno">Este navegador não mostra notificações. O recado aparece quando você volta.</p>
             ) : permissao === 'granted' ? (
-              <label className="linha-check">
-                <input type="checkbox" checked={config.notificar} onChange={(e) => mudarConfig({ notificar: e.target.checked })} />
-                Receber o recado do mentor quando eu estiver em outra aba ou janela
-              </label>
+              <>
+                <label className="linha-check">
+                  <input type="checkbox" checked={config.notificar} onChange={(e) => mudarConfig({ notificar: e.target.checked })} />
+                  Receber o recado do {cobrador} quando eu sair do app com o cronômetro rodando ou numa pausa longa
+                </label>
+                {config.notificar && (
+                  <p className="suave pequeno">
+                    {suportaAvisos()
+                      ? `📱 Neste aparelho, o ${cobrador} chama pela notificação na hora certa, mesmo com o app fechado. Se você voltar antes, ele não chama.`
+                      : 'O recado chega enquanto você está em outra aba ou janela do computador.'}
+                  </p>
+                )}
+              </>
             ) : permissao === 'denied' ? (
               <p className="suave pequeno">As notificações estão bloqueadas neste navegador. Libere nas configurações do site para receber os recados.</p>
             ) : (
               <button className="secundario" onClick={pedirPermissao}>
-                Permitir avisos
+                📱 Receber os recados no celular
               </button>
             )}
+            {erroAviso && (
+              <p className="erro-texto" role="alert">
+                {erroAviso}
+              </p>
+            )}
             <p className="suave pequeno">
-              Funciona no computador. No celular, o sistema congela o app quando você sai dele, então o recado aparece quando você volta.
+              Sites não escolhem o som da notificação: toca o som do seu celular. A vibração é a do EstudeMais e do Advogando (curta, curta, longa).
             </p>
           </section>
         </>

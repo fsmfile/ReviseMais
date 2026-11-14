@@ -43,6 +43,8 @@ export default defineConfig({
         skipWaiting: true,
         clientsClaim: true,
         cleanupOutdatedCaches: true,
+        // Avisos do Mentor no celular (toque do servidor de avisos do Advogando): public/sw-avisos.js.
+        importScripts: ['sw-avisos.js'],
       },
     }),
   ],

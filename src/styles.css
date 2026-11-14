@@ -606,7 +606,8 @@ main { padding-bottom: 6rem; }
 .amostra-mentor p { margin: 0 0 0.35rem; }
 .campos-refeicao { display: flex; flex-wrap: wrap; gap: 1rem; }
 .campos-refeicao label { display: grid; gap: 0.25rem; }
-.linha-check { display: flex; gap: 0.5rem; align-items: flex-start; }
+.linha-check { display: flex; flex-direction: row; gap: 0.6rem; align-items: flex-start; font-size: 0.95rem; color: var(--texto); }
+.linha-check input[type='checkbox'] { width: 1.15rem; height: 1.15rem; flex: none; margin: 0.15rem 0 0; padding: 0; }
 .kpis-foco { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .placar-motivos { list-style: none; padding: 0; margin: 0.75rem 0 0; display: grid; gap: 0.45rem; }
 .placar-motivos li { display: grid; grid-template-columns: minmax(0, 11rem) 1fr auto; align-items: center; gap: 0.5rem; font-size: 0.9rem; }

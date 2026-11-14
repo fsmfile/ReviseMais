@@ -7,6 +7,7 @@ import { hoje } from '../lib/datas';
 import { duracaoFalada, falar, type Contexto, type Nivel, type Situacao } from '../lib/foco/falas';
 import { desconta, gravarEstado, lerConfig, lerEstado, NIVEIS, ROTULO_MOTIVO, useConfigMentor, vezesNoDia, type Ausencia } from '../lib/foco/mentor';
 import { appsUsados, type Motivo } from '../lib/foco/sensor';
+import { agendarChamado, avisoPeloServidor, cancelarChamado, prepararAvisos, type Recado as RecadoDeFora } from '../lib/foco/avisos';
 import {
   iniciarEco,
   jaCobradaNoOutro,
@@ -101,6 +102,8 @@ export function Mentor() {
 
   // Modo integrado: presença e resumo para o Advogando (mesmo com o cobrador desligado).
   useEffect(() => iniciarEco(), []);
+  // Avisos no celular: inscrição e acesso à mão para a hora de sair do app.
+  useEffect(() => void prepararAvisos(), []);
   useEffect(() => {
     const ref = hoje();
     publicarResumo({
@@ -151,6 +154,33 @@ export function Mentor() {
               .catch(() => {});
           }, minutos * 60000),
         );
+    };
+
+    /** O recado que deve chegar enquanto a pessoa está fora, e quando (null: nada a cobrar). */
+    const recadoDeFora = (c: EstadoCronometro): RecadoDeFora | null => {
+      const agora = Date.now();
+      const titulo = `${NIVEIS[n].icone} Recado do ${nomeDoCobrador(lerEco()) === 'Sócio' ? 'sócio' : 'mentor'}`;
+      const url = './#/estudar';
+      if (c.rodandoDesde) {
+        const tol = NIVEIS[n].tolerancia;
+        return { titulo, texto: falar('fora', n, contexto(c, { min: tol })), avisarEm: agora + tol * 60000, url };
+      }
+      // Pausado: só cobra a pausa longa (ou o fim da refeição), nunca a ida ao Advogando, e só uma vez.
+      if (!c.pausadoEm || pausadoPeloEscritorio() || lerEstado().avisouPausa === c.pausadoEm) return null;
+      if (c.refeicao) {
+        const em = c.refeicao.ate + 2 * 60000;
+        return em > agora ? { titulo, texto: falar(c.refeicao.tipo === 'almoco' ? 'almocoFim' : 'jantaFim', n, contexto(c, { min: 2 })), avisarEm: em, url } : null;
+      }
+      const em = c.pausadoEm + NIVEIS[n].pausa * 60000;
+      return em > agora ? { titulo, texto: falar('pausaLonga', n, contexto(c, { min: NIVEIS[n].pausa })), avisarEm: em, url } : null;
+    };
+
+    /** Saiu do app: com o aparelho inscrito, o servidor chama na hora certa (mesmo com o app congelado); senão, o próprio app (computador). */
+    const chamarDeFora = (c: EstadoCronometro) => {
+      if (!lerConfig().notificar) return;
+      const r = recadoDeFora(c);
+      if (r && avisoPeloServidor() && agendarChamado(r)) return;
+      if (c.rodandoDesde) agendarAvisos(c);
     };
 
     const verificarPausa = async () => {
@@ -212,12 +242,11 @@ export function Mentor() {
     const aoMudar = () => {
       if (document.visibilityState === 'hidden') {
         const c = cronometro.estado();
-        if (c?.rodandoDesde) {
-          gravarEstado({ ...lerEstado(), saiuEm: Date.now(), sessao: c.iniciadoEm });
-          agendarAvisos(c);
-        }
+        if (c?.rodandoDesde) gravarEstado({ ...lerEstado(), saiuEm: Date.now(), sessao: c.iniciadoEm });
+        if (c) chamarDeFora(c);
       } else {
         cancelarAvisos();
+        cancelarChamado();
         void aoVoltar();
       }
     };
@@ -230,6 +259,7 @@ export function Mentor() {
       document.removeEventListener('visibilitychange', aoMudar);
       clearInterval(relogio);
       cancelarAvisos();
+      cancelarChamado();
     };
   }, [nivel, contexto]);
 

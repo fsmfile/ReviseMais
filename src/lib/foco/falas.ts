@@ -170,7 +170,8 @@ function partesDa(sit: Situacao, nivel: Nivel, ctx: Contexto): Partes {
     return [ab, VOLTOU[nivel].recado, GANCHO[nivel], VOLTOU[nivel].fecho];
   }
   if (sit === 'pausaLonga') return [PAUSA_LONGA[nivel], GANCHO[nivel], FECHO_PAUSA[nivel]];
-  if (sit === 'fora') return [FORA[nivel]];
+  // Notificação de quem saiu: às vezes lembra o que está pendente (revisões, escritório).
+  if (sit === 'fora') return [FORA[nivel], ['', '', ...GANCHO[nivel].filter((g) => g)]];
   if (sit === 'estudouNoOutro') return [NO_OUTRO[nivel], GANCHO[nivel].filter((g) => !g.includes('{cliente}') && !g.includes('{assunto}')), FECHO_PAUSA[nivel]];
   if (sit === 'almocoInicio' || sit === 'jantaInicio' || sit === 'almocoFim' || sit === 'jantaFim') return [REFEICAO[sit][nivel]];
   return [MOTIVO[sit][nivel], ['', '', ...FECHO_MOTIVO[nivel]]];
@@ -373,14 +374,20 @@ const FORA: Record<Nivel, string[]> = {
     'Saudade de {materia}? A saudade é recíproca.',
     'Tudo bem por aí? O estudo está te esperando.',
     'Psiu! O cronômetro continua contando.',
+    'Passando para lembrar: {materia} ficou aberto aqui. Volta quando der.',
+    'O cronômetro está rodando e eu estou de olho. Com carinho, mas de olho.',
+    'Um intervalinho é bom. Dois já vira férias. Vamos voltar?',
   ],
   2: [
     '{min} fora e o cronômetro contando. Volta para {materia}.',
     'O cronômetro acha que você está estudando. Está?',
     'Seu estudo de {materia} ficou parado. Volta.',
     'Já faz {min}. Hora de voltar.',
+    'Intervalo encerrado. {materia} espera.',
+    'O tempo está correndo no cronômetro, não no estudo. Volta.',
+    'Combinado é combinado: volta para {materia}.',
   ],
-  3: ['{min} fora. Volta agora.', 'Cronômetro rodando e você sumido. Volta.', 'Larga isso e volta para {materia}.', 'Eu estou vendo o relógio. Volta.'],
+  3: ['{min} fora. Volta agora.', 'Cronômetro rodando e você sumido. Volta.', 'Larga isso e volta para {materia}.', 'Eu estou vendo o relógio. Volta.', 'O edital não estuda sozinho. Volta.', 'Cada minuto aí é um minuto que a concorrência está estudando.', 'Chega de rolar a tela. {materia}. Agora.'],
 };
 
 const REFEICAO: Record<'almocoInicio' | 'jantaInicio' | 'almocoFim' | 'jantaFim', Record<Nivel, string[]>> = {
