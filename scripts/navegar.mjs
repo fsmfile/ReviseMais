@@ -385,6 +385,30 @@ try {
       await clicar('.cab-disc');
       await foto('plano-aberto', ap);
     }
+    if (quer('estudar-pausado')) {
+      // Cronômetro pausado há 20 min com o mentor linha-dura (pausa longa = 15 min): o recado aparece;
+      // ao continuar pelo botão GRANDE do cronômetro, o recado de pausa tem de sumir (relato de 17/11/2026).
+      const crono = (minAtras) => JSON.stringify({ plano_id: null, disciplina_id: null, assunto_id: null, materia: 'Direito Constitucional', tipo: 'teoria', iniciadoEm: new Date(Date.now() - 3600000).toISOString(), rodandoDesde: null, acumuladoMs: 2400000, pausadoEm: Date.now() - minAtras * 60000 });
+      await js(`localStorage.setItem('revisemais:mentor', ${JSON.stringify(JSON.stringify({ nivel: 3, escolhido: true, almocoMin: 60, jantaMin: 45, notificar: false }))}); localStorage.setItem('revisemais:cronometro', ${JSON.stringify(crono(5))}); localStorage.removeItem('revisemais:mentor-estado');`);
+      await cmd('Page.reload');
+      await dormir(800);
+      await esperarApp();
+      await ir('#/estudar');
+      nota('pausa: aviso na tela (5 min)', await js(`document.querySelector('.status-pausa')?.textContent ?? '(sem aviso)'`));
+      await foto('estudar-pausado', ap);
+      await js(`localStorage.setItem('revisemais:cronometro', ${JSON.stringify(crono(20))}); localStorage.removeItem('revisemais:mentor-estado');`);
+      await cmd('Page.reload');
+      await dormir(800);
+      await esperarApp();
+      await ir('#/estudar');
+      await dormir(500);
+      nota('pausa longa: recado do mentor', await js(`document.querySelector('.recado-mentor p')?.textContent ?? '(sem recado)'`));
+      await foto('estudar-pausa-longa', ap);
+      await clicar('.cronometro-cartao .acoes button.secundario.grande', '▶ Continuar');
+      await dormir(400);
+      nota('depois de continuar pelo botão grande, recado some', await js(`document.querySelector('.recado-mentor') === null`));
+      await js(`localStorage.removeItem('revisemais:cronometro'); localStorage.removeItem('revisemais:mentor'); localStorage.removeItem('revisemais:mentor-estado');`);
+    }
     if (quer('questoes-fluxo')) {
       // Cadastrar uma questão de ponta a ponta: erros, rascunho no aparelho, recarga e gravação.
       await ir('#/questao-nova');
