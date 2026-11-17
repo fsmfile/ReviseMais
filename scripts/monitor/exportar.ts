@@ -27,6 +27,7 @@ interface Q {
   marcada: string | null;
   gabarito: string;
   comentario: string;
+  pergunta: string;
   criada_em: string;
 }
 interface A {
@@ -44,7 +45,7 @@ interface Outra {
 }
 
 const pendentes = await sql<Q>(
-  `select id, user_id, materia, assunto_id, banca, prova, formato, enunciado, alternativas, marcada, gabarito, comentario, criada_em
+  `select id, user_id, materia, assunto_id, banca, prova, formato, enunciado, alternativas, marcada, gabarito, comentario, pergunta, criada_em
    from public.questoes where status = 'pendente' order by user_id, criada_em`,
 );
 if (!pendentes.length) {

@@ -268,6 +268,19 @@ function Formulario({ id, inicial }: { id?: string; inicial: Rascunho | null }) 
         </label>
       </section>
 
+      <section className="cartao">
+        <h2>Ficou com alguma dúvida? Pergunte ao Monitor</h2>
+        <label>
+          Sua pergunta (opcional)
+          <textarea
+            rows={3}
+            value={r.pergunta}
+            onChange={(e) => mudar({ pergunta: e.target.value })}
+            placeholder="Pode ser sobre outro ponto que apareceu na questão, ex.: 'isso é injúria ou calúnia?'"
+          />
+        </label>
+      </section>
+
       {tentou && erros.length > 0 && (
         <div className="aviso-edital" role="alert">
           <strong>Falta pouco:</strong>

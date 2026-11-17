@@ -60,3 +60,35 @@ describe('validação da saída do Monitor', () => {
     expect(chaveTexto('O prazo é Decadencial!')).toBe(chaveTexto('o prazo e decadencial'));
   });
 });
+
+describe('pergunta da pessoa', () => {
+  const comPergunta: Pendente = { ...pendente, pergunta: 'isso é injúria ou calúnia?' };
+  const resposta = () => ({
+    relacionada: false,
+    por_que: 'A questão cobrava desistência voluntária, não crimes contra a honra.',
+    resposta: 'Calúnia (art. 138) imputa falsamente fato definido como crime; difamação (art. 139), fato ofensivo à reputação; injúria (art. 140), atributo ofensivo à dignidade ou ao decoro.',
+    fontes: [{ referencia: 'CP, arts. 138 a 140' }],
+  });
+  it('sem pergunta, resposta_pergunta é opcional', () => {
+    expect(validarItem(item(), pendente)).toEqual([]);
+  });
+  it('com pergunta, recusa comentário sem resposta_pergunta', () => {
+    expect(validarItem(item(), comPergunta).join(' ')).toMatch(/falta comentario.resposta_pergunta/);
+  });
+  it('aceita a resposta de pergunta fora do assunto com o porquê e a fonte', () => {
+    const i = item() as ReturnType<typeof item> & { comentario: Record<string, unknown> };
+    i.comentario.resposta_pergunta = resposta();
+    expect(validarItem(i, comPergunta)).toEqual([]);
+  });
+  it('fora do assunto exige o porquê; a resposta e a fonte são sempre obrigatórias', () => {
+    const base = item() as ReturnType<typeof item> & { comentario: Record<string, unknown> };
+    base.comentario.resposta_pergunta = { ...resposta(), por_que: '' };
+    expect(validarItem(base, comPergunta).join(' ')).toMatch(/por_que/);
+    base.comentario.resposta_pergunta = { ...resposta(), resposta: '' };
+    expect(validarItem(base, comPergunta).join(' ')).toMatch(/obrigatória/);
+    base.comentario.resposta_pergunta = { ...resposta(), fontes: [] };
+    expect(validarItem(base, comPergunta).join(' ')).toMatch(/sem fonte/);
+    base.comentario.resposta_pergunta = { ...resposta(), relacionada: 'não' };
+    expect(validarItem(base, comPergunta).join(' ')).toMatch(/true ou false/);
+  });
+});

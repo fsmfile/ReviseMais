@@ -297,9 +297,22 @@ function questoesExemplo() {
   const q3 = { ...base, id: 'q3', materia: 'Direito Constitucional', status: 'comentada', criada_em: t(8), comentada_em: t(6), lida_em: t(5), marcada: 'C', gabarito: 'C', formato: 'certo_errado', banca: 'Cebraspe', prova: null,
     enunciado: 'O habeas corpus é cabível contra punição disciplinar militar.', alternativas: [{ letra: 'C', texto: 'Certo' }, { letra: 'E', texto: 'Errado' }], comentario: 'Só quanto à legalidade, não ao mérito.',
     comentario_monitor: { versao: 1, resposta_oficial: { letra: 'E', confere: false, observacao: 'Pela CF, art. 142, § 2º, não cabe habeas corpus em relação a punições disciplinares militares, mas o STF admite quanto à legalidade.' }, alternativas: [], sobre_o_que_voce_escreveu: { acertou: [], ajustar: ['O gabarito informado parece divergir do texto constitucional.'], faltou: [] }, complemento: [], parecidas: [], fontes: [{ referencia: 'CF, art. 142, § 2º' }], duvida: 'Se a banca considerou a leitura jurisprudencial, o gabarito pode ser outro.' } };
+  const q4 = { ...base, id: 'q4', materia: 'Direito Penal', status: 'comentada', criada_em: t(2), atualizada_em: t(2), comentada_em: t(0), marcada: 'B', gabarito: 'B', prova: null, banca: 'FGV',
+    enunciado: 'Ao perceber que a vítima ainda respirava, o agente socorre-a por conta própria e impede a morte. Qual é a consequência para o agente, que já havia ferido a vítima com intenção de matá-la?',
+    alternativas: alts('Responde por tentativa de homicídio.', 'Responde só pelos atos já praticados (lesão corporal), por arrependimento eficaz.', 'Fica isento de qualquer pena.', 'Responde por homicídio consumado.'),
+    comentario: 'Acertei porque lembrei do arrependimento eficaz do art. 15.',
+    pergunta: 'Nos comentários do site todo mundo ficou em dúvida se o caso era injúria ou calúnia. Qual é a diferença?',
+    comentario_monitor: { versao: 1, resposta_oficial: { letra: 'B', confere: true },
+      alternativas: [{ letra: 'A', correta: false, explicacao: 'O arrependimento eficaz afasta a tentativa: CP, art. 15.' }, { letra: 'B', correta: true, explicacao: 'Art. 15 do CP: responde só pelos atos já praticados.' }, { letra: 'C', correta: false, explicacao: 'Não fica isento: responde pelos atos já praticados.' }, { letra: 'D', correta: false, explicacao: 'Não houve consumação, o resultado foi impedido.' }],
+      sobre_o_que_voce_escreveu: { acertou: ['Art. 15 do CP, arrependimento eficaz.'], ajustar: [], faltou: ['A diferença para a desistência voluntária: aqui o agente já esgotou os atos de execução.'] },
+      complemento: [], parecidas: [], fontes: [{ referencia: 'CP, art. 15', url: 'https://www.planalto.gov.br/ccivil_03/decreto-lei/del2848compilado.htm' }],
+      resposta_pergunta: { relacionada: false,
+        por_que: 'Esta questão não trata de crimes contra a honra: ela cobrava o arrependimento eficaz (art. 15 do CP), e nenhuma alternativa fala de ofensa a alguém. A dúvida deve ter vindo de outra questão ou de um comentário de outro assunto.',
+        resposta: 'A diferença está no que é dito sobre a vítima. Calúnia (art. 138): imputar falsamente a alguém um fato definido como crime. Pista: "ele roubou", "ela é traficante". Difamação (art. 139): imputar fato ofensivo à reputação, que não é crime. Pista: "ele trai a esposa", "ela não paga as contas". Injúria (art. 140): atribuir qualidade negativa, ofendendo a dignidade ou o decoro, sem fato determinado. Pista: "idiota", "incompetente". Foi atribuído um fato? É calúnia ou difamação; um xingamento ou qualidade? Injúria.',
+        fontes: [{ referencia: 'CP, arts. 138, 139 e 140', url: 'https://www.planalto.gov.br/ccivil_03/decreto-lei/del2848compilado.htm' }] } } };
   const a = (id, materia, texto, fonte, origem, questoes) => ({ id, materia, assunto_id: null, texto, fonte, origem, questoes, criado_em: t(1) });
   return {
-    questoes: [q2, q1, q3],
+    questoes: [q2, q4, q1, q3],
     aprendizados: [
       a('a1', 'Direito Constitucional', 'O prazo do mandado de segurança é decadencial: 120 dias da ciência do ato, sem suspensão nem interrupção.', 'Lei 12.016/09, art. 23', 'monitor', ['q1']),
       a('a2', 'Direito Constitucional', 'Súmula 632 do STF: é constitucional o prazo de decadência do mandado de segurança.', 'Súmula 632 do STF', 'monitor', ['q1']),
@@ -325,6 +338,7 @@ const TELAS = [
   ['questao-pendente', '#/questao/q2'],
   ['questao-monitor', '#/questao/q1'],
   ['questao-divergente', '#/questao/q3'],
+  ['questao-pergunta', '#/questao/q4'],
 ];
 
 /** Digita num campo controlado do React (dispara o evento que ele escuta). */
@@ -397,7 +411,7 @@ try {
       await dormir(800);
       await esperarApp();
       await ir('#/questoes');
-      nota('fluxo: questões na lista (esperado 4)', await js(`document.querySelectorAll('.qst-lista li').length`));
+      nota('fluxo: questões na lista (esperado 5)', await js(`document.querySelectorAll('.qst-lista li').length`));
       nota('fluxo: novas antes de abrir q1 (esperado 1)', await js(`document.querySelectorAll('.qst-item.nova').length`));
       await ir('#/questao/q1');
       await dormir(400);

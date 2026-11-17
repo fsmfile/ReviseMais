@@ -21,6 +21,7 @@ const base = () => ({
   marcada: 'B',
   gabarito: 'C',
   comentario: 'Estudei o prazo de 120 dias.',
+  pergunta: '',
 });
 
 describe('formulário de questão', () => {
@@ -59,6 +60,14 @@ describe('formulário de questão', () => {
     expect(acertou({ marcada: null, gabarito: 'C' })).toBeNull();
     expect(acertou({ marcada: 'C', gabarito: 'C' })).toBe(true);
     expect(acertou({ marcada: 'B', gabarito: 'C' })).toBe(false);
+  });
+  it('a pergunta para o Monitor é opcional, é aparada e vai para a linha', () => {
+    expect(validarRascunho({ ...base(), pergunta: '' })).toEqual([]);
+    expect(montarQuestao({ ...base(), pergunta: '  isso é injúria ou calúnia?  ' })!.pergunta).toBe('isso é injúria ou calúnia?');
+    expect(montarQuestao(base())!.pergunta).toBe('');
+    const q = { ...montarQuestao({ ...base(), pergunta: 'dúvida' })!, id: 'x', status: 'pendente', comentario_monitor: null, comentada_em: null, lida_em: null, criada_em: '', atualizada_em: '' } as Questao;
+    expect(rascunhoDe(q).pergunta).toBe('dúvida');
+    expect(rascunhoDe({ ...q, pergunta: undefined }).pergunta).toBe(''); // questão antiga do modo local
   });
   it('editar devolve o mesmo rascunho', () => {
     const q = { ...montarQuestao(base())!, id: 'x', status: 'pendente', comentario_monitor: null, comentada_em: null, lida_em: null, criada_em: '', atualizada_em: '' } as Questao;
@@ -112,5 +121,34 @@ describe('caderno', () => {
     const g = agruparPorMateria([a('1', 'Penal', '2026-01-01'), a('2', 'Civil', '2026-01-02'), a('3', 'Penal', '2026-02-01'), a('4', '', '2026-01-01')]);
     expect(g.map(([m]) => m)).toEqual(['Civil', 'Penal', 'Sem matéria']);
     expect(g[1][1].map((x) => x.id)).toEqual(['3', '1']);
+  });
+});
+
+describe('resposta à pergunta no comentário do Monitor', () => {
+  const comentario = (rp: unknown) => ({
+    versao: 1,
+    resposta_oficial: { letra: 'C', confere: true },
+    fontes: [{ referencia: 'CP, art. 15' }],
+    resposta_pergunta: rp,
+  });
+  it('lê a resposta de uma pergunta fora do assunto, com o porquê e as fontes', () => {
+    const c = lerComentarioMonitor(
+      comentario({ relacionada: false, por_que: 'A questão cobrava desistência voluntária.', resposta: 'Injúria é ofensa ao decoro (art. 140).', fontes: [{ referencia: 'CP, art. 140', url: 'https://www.planalto.gov.br' }, { referencia: '' }] }),
+    )!;
+    expect(c.resposta_pergunta).toEqual({
+      relacionada: false,
+      por_que: 'A questão cobrava desistência voluntária.',
+      resposta: 'Injúria é ofensa ao decoro (art. 140).',
+      fontes: [{ referencia: 'CP, art. 140', url: 'https://www.planalto.gov.br' }],
+    });
+  });
+  it('sem texto de resposta, ou fora do assunto sem o porquê, a resposta é descartada', () => {
+    expect(lerComentarioMonitor(comentario({ relacionada: true, resposta: '  ' }))!.resposta_pergunta).toBeUndefined();
+    expect(lerComentarioMonitor(comentario({ relacionada: false, resposta: 'algo' }))!.resposta_pergunta).toBeUndefined();
+    expect(lerComentarioMonitor(comentario('texto'))!.resposta_pergunta).toBeUndefined();
+    expect(lerComentarioMonitor(comentario(undefined))!.resposta_pergunta).toBeUndefined();
+  });
+  it('relacionada ausente não vira "fora do assunto"', () => {
+    expect(lerComentarioMonitor(comentario({ resposta: 'ok' }))!.resposta_pergunta?.relacionada).toBe(true);
   });
 });

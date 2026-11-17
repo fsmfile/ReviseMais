@@ -39,6 +39,16 @@ export interface ComentarioMonitor {
   parecidas: { questao_id: string; motivo: string }[];
   fontes: Fonte[];
   duvida?: string;
+  /** Resposta à dúvida que a pessoa escreveu em `questoes.pergunta` (presente só quando ela perguntou). */
+  resposta_pergunta?: RespostaPergunta;
+}
+
+export interface RespostaPergunta {
+  /** A pergunta tem a ver com o que a questão cobrava? Se não, `por_que` explica. */
+  relacionada: boolean;
+  resposta: string;
+  por_que?: string;
+  fontes?: Fonte[];
 }
 
 export interface Questao {
@@ -55,6 +65,8 @@ export interface Questao {
   marcada: string | null;
   gabarito: string;
   comentario: string;
+  /** Dúvida da pessoa para o Monitor (vazia = não perguntou). Questões antigas do modo local podem não ter. */
+  pergunta?: string;
   status: StatusQuestao;
   comentario_monitor: unknown | null;
   comentada_em: string | null;
@@ -95,6 +107,7 @@ export interface Rascunho {
   marcada: string;
   gabarito: string;
   comentario: string;
+  pergunta: string;
 }
 
 export const rascunhoVazio = (): Rascunho => ({
@@ -110,6 +123,7 @@ export const rascunhoVazio = (): Rascunho => ({
   marcada: '',
   gabarito: '',
   comentario: '',
+  pergunta: '',
 });
 
 export const rascunhoDe = (q: Questao): Rascunho => ({
@@ -125,6 +139,7 @@ export const rascunhoDe = (q: Questao): Rascunho => ({
   marcada: q.marcada ?? '',
   gabarito: q.gabarito,
   comentario: q.comentario,
+  pergunta: q.pergunta ?? '',
 });
 
 /** Alternativas que valem: no múltipla, as preenchidas (a letra segue a posição); no certo/errado, as duas fixas. */
@@ -172,6 +187,7 @@ export function montarQuestao(r: Rascunho): DadosQuestao | null {
     marcada: vazioNulo(r.marcada),
     gabarito: r.gabarito,
     comentario: r.comentario.trim(),
+    pergunta: r.pergunta.trim(),
   };
 }
 
@@ -184,6 +200,25 @@ export function estadoDe(q: Pick<Questao, 'status' | 'lida_em'>): EstadoQuestao 
   return q.lida_em ? 'lida' : 'nova';
 }
 export const ROTULO_ESTADO: Record<EstadoQuestao, string> = { aguardando: `Aguardando ${NOME_MONITOR}`, nova: 'Comentada · nova', lida: 'Comentada' };
+
+/** Lê a resposta à pergunta com a mesma desconfiança do resto: sem texto de resposta, ou sem o porquê quando fora do assunto, não vale. */
+function lerRespostaPergunta(bruto: unknown): RespostaPergunta | undefined {
+  if (!bruto || typeof bruto !== 'object') return undefined;
+  const o = bruto as Record<string, unknown>;
+  const resposta = texto(o.resposta);
+  if (!resposta) return undefined;
+  const relacionada = o.relacionada !== false; // na dúvida, não afirma que é fora do assunto sem o porquê
+  const por_que = texto(o.por_que);
+  if (o.relacionada === false && !por_que) return undefined;
+  const fontes = (Array.isArray(o.fontes) ? o.fontes : [])
+    .map((f) => {
+      const x = (f ?? {}) as Record<string, unknown>;
+      const url = texto(x.url);
+      return { referencia: texto(x.referencia), ...(url ? { url } : {}) };
+    })
+    .filter((f) => f.referencia);
+  return { relacionada, resposta, ...(por_que ? { por_que } : {}), ...(fontes.length ? { fontes } : {}) };
+}
 
 const texto = (v: unknown): string => (typeof v === 'string' ? v.trim() : '');
 const lista = (v: unknown): string[] => (Array.isArray(v) ? v.map(texto).filter(Boolean) : []);
@@ -204,6 +239,7 @@ export function lerComentarioMonitor(bruto: unknown): ComentarioMonitor | null {
   const eu = (b.sobre_o_que_voce_escreveu ?? {}) as Record<string, unknown>;
   const obs = texto(ro.observacao);
   const duvida = texto(b.duvida);
+  const resposta_pergunta = lerRespostaPergunta(b.resposta_pergunta);
   return {
     versao: 1,
     resposta_oficial: { letra: texto(ro.letra), confere: ro.confere === true ? true : ro.confere === false ? false : 'duvida', ...(obs ? { observacao: obs } : {}) },
@@ -223,6 +259,7 @@ export function lerComentarioMonitor(bruto: unknown): ComentarioMonitor | null {
       .filter((p) => p.questao_id),
     fontes,
     ...(duvida ? { duvida } : {}),
+    ...(resposta_pergunta ? { resposta_pergunta } : {}),
   };
 }
 

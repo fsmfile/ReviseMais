@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { href, ir } from '../lib/rota';
-import { AVISO_IA, DO_MONITOR, acertou, estadoDe, lerComentarioMonitor, NOME_MONITOR, NOME_MONITOR_CAP, type ComentarioMonitor, type Questao as TQuestao } from '../lib/questoes';
+import { AVISO_IA, DO_MONITOR, acertou, estadoDe, lerComentarioMonitor, NOME_MONITOR, NOME_MONITOR_CAP, type ComentarioMonitor, type Questao as TQuestao, type RespostaPergunta } from '../lib/questoes';
 import { excluirQuestao, marcarLida, useQuestoes } from '../lib/questoesStore';
 import { dataCurta, ResultadoMarcado, SeloEstado } from './Questoes';
 
@@ -104,6 +104,18 @@ export function Questao({ id }: { id: string }) {
         )}
         {erro && <p className="erro-texto">{erro}</p>}
       </section>
+
+      {q.pergunta && (
+        <section className="cartao qst-pergunta">
+          <h2>Sua pergunta</h2>
+          <p className="qst-texto">{q.pergunta}</p>
+          {q.status === 'pendente' && <p className="suave pequeno">{NOME_MONITOR_CAP} responde junto com o comentário da questão.</p>}
+          {comentario?.resposta_pergunta && <RespostaDaPergunta r={comentario.resposta_pergunta} />}
+          {q.status === 'comentada' && comentario && !comentario.resposta_pergunta && (
+            <p className="suave pequeno">{NOME_MONITOR_CAP} não respondeu a esta pergunta. Ela será retomada na próxima rodada.</p>
+          )}
+        </section>
+      )}
 
       {q.status === 'pendente' ? (
         <section className="cartao qst-aguardando">
@@ -251,6 +263,37 @@ function ComentarioDoMonitor({ c, q }: { c: ComentarioMonitor; q: TQuestao }) {
         ))}
       </ul>
     </section>
+  );
+}
+
+function RespostaDaPergunta({ r }: { r: RespostaPergunta }) {
+  return (
+    <div className="qst-resposta">
+      <h3>Resposta {DO_MONITOR}</h3>
+      {!r.relacionada && (
+        <p className="qst-fora">
+          <strong>Este ponto é de outro assunto e não aparece nesta questão.</strong> {r.por_que}
+        </p>
+      )}
+      {r.relacionada && r.por_que && <p className="suave">{r.por_que}</p>}
+      <p className="qst-texto">{r.resposta}</p>
+      {r.fontes && r.fontes.length > 0 && (
+        <ul className="qst-itens qst-fontes">
+          {r.fontes.map((f, i) => (
+            <li key={i}>
+              {seguro(f.url) ? (
+                <a href={seguro(f.url)} target="_blank" rel="noreferrer noopener">
+                  {f.referencia}
+                </a>
+              ) : (
+                f.referencia
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="qst-ia pequeno">{AVISO_IA}</p>
+    </div>
   );
 }
 

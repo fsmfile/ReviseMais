@@ -229,3 +229,6 @@ button.fantasma:hover, .botao.fantasma:hover { background: var(--superficie-2); 
 .qst-form-acoes button.pequeno, .pagina-form .acoes .pequeno { min-height: 44px; }
 .qst-itens a, .qst-abas a, .qst-aprend-pe a { display: inline-block; padding: 0.45rem 0; }
 .qst-aprend-pe button.link { min-height: 36px; }
+.qst-pergunta { border-left: 4px solid var(--primaria); }
+.qst-resposta h3 { font-size: 0.95rem; margin: 0.8rem 0 0.4rem; }
+.qst-fora { background: var(--amarelo-fundo); border: 1px solid var(--amarelo); border-radius: 8px; padding: 0.5rem 0.8rem; margin: 0 0 0.6rem; }

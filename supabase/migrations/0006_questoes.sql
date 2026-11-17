@@ -84,3 +84,6 @@ as $$
 $$;
 revoke all on function public.registrar_inscricao(text, text, text, text) from public, anon;
 grant execute on function public.registrar_inscricao(text, text, text, text) to authenticated;
+
+-- A dúvida que a pessoa quer tirar com o Monitor (pode ser sobre outro ponto que apareceu na questão).
+alter table public.questoes add column if not exists pergunta text not null default '';
