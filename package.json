@@ -10,7 +10,9 @@
     "test": "vitest run",
     "typecheck": "tsc -b",
     "edital": "vite-node scripts/analisar-edital.ts --",
-    "navegar": "node scripts/navegar.mjs"
+    "navegar": "node scripts/navegar.mjs",
+    "monitor:exportar": "node scripts/monitor/rodar.mjs exportar",
+    "monitor:aplicar": "node scripts/monitor/rodar.mjs aplicar"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",
@@ -23,10 +25,12 @@
     "@types/node": "^22.20.5",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
+    "@types/web-push": "^3.6.4",
     "@vitejs/plugin-react": "^4.3.4",
     "typescript": "^5.7.3",
     "vite": "^6.0.7",
     "vite-plugin-pwa": "^0.21.1",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "web-push": "^4.0.0"
   }
 }

@@ -136,3 +136,12 @@ Detalhes e passo a passo do dono: `docs/ECOSSISTEMA.md` no repositório do Advog
   (`revisemais:eco-teste`) para simular o Advogando.
 - **Tempo em dobro:** ir para o Advogando pelos botões daqui pausa o cronômetro (`pausarParaOEscritorio`); se ele rodou
   durante o atendimento, o registro do resultado desconta o tempo que já entrou pela sessão do escritório.
+
+## Minhas questões e o Monitor
+
+Cadastro de questões de simulado com o que a pessoa estudou; o **Monitor** (agentes de IA, rodados pelo dono no PC, em lote) comenta
+e alimenta o "Meu caderno". **O app não chama IA.** Tudo em `docs/MONITOR.md`: tabelas (`0006_questoes.sql`), telas
+(`src/pages/Questoes.tsx`, `Questao.tsx`, `QuestaoForm.tsx`), lógica (`src/lib/questoes.ts`, `questoesStore.ts`), scripts do dono
+(`scripts/monitor/`, `npm run monitor:exportar` e `monitor:aplicar`), agente e comando `/monitor` (`.claude/`). O nome do personagem
+fica na constante `PERSONAGEM` de `src/lib/questoes.ts`. A pasta `monitor/` (dados pessoais) nunca vai para o git.
+`npm run navegar -- --sessao=<arquivo> --hash=#/questoes` navega logado de verdade com uma sessão de conta de teste.
