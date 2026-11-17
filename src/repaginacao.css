@@ -170,3 +170,62 @@ button.fantasma:hover, .botao.fantasma:hover { background: var(--superficie-2); 
 /* O ícone da marca é azul-escuro: no tema escuro ganha contorno para não sumir no fundo */
 .marca-app img { border-radius: 8px; }
 @media (prefers-color-scheme: dark) { .marca-app img { box-shadow: 0 0 0 1px var(--texto-suave); } }
+
+/* Minhas questões e o Monitor (docs/MONITOR.md) */
+.qst-abas { display: flex; gap: 0.25rem; border-bottom: 1px solid var(--borda); margin-bottom: 1rem; }
+.qst-abas a { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.6rem 0.9rem; min-height: 44px; text-decoration: none; color: var(--texto-suave); font-weight: 600; border-bottom: 3px solid transparent; margin-bottom: -1px; }
+.qst-abas a.ativa { color: var(--primaria); border-bottom-color: var(--primaria); }
+.qst-qtd { background: var(--superficie-2); color: var(--texto-suave); border-radius: 999px; font-size: 0.72rem; padding: 0 0.45rem; font-weight: 700; }
+.qst-filtros { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.4rem 0 0.8rem; }
+.qst-lista, .qst-aprendizados { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
+.qst-lista .cartao, .qst-aprendizados .cartao { margin-bottom: 0; }
+.qst-item { display: grid; gap: 0.35rem; text-decoration: none; color: var(--texto); }
+.qst-item.nova { border-color: var(--primaria); box-shadow: 0 0 0 1px var(--primaria); }
+.qst-item-topo { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.qst-item-pe { display: flex; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; }
+.qst-trecho { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: var(--texto-suave); }
+.qst-selo { font-size: 0.75rem; font-weight: 700; border-radius: 99px; padding: 0.1rem 0.55rem; white-space: nowrap; }
+.qst-selo.aguardando { background: var(--amarelo-fundo); color: var(--amarelo); }
+.qst-selo.nova { background: var(--primaria); color: var(--primaria-texto); }
+.qst-selo.lida { background: var(--verde-fundo); color: var(--verde); }
+.qst-acertou { color: var(--verde); font-weight: 600; }
+.qst-errou { color: var(--vermelho); font-weight: 600; }
+.qst-vazio p { max-width: 60ch; }
+.qst-enunciado, .qst-texto { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0 0 0.6rem; }
+.qst-alternativas, .qst-explica { list-style: none; margin: 0 0 0.6rem; padding: 0; display: grid; gap: 0.4rem; }
+.qst-alternativas li, .qst-explica li { display: flex; gap: 0.6rem; align-items: baseline; padding: 0.5rem 0.65rem; border: 1px solid var(--borda); border-radius: 8px; overflow-wrap: anywhere; }
+.qst-alternativas li.certa, .qst-explica li.certa { border-color: var(--verde); background: var(--verde-fundo); }
+.qst-alternativas li.errada { border-color: var(--vermelho); background: var(--vermelho-fundo); }
+.qst-letra { font-weight: 800; flex: none; min-width: 1.2rem; }
+.qst-alt-texto { flex: 1; min-width: 0; }
+.qst-alt-marca { font-size: 0.82rem; text-align: right; }
+.qst-duas { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.qst-escolha { border: 0; padding: 0; margin: 0 0 0.6rem; min-width: 0; }
+.qst-escolha legend { font-size: 0.85rem; color: var(--texto-suave); padding: 0; }
+.qst-aguardando { border-left: 4px solid var(--amarelo); }
+.qst-monitor { border-left: 4px solid var(--primaria); }
+.qst-monitor h3 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+.qst-monitor header h2 { margin-bottom: 0.1rem; }
+.qst-ia { color: var(--texto-suave); margin: 0 0 0.8rem; }
+.qst-conferencia { border-radius: 8px; padding: 0.1rem 0.8rem; border: 1px solid var(--borda); }
+.qst-conferencia.ok { background: var(--verde-fundo); border-color: var(--verde); }
+.qst-conferencia.diferente { background: var(--vermelho-fundo); border-color: var(--vermelho); }
+.qst-conferencia.duvida { background: var(--amarelo-fundo); border-color: var(--amarelo); }
+.qst-itens { margin: 0.2rem 0 0.4rem; padding-left: 1.2rem; overflow-wrap: anywhere; }
+.qst-bloco { margin-bottom: 0.4rem; }
+.qst-bloco.ok strong { color: var(--verde); }
+.qst-bloco.ajustar strong { color: var(--amarelo); }
+.qst-bloco.faltou strong { color: var(--primaria); }
+.qst-duvida { background: var(--amarelo-fundo); border-radius: 8px; padding: 0.5rem 0.8rem; }
+.qst-aprendizados p { margin: 0 0 0.3rem; overflow-wrap: anywhere; }
+.qst-aprendizados.sem-cartao li { padding: 0.3rem 0; border-bottom: 1px solid var(--borda); }
+.qst-aprend-pe { display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: center; margin: 0; }
+.qst-origem { font-weight: 700; }
+.qst-origem.monitor { color: var(--primaria); }
+.qst-grupo h2 { display: flex; align-items: center; gap: 0.5rem; margin-top: 1.2rem; }
+.qst-anotar textarea { resize: vertical; }
+@media (max-width: 520px) { .qst-duas { grid-template-columns: 1fr; } }
+.qst-escolha .chip { min-width: 44px; min-height: 44px; justify-content: center; }
+.qst-form-acoes button.pequeno, .pagina-form .acoes .pequeno { min-height: 44px; }
+.qst-itens a, .qst-abas a, .qst-aprend-pe a { display: inline-block; padding: 0.45rem 0; }
+.qst-aprend-pe button.link { min-height: 36px; }

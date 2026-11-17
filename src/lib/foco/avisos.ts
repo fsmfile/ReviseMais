@@ -27,6 +27,13 @@ export const avisosPermitidos = () => suportaAvisos() && Notification.permission
 export const iPhoneSemInstalar = () =>
   typeof navigator !== 'undefined' && /iPhone|iPad|iPod/.test(navigator.userAgent) && !matchMedia('(display-mode: standalone)').matches;
 
+/** Linha de `inscricoes_push`: a inscrição COMPLETA (com as chaves), para o script do dono mandar aviso com texto. */
+export function linhaInscricao(sub: { endpoint: string; toJSON(): { keys?: Record<string, string> } }, usuario: string) {
+  const k = sub.toJSON().keys ?? {};
+  if (!k.p256dh || !k.auth) return null;
+  return { endpoint: sub.endpoint, user_id: usuario, app: 'estudemais' as const, p256dh: k.p256dh, auth: k.auth, atualizado_em: new Date().toISOString() };
+}
+
 export function chaveEmBytes(b64: string): Uint8Array {
   const base = (b64 + '='.repeat((4 - (b64.length % 4)) % 4)).replace(/-/g, '+').replace(/_/g, '/');
   return Uint8Array.from(atob(base), (c) => c.charCodeAt(0));
@@ -59,6 +66,7 @@ async function inscricao(criar: boolean): Promise<PushSubscription | null> {
 
 // Ao sair do app não dá tempo de perguntar nada ao navegador: inscrição e acesso ficam à mão.
 let endpoint: string | null = null;
+let subscricao: PushSubscription | null = null;
 let acesso: { token: string; usuario: string } | null = null;
 let chamadoAberto = false;
 let ouvindoConta = false;
@@ -68,7 +76,9 @@ export async function ativarAvisos(): Promise<string | null> {
   if (!suportaAvisos()) return 'Este navegador não recebe notificações.';
   const p = await Notification.requestPermission();
   if (p !== 'granted') return 'As notificações estão bloqueadas neste aparelho. Libere nas configurações do navegador e volte aqui.';
-  endpoint = (await inscricao(true))?.endpoint ?? null;
+  subscricao = await inscricao(true);
+  endpoint = subscricao?.endpoint ?? null;
+  void gravarInscricao();
   return endpoint ? null : 'Não deu certo. Tente de novo.';
 }
 
@@ -80,12 +90,16 @@ export async function prepararAvisos(): Promise<void> {
   if (supabase && !ouvindoConta) {
     ouvindoConta = true;
     supabase.auth.onAuthStateChange((_e, s) => {
+      const outraConta = s?.user.id !== acesso?.usuario;
       acesso = s ? { token: s.access_token, usuario: s.user.id } : null;
+      if (outraConta) void gravarInscricao(); // entrou numa conta: o aparelho passa a receber os avisos dela
     });
   }
   const s = supabase ? (await supabase.auth.getSession()).data.session : null;
   acesso = s ? { token: s.access_token, usuario: s.user.id } : null;
-  endpoint = (await inscricao(avisosPermitidos()))?.endpoint ?? null;
+  subscricao = await inscricao(avisosPermitidos());
+  endpoint = subscricao?.endpoint ?? null;
+  void gravarInscricao();
   chamadoAberto = true;
   cancelarChamado();
   // Logo depois de instalar o app (ou de uma recarga no meio da inscrição) o navegador pode recusar a
@@ -93,7 +107,24 @@ export async function prepararAvisos(): Promise<void> {
   for (const espera of [3000, 10000, 30000]) {
     if (endpoint || !avisosPermitidos()) break;
     await new Promise((r) => setTimeout(r, espera));
-    endpoint = (await inscricao(true))?.endpoint ?? null;
+    subscricao = await inscricao(true);
+    endpoint = subscricao?.endpoint ?? null;
+    void gravarInscricao();
+  }
+}
+
+/**
+ * Guarda a inscrição completa deste aparelho na conta (tabela `inscricoes_push`), para o Monitor avisar com texto.
+ * Falha em silêncio: sem a tabela (migração 0006) ou com o aparelho já ligado a outra conta, o resto do app segue igual.
+ */
+async function gravarInscricao(): Promise<void> {
+  if (!supabase || !subscricao || !acesso) return;
+  const linha = linhaInscricao(subscricao, acesso.usuario);
+  if (!linha) return;
+  try {
+    await supabase.from('inscricoes_push').upsert(linha, { onConflict: 'endpoint' });
+  } catch {
+    /* tenta de novo na próxima abertura */
   }
 }
 

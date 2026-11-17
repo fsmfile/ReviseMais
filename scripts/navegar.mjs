@@ -9,13 +9,17 @@
 // botões pequenos demais para o dedo e erros de console). O app roda em "modo local"
 // (sem Supabase), então nada toca os dados de verdade.
 import { spawn, execSync } from 'node:child_process';
-import { existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const args = process.argv.slice(2);
 const ESCURO = args.includes('--escuro');
 const pedido = args.find((a) => !a.startsWith('--')) ?? 'tudo';
+// --sessao=arquivo.json: navega LOGADO no Supabase de verdade com uma sessão já criada (conta de teste), em vez do modo local.
+// O arquivo tem { chave, sessao } (chave do localStorage e a sessão do login). --hash=#/questao/ID,#/questoes fotografa essas telas.
+const SESSAO = args.find((a) => a.startsWith('--sessao='))?.slice(9);
+const HASHES = (args.find((a) => a.startsWith('--hash='))?.slice(7) ?? '#/questoes').split(',');
 const quer = (n) => pedido === 'tudo' || pedido.split(',').includes(n);
 
 const PORTA_APP = 5331;
@@ -128,11 +132,17 @@ if (process.platform === 'win32') {
   }
 }
 
+function lerEnvPublico() {
+  const t = readFileSync('.env.production', 'utf8');
+  const v = (n) => t.match(new RegExp(`^${n}=(.*)$`, 'm'))?.[1].trim() ?? '';
+  return { VITE_SUPABASE_URL: v('VITE_SUPABASE_URL'), VITE_SUPABASE_ANON_KEY: v('VITE_SUPABASE_ANON_KEY') };
+}
+
 // ── Servidor de desenvolvimento, em modo local ──
 const servidor = spawn(`npx vite --port ${PORTA_APP} --strictPort`, {
   shell: true,
   stdio: 'ignore',
-  env: { ...process.env, VITE_SUPABASE_URL: '', VITE_SUPABASE_ANON_KEY: '' },
+  env: { ...process.env, ...(SESSAO ? lerEnvPublico() : { VITE_SUPABASE_URL: '', VITE_SUPABASE_ANON_KEY: '' }) },
 });
 let noAr = false;
 for (let i = 0; i < 80 && !noAr; i++) {
@@ -258,6 +268,46 @@ const ir = async (hash) => {
 const clicar = (seletor, texto) =>
   js(`(() => { const els = [...document.querySelectorAll(${JSON.stringify(seletor)})]; const el = ${texto ? `els.find((e) => e.textContent.includes(${JSON.stringify(texto)}))` : 'els[0]'}; if (!el) return false; el.click(); return true; })()`);
 
+/** Questões de exemplo para as telas de Minhas questões (uma comentada e nova, uma pendente, uma comentada e lida). */
+function questoesExemplo() {
+  const t = (n) => new Date(Date.now() - n * 86400000).toISOString();
+  const base = { plano_id: 'p1', disciplina_id: null, assunto_id: null, banca: 'FGV', prova: '41º Exame de Ordem', formato: 'multipla', criada_em: t(3), atualizada_em: t(3), lida_em: null, comentada_em: null, comentario_monitor: null };
+  const alts = (...x) => x.map((texto, i) => ({ letra: 'ABCD'[i], texto }));
+  const q1 = {
+    ...base, id: 'q1', materia: 'Direito Constitucional', status: 'comentada', comentada_em: t(1), marcada: 'B', gabarito: 'C',
+    enunciado: 'João, servidor público, teve a remoção negada sem motivação. O prazo para impetrar mandado de segurança contra o ato conta-se a partir de quando, e qual é a sua natureza?',
+    alternativas: alts('Da ciência do ato, prazo prescricional de 120 dias.', 'Do ato, prazo de 5 anos.', 'Da ciência do ato, prazo decadencial de 120 dias.', 'Da decisão final do recurso administrativo, sempre.'),
+    comentario: 'Errei porque confundi com o prazo da ação popular. Estudei que o MS tem prazo de 120 dias, contado da ciência do ato, e que o prazo não se suspende nem se interrompe.',
+    comentario_monitor: {
+      versao: 1, resposta_oficial: { letra: 'C', confere: true },
+      alternativas: [
+        { letra: 'A', correta: false, explicacao: 'O prazo é de 120 dias, mas é decadencial, não prescricional.' },
+        { letra: 'B', correta: false, explicacao: 'Cinco anos é prazo de outra ação; o do mandado de segurança é de 120 dias (Lei 12.016/09, art. 23).' },
+        { letra: 'C', correta: true, explicacao: 'Art. 23 da Lei 12.016/09: 120 dias, contados da ciência do ato impugnado; a jurisprudência o trata como decadencial.' },
+        { letra: 'D', correta: false, explicacao: 'Recurso administrativo com efeito suspensivo pode alterar o termo inicial, mas não é regra sempre.' },
+      ],
+      sobre_o_que_voce_escreveu: { acertou: ['Prazo de 120 dias, contado da ciência do ato.', 'O prazo não se suspende nem se interrompe.'], ajustar: ['Faltou dizer que o prazo é decadencial: é isso que o torna improrrogável.'], faltou: ['Súmula 632 do STF: é constitucional lei que fixa prazo de decadência para o mandado de segurança.'] },
+      complemento: ['A banca costuma trocar decadencial por prescricional nas alternativas.', 'Impetração fora do prazo não impede a ação ordinária, só fecha a via do mandado.'],
+      parecidas: [{ questao_id: 'q3', motivo: 'também trata de prazo e de sua natureza' }],
+      fontes: [{ referencia: 'Lei 12.016/09, art. 23', url: 'https://www.planalto.gov.br/ccivil_03/_ato2007-2010/2009/lei/l12016.htm' }, { referencia: 'Súmula 632 do STF' }],
+    },
+  };
+  const q2 = { ...base, id: 'q2', materia: 'Ética Profissional', status: 'pendente', criada_em: t(0), atualizada_em: t(0), marcada: 'A', gabarito: 'A', banca: null, prova: null,
+    enunciado: 'O advogado pode receber honorários em bens do cliente?', alternativas: alts('Sim, desde que ajustado.', 'Nunca.', 'Só com autorização da OAB.'), comentario: 'Lembrei do CED, art. 50.' };
+  const q3 = { ...base, id: 'q3', materia: 'Direito Constitucional', status: 'comentada', criada_em: t(8), comentada_em: t(6), lida_em: t(5), marcada: 'C', gabarito: 'C', formato: 'certo_errado', banca: 'Cebraspe', prova: null,
+    enunciado: 'O habeas corpus é cabível contra punição disciplinar militar.', alternativas: [{ letra: 'C', texto: 'Certo' }, { letra: 'E', texto: 'Errado' }], comentario: 'Só quanto à legalidade, não ao mérito.',
+    comentario_monitor: { versao: 1, resposta_oficial: { letra: 'E', confere: false, observacao: 'Pela CF, art. 142, § 2º, não cabe habeas corpus em relação a punições disciplinares militares, mas o STF admite quanto à legalidade.' }, alternativas: [], sobre_o_que_voce_escreveu: { acertou: [], ajustar: ['O gabarito informado parece divergir do texto constitucional.'], faltou: [] }, complemento: [], parecidas: [], fontes: [{ referencia: 'CF, art. 142, § 2º' }], duvida: 'Se a banca considerou a leitura jurisprudencial, o gabarito pode ser outro.' } };
+  const a = (id, materia, texto, fonte, origem, questoes) => ({ id, materia, assunto_id: null, texto, fonte, origem, questoes, criado_em: t(1) });
+  return {
+    questoes: [q2, q1, q3],
+    aprendizados: [
+      a('a1', 'Direito Constitucional', 'O prazo do mandado de segurança é decadencial: 120 dias da ciência do ato, sem suspensão nem interrupção.', 'Lei 12.016/09, art. 23', 'monitor', ['q1']),
+      a('a2', 'Direito Constitucional', 'Súmula 632 do STF: é constitucional o prazo de decadência do mandado de segurança.', 'Súmula 632 do STF', 'monitor', ['q1']),
+      a('a3', 'Ética Profissional', 'Receber bens em vez de dinheiro como honorários exige ajuste prévio e é exceção.', 'CED, art. 50', 'voce', []),
+    ],
+  };
+}
+
 const TELAS = [
   ['hoje', '#/hoje'],
   ['painel', '#/painel'],
@@ -269,7 +319,17 @@ const TELAS = [
   ['comparar', '#/comparar'],
   ['calendario', '#/calendario'],
   ['novo', '#/novo'],
+  ['questoes', '#/questoes'],
+  ['caderno', '#/caderno'],
+  ['questao-nova', '#/questao-nova'],
+  ['questao-pendente', '#/questao/q2'],
+  ['questao-monitor', '#/questao/q1'],
+  ['questao-divergente', '#/questao/q3'],
 ];
+
+/** Digita num campo controlado do React (dispara o evento que ele escuta). */
+const digitar = (seletor, valor) =>
+  js(`(() => { const el = document.querySelector(${JSON.stringify(seletor)}); if (!el) return false; const proto = el.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype; Object.getOwnPropertyDescriptor(proto, 'value').set.call(el, ${JSON.stringify(valor)}); el.dispatchEvent(new Event('input', { bubbles: true })); return true; })()`);
 
 try {
   for (const ap of APARELHOS) {
@@ -278,7 +338,20 @@ try {
     await cmd('Page.navigate', { url: URL_APP });
     await dormir(800);
     await esperarApp();
-    await js(`localStorage.clear(); localStorage.setItem('revisemais:dados', ${JSON.stringify(JSON.stringify(dadosExemplo()))});`);
+    if (SESSAO) {
+      const { chave, sessao } = JSON.parse(readFileSync(SESSAO, 'utf8'));
+      await js(`localStorage.clear(); localStorage.setItem(${JSON.stringify(chave)}, ${JSON.stringify(JSON.stringify(sessao))});`);
+      await cmd('Page.reload');
+      await dormir(2500);
+      await esperarApp();
+      for (const h of HASHES) {
+        await ir(h);
+        await dormir(1500);
+        await foto(`logado-${h.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').slice(0, 30)}`, ap);
+      }
+      continue;
+    }
+    await js(`localStorage.clear(); localStorage.setItem('revisemais:dados', ${JSON.stringify(JSON.stringify(dadosExemplo()))}); localStorage.setItem('revisemais:questoes', ${JSON.stringify(JSON.stringify(questoesExemplo()))});`);
     await cmd('Page.reload');
     await dormir(800);
     await esperarApp();
@@ -297,6 +370,39 @@ try {
       await ir('#/plano/p1');
       await clicar('.cab-disc');
       await foto('plano-aberto', ap);
+    }
+    if (quer('questoes-fluxo')) {
+      // Cadastrar uma questão de ponta a ponta: erros, rascunho no aparelho, recarga e gravação.
+      await ir('#/questao-nova');
+      await clicar('.pagina-form .acoes button', 'Cadastrar questão');
+      await dormir(300);
+      nota('fluxo: erros ao cadastrar vazio', await js(`document.querySelectorAll('.pagina-form .aviso-edital li').length`));
+      await digitar('.pagina-form input[placeholder^="ex.: Direito Const"]', 'Direito Penal');
+      await digitar('.pagina-form textarea[placeholder^="Cole"]', 'Qual é o prazo?');
+      await digitar('#qst-alt-A', 'Dez dias');
+      await digitar('#qst-alt-B', 'Vinte dias');
+      await cmd('Page.reload');
+      await dormir(800);
+      await esperarApp();
+      nota('fluxo: rascunho depois de recarregar', await js(`document.querySelector('.pagina-form textarea[placeholder^="Cole"]')?.value + ' | aviso: ' + !!document.querySelector('.pagina-form .aviso-edital')`));
+      await foto('questoes-fluxo-rascunho', ap);
+      await js(`[...document.querySelectorAll('.qst-escolha')][0].querySelectorAll('.chip')[2].click()`);
+      await js(`[...document.querySelectorAll('.qst-escolha')][1].querySelectorAll('.chip')[1].click()`);
+      await clicar('.pagina-form .acoes button', 'Cadastrar questão');
+      await dormir(600);
+      nota('fluxo: foi para o detalhe', await js(`location.hash + ' | ' + document.querySelector('.pagina-questao h1')?.textContent + ' | ' + document.querySelector('.qst-selo')?.textContent`));
+      await foto('questoes-fluxo-detalhe', ap);
+      await js(`(() => { const d = JSON.parse(localStorage.getItem('revisemais:questoes')); d.questoes.forEach((q) => { if (q.id === 'q1') q.lida_em = null; }); localStorage.setItem('revisemais:questoes', JSON.stringify(d)); })()`);
+      await cmd('Page.reload');
+      await dormir(800);
+      await esperarApp();
+      await ir('#/questoes');
+      nota('fluxo: questões na lista (esperado 4)', await js(`document.querySelectorAll('.qst-lista li').length`));
+      nota('fluxo: novas antes de abrir q1 (esperado 1)', await js(`document.querySelectorAll('.qst-item.nova').length`));
+      await ir('#/questao/q1');
+      await dormir(400);
+      await ir('#/questoes');
+      nota('fluxo: novas depois de abrir q1 (esperado 0)', await js(`document.querySelectorAll('.qst-item.nova').length`));
     }
     if (quer('vazio')) {
       await js(`localStorage.clear()`);

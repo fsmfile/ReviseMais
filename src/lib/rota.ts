@@ -13,6 +13,11 @@ export type Rota =
   | { tela: 'comparar' }
   | { tela: 'calendario' }
   | { tela: 'foco' }
+  | { tela: 'questoes' }
+  | { tela: 'caderno' }
+  | { tela: 'questao-nova' }
+  | { tela: 'questao'; id: string }
+  | { tela: 'questao-editar'; id: string }
   /** Resultado de um caso atendido no Advogando (a busca leva os dados). */
   | { tela: 'advogando'; busca: string };
 
@@ -24,6 +29,8 @@ function ler(): Rota {
       const assunto = new URLSearchParams(busca).get('a') ?? undefined;
       return id ? { tela, id, assunto } : { tela: 'hoje' };
     }
+    case 'questao':
+    case 'questao-editar':
     case 'importar':
       return id ? { tela, id } : { tela: 'hoje' };
     case 'estudar': {
@@ -40,6 +47,9 @@ function ler(): Rota {
     case 'comparar':
     case 'calendario':
     case 'foco':
+    case 'questoes':
+    case 'caderno':
+    case 'questao-nova':
       return { tela };
     default:
       return { tela: 'hoje' };

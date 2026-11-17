@@ -22,6 +22,10 @@ import { Plano } from './pages/Plano';
 import { ResultadoAdvogando } from './pages/Advogando';
 import { Foco } from './pages/Foco';
 import { Mentor } from './components/Mentor';
+import { Caderno, Questoes } from './pages/Questoes';
+import { Questao } from './pages/Questao';
+import { QuestaoForm } from './pages/QuestaoForm';
+import { useQuestoes } from './lib/questoesStore';
 import { Icone } from './components/Icone';
 
 export function App() {
@@ -64,6 +68,8 @@ const PRINCIPAIS: ItemMenu[] = [
   { rota: { tela: 'desempenho' }, icone: 'evolucao', rotulo: 'Evolução dos acertos' },
   { rota: { tela: 'historico' }, icone: 'historico', rotulo: 'Histórico' },
   { rota: { tela: 'foco' }, icone: 'foco', rotulo: 'Mentor de foco' },
+  { rota: { tela: 'questoes' }, icone: 'questoes', rotulo: 'Minhas questões' },
+  { rota: { tela: 'caderno' }, icone: 'caderno', rotulo: 'Meu caderno' },
 ];
 const FERRAMENTAS: ItemMenu[] = [
   { rota: { tela: 'comparar' }, icone: 'comparar', rotulo: 'Comparar editais' },
@@ -71,7 +77,8 @@ const FERRAMENTAS: ItemMenu[] = [
 ];
 /** O que aparece em "Mais" (celular e tablet): tudo o que não está na barra inferior. */
 const SECOES: { titulo: string; itens: ItemMenu[] }[] = [
-  { titulo: 'Acompanhamento', itens: PRINCIPAIS.slice(3) },
+  { titulo: 'Acompanhamento', itens: PRINCIPAIS.slice(3, 6) },
+  { titulo: 'Questões', itens: PRINCIPAIS.slice(6) },
   { titulo: 'Planos e editais', itens: [{ rota: { tela: 'novo' }, icone: 'mais', rotulo: 'Novo plano' }, FERRAMENTAS[0]] },
   { titulo: 'Avisos', itens: [FERRAMENTAS[1]] },
 ];
@@ -92,6 +99,7 @@ function Estrutura({ email }: { email?: string }) {
   );
   const [menuAberto, setMenuAberto] = useState(false);
   useEffect(() => setMenuAberto(false), [rota, larga]);
+  const { novas: questoesNovas } = useQuestoes();
   const pendHoje = dados.revisoes.filter((r) => !r.concluida_em && r.data_prevista <= hoje()).length;
 
   useEffect(() => {
@@ -144,7 +152,7 @@ function Estrutura({ email }: { email?: string }) {
           <BotaoEstudar />
           <nav aria-label="Menu" className="lateral-nav">
             {PRINCIPAIS.map((it) => (
-              <LinkMenu key={it.rotulo} item={it} rota={rota} contador={it.rota.tela === 'hoje' ? pendHoje : 0} />
+              <LinkMenu key={it.rotulo} item={it} rota={rota} contador={it.rota.tela === 'hoje' ? pendHoje : it.rota.tela === 'questoes' ? questoesNovas : 0} />
             ))}
             <p className="menu-titulo">Planos de estudo</p>
             <div className={`lateral-planos ${arraste.arrastando ? 'reordenando' : ''}`} ref={arraste.lista as React.RefObject<HTMLDivElement>}>
@@ -179,7 +187,7 @@ function Estrutura({ email }: { email?: string }) {
           </div>
         </header>
       )}
-      {menuAberto && <MenuLateral rota={rota} email={email} aoFechar={() => setMenuAberto(false)} sair={sair} />}
+      {menuAberto && <MenuLateral rota={rota} email={email} contadores={{ questoes: questoesNovas }} aoFechar={() => setMenuAberto(false)} sair={sair} />}
       <div className="conteudo">
         {!modoLocal && tabelasFaltando.has('sessoes') && (
           <div className="aviso-local">
@@ -218,6 +226,16 @@ function Estrutura({ email }: { email?: string }) {
             <Foco />
           ) : rota.tela === 'calendario' ? (
             <Calendario />
+          ) : rota.tela === 'questoes' ? (
+            <Questoes />
+          ) : rota.tela === 'caderno' ? (
+            <Caderno />
+          ) : rota.tela === 'questao-nova' ? (
+            <QuestaoForm />
+          ) : rota.tela === 'questao-editar' ? (
+            <QuestaoForm key={rota.id} id={rota.id} />
+          ) : rota.tela === 'questao' ? (
+            <Questao key={rota.id} id={rota.id} />
           ) : (
             <Hoje />
           )}
@@ -239,6 +257,7 @@ function Estrutura({ email }: { email?: string }) {
           <button className={`barra-item ${menuAberto ? 'ativa' : ''}`} aria-label="Abrir menu" aria-expanded={menuAberto} onClick={() => setMenuAberto(true)}>
             <span className="barra-icone">
               <Icone nome="menu" tamanho={22} />
+              {questoesNovas > 0 && <span className="contador">{questoesNovas}</span>}
             </span>
             <span>Mais</span>
           </button>
@@ -272,7 +291,7 @@ function LinkBarra({ item, rotulo, rota, contador = 0 }: { item: ItemMenu; rotul
 }
 
 /** "Mais" (celular e tablet): o que não cabe na barra inferior. */
-function MenuLateral({ rota, email, aoFechar, sair }: { rota: Rota; email?: string; aoFechar: () => void; sair: React.ReactNode }) {
+function MenuLateral({ rota, email, aoFechar, sair, contadores }: { rota: Rota; email?: string; aoFechar: () => void; sair: React.ReactNode; contadores: { questoes: number } }) {
   useEffect(() => {
     const f = (e: KeyboardEvent) => e.key === 'Escape' && aoFechar();
     window.addEventListener('keydown', f);
@@ -291,7 +310,7 @@ function MenuLateral({ rota, email, aoFechar, sair }: { rota: Rota; email?: stri
           <div key={s.titulo} className="menu-secao">
             <p className="menu-titulo">{s.titulo}</p>
             {s.itens.map((it) => (
-              <LinkMenu key={it.rotulo} item={it} rota={rota} />
+              <LinkMenu key={it.rotulo} item={it} rota={rota} contador={it.rota.tela === 'questoes' ? contadores.questoes : 0} />
             ))}
           </div>
         ))}

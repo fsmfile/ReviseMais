@@ -17,7 +17,34 @@ async function recadoDoMentor() {
   return agora < recado.avisarEm + 3 * 3600000 ? recado : null;
 }
 
+// Aviso COM texto (ex.: o Monitor comentou uma questão): o script do dono manda { titulo, texto, url } e é isso que aparece.
+function dadosDoAviso(e) {
+  if (!e.data) return null;
+  try {
+    const d = e.data.json();
+    return d && (d.titulo || d.texto) ? d : null;
+  } catch {
+    const t = e.data.text();
+    return t ? { titulo: 'EstudeMais', texto: t } : null;
+  }
+}
+
 self.addEventListener('push', (e) => {
+  const aviso = dadosDoAviso(e);
+  if (aviso) {
+    e.waitUntil(
+      self.registration.showNotification(aviso.titulo || 'EstudeMais', {
+        body: aviso.texto || '',
+        icon: 'icon-192.png',
+        badge: 'icon-192.png',
+        tag: aviso.tag || 'aviso',
+        renotify: true,
+        vibrate: VIBRACAO,
+        data: { url: aviso.url || './', ir: true },
+      }),
+    );
+    return;
+  }
   e.waitUntil(
     recadoDoMentor()
       .catch(() => null)
@@ -42,7 +69,10 @@ self.addEventListener('notificationclick', (e) => {
   e.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((lista) => {
       const aberto = lista.find((c) => c.url.startsWith(self.registration.scope));
-      return aberto ? aberto.focus() : self.clients.openWindow(destino);
+      if (!aberto) return self.clients.openWindow(destino);
+      // Aviso com texto (Monitor): leva a tela já aberta até a questão.
+      const ir = e.notification.data && e.notification.data.ir;
+      return aberto.focus().then((c) => (ir && c && c.navigate ? c.navigate(destino) : c)).catch(() => {});
     }),
   );
 });
