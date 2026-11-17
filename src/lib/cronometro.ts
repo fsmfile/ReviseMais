@@ -18,6 +18,13 @@ export interface EstadoCronometro {
   pausadoEm?: number | null;
   /** Pausa para almoço ou janta: o Mentor fica quieto até `ate` (ms). */
   refeicao?: { tipo: 'almoco' | 'janta'; ate: number } | null;
+  /** Tocou em Concluir e está preenchendo o resumo: o relógio para, mas não é pausa de descanso (o mentor não cobra). */
+  concluindo?: boolean;
+}
+
+/** Pausa de descanso de verdade (a que o mentor pode cobrar): parado, com hora de pausa, e não é a conclusão da sessão. */
+export function pausaDeDescanso(e: EstadoCronometro | null): e is EstadoCronometro & { pausadoEm: number } {
+  return !!e && !e.rodandoDesde && typeof e.pausadoEm === 'number' && !e.concluindo;
 }
 
 const CHAVE = 'revisemais:cronometro';
@@ -64,17 +71,24 @@ export const cronometro = {
   pausar() {
     if (!atual?.rodandoDesde) return;
     const agora = Date.now();
-    gravar({ ...atual, acumuladoMs: atual.acumuladoMs + (agora - atual.rodandoDesde), rodandoDesde: null, pausadoEm: agora, refeicao: null });
+    gravar({ ...atual, acumuladoMs: atual.acumuladoMs + (agora - atual.rodandoDesde), rodandoDesde: null, pausadoEm: agora, refeicao: null, concluindo: false });
+  },
+  /** Concluir: para o relógio enquanto a pessoa preenche o resumo (não conta como pausa para o mentor). */
+  pausarParaConcluir() {
+    if (!atual) return;
+    const agora = Date.now();
+    const acumuladoMs = atual.acumuladoMs + (atual.rodandoDesde ? agora - atual.rodandoDesde : 0);
+    gravar({ ...atual, acumuladoMs, rodandoDesde: null, pausadoEm: atual.rodandoDesde ? agora : (atual.pausadoEm ?? agora), concluindo: true });
   },
   /** Pausa para almoço ou janta: o Mentor de foco não cobra até o fim do tempo combinado. */
   pausarParaRefeicao(tipo: 'almoco' | 'janta', minutos: number) {
     if (!atual?.rodandoDesde) return;
     const agora = Date.now();
-    gravar({ ...atual, acumuladoMs: atual.acumuladoMs + (agora - atual.rodandoDesde), rodandoDesde: null, pausadoEm: agora, refeicao: { tipo, ate: agora + minutos * 60000 } });
+    gravar({ ...atual, acumuladoMs: atual.acumuladoMs + (agora - atual.rodandoDesde), rodandoDesde: null, pausadoEm: agora, refeicao: { tipo, ate: agora + minutos * 60000 }, concluindo: false });
   },
   retomar() {
     if (!atual || atual.rodandoDesde) return;
-    gravar({ ...atual, rodandoDesde: Date.now(), pausadoEm: null, refeicao: null });
+    gravar({ ...atual, rodandoDesde: Date.now(), pausadoEm: null, refeicao: null, concluindo: false });
   },
   /** Tira do tempo contado (ex.: os minutos fora do app); nunca deixa negativo. */
   descontar(ms: number) {

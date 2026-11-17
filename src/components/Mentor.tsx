@@ -2,10 +2,10 @@
 // conversa quando ela volta e lembra das pausas longas. Fica montado em todas as telas.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { casosDoAssunto, pausadoPeloEscritorio, useCatalogoAdvogando, type CatalogoAdvogando } from '../lib/advogando';
-import { cronometro, decorridoSeg, useCronometro, type EstadoCronometro } from '../lib/cronometro';
+import { cronometro, decorridoSeg, pausaDeDescanso, useCronometro, type EstadoCronometro } from '../lib/cronometro';
 import { hoje } from '../lib/datas';
 import { duracaoFalada, falar, type Contexto, type Nivel, type Situacao } from '../lib/foco/falas';
-import { desconta, gravarEstado, lerConfig, lerEstado, NIVEIS, ROTULO_MOTIVO, useConfigMentor, vezesNoDia, type Ausencia } from '../lib/foco/mentor';
+import { desconta, gravarEstado, lerConfig, lerEstado, NIVEIS, recadoDaPausaVale, ROTULO_MOTIVO, useConfigMentor, vezesNoDia, type Ausencia } from '../lib/foco/mentor';
 import { appsUsados, type Motivo } from '../lib/foco/sensor';
 import { agendarChamado, avisoPeloServidor, cancelarChamado, prepararAvisos, type Recado as RecadoDeFora } from '../lib/foco/avisos';
 import {
@@ -73,6 +73,8 @@ export interface Recado {
   texto: string;
   /** Mostra o botão de continuar o cronômetro. */
   continuar?: boolean;
+  /** Recado sobre uma pausa (o pausadoEm dela): some quando essa pausa acaba. */
+  pausa?: number;
 }
 
 let mostrarRecado: ((r: Recado) => void) | null = null;
@@ -118,6 +120,11 @@ export function Mentor() {
       mostrarRecado = null;
     };
   }, []);
+
+  // Recado de pausa só vale enquanto aquela pausa continua (retomou pelo botão grande, concluiu, descartou: some).
+  useEffect(() => {
+    if (recado?.pausa != null && !recadoDaPausaVale(recado.pausa, crono)) setRecado(null);
+  }, [crono, recado]);
 
   useEffect(() => {
     // Recado que pede ação (continuar o cronômetro) fica até a pessoa responder; os outros somem sozinhos.
@@ -165,8 +172,8 @@ export function Mentor() {
         const tol = NIVEIS[n].tolerancia;
         return { titulo, texto: falar('fora', n, contexto(c, { min: tol })), avisarEm: agora + tol * 60000, url };
       }
-      // Pausado: só cobra a pausa longa (ou o fim da refeição), nunca a ida ao Advogando, e só uma vez.
-      if (!c.pausadoEm || pausadoPeloEscritorio() || lerEstado().avisouPausa === c.pausadoEm) return null;
+      // Pausado: só cobra a pausa longa (ou o fim da refeição), nunca a ida ao Advogando nem a conclusão da sessão, e só uma vez.
+      if (!pausaDeDescanso(c) || pausadoPeloEscritorio() || lerEstado().avisouPausa === c.pausadoEm) return null;
       if (c.refeicao) {
         const em = c.refeicao.ate + 2 * 60000;
         return em > agora ? { titulo, texto: falar(c.refeicao.tipo === 'almoco' ? 'almocoFim' : 'jantaFim', n, contexto(c, { min: 2 })), avisarEm: em, url } : null;
@@ -185,7 +192,7 @@ export function Mentor() {
 
     const verificarPausa = async () => {
       const c = cronometro.estado();
-      if (!c || c.rodandoDesde || !c.pausadoEm) return;
+      if (!pausaDeDescanso(c)) return;
       // Pausado porque foi atender no Advogando: é estudo, não se cobra.
       if (pausadoPeloEscritorio()) return;
       const st = lerEstado();
@@ -198,11 +205,11 @@ export function Mentor() {
       }
       if (c.refeicao) {
         if (agora < c.refeicao.ate + 2 * 60000) return;
-        setRecado({ texto: falar(c.refeicao.tipo === 'almoco' ? 'almocoFim' : 'jantaFim', n, contexto(c, { min: (agora - c.refeicao.ate) / 60000 })), continuar: true });
+        setRecado({ texto: falar(c.refeicao.tipo === 'almoco' ? 'almocoFim' : 'jantaFim', n, contexto(c, { min: (agora - c.refeicao.ate) / 60000 })), continuar: true, pausa: c.pausadoEm });
       } else {
         const min = (agora - c.pausadoEm) / 60000;
         if (min < NIVEIS[n].pausa) return;
-        setRecado({ texto: falar('pausaLonga', n, contexto(c, { min })), continuar: true });
+        setRecado({ texto: falar('pausaLonga', n, contexto(c, { min })), continuar: true, pausa: c.pausadoEm });
       }
       gravarEstado({ ...st, avisouPausa: c.pausadoEm });
     };

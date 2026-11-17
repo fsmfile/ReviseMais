@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { lerInteiro } from '../components/Campos';
 import { cronometro, useCronometro, useDecorrido, type EstadoCronometro } from '../lib/cronometro';
 import { curtoRevisao, formatarData, hoje } from '../lib/datas';
@@ -6,11 +6,11 @@ import { href, ir } from '../lib/rota';
 import { useDados, useIndices } from '../lib/store';
 import { relogio, TIPOS_ESTUDO } from '../lib/tempo';
 import type { TipoEstudo } from '../lib/types';
-import { recadoDoMentor, montarContexto, nivelEfetivo } from '../components/Mentor';
+import { recadoDoMentor, montarContexto, nivelEfetivo, nomeDoCobrador } from '../components/Mentor';
 import { useEco } from '../lib/ecossistema';
 import { useCatalogoAdvogando } from '../lib/advogando';
-import { falar } from '../lib/foco/falas';
-import { mudarConfig, refeicaoDoHorario, REFEICOES, useConfigMentor } from '../lib/foco/mentor';
+import { duracaoFalada, falar } from '../lib/foco/falas';
+import { mudarConfig, NIVEIS, refeicaoDoHorario, REFEICOES, useConfigMentor } from '../lib/foco/mentor';
 
 /** Escolha de plano → disciplina → assunto (opcional) e tipo de estudo. */
 export interface Escolha {
@@ -226,7 +226,8 @@ function FinalizarSessao({
 function CronometroAtivo({ estado }: { estado: EstadoCronometro }) {
   const seg = useDecorrido(estado);
   const { contexto } = useIndices();
-  const [concluindo, setConcluindo] = useState(false);
+  // Recarregou no meio da conclusão: volta para o resumo, em vez de parecer uma pausa.
+  const [concluindo, setConcluindo] = useState(estado.concluindo === true);
   const c = estado.assunto_id ? contexto(estado.assunto_id) : null;
   const tipo = TIPOS_ESTUDO.find((t) => t.tipo === estado.tipo);
   const escolha: Escolha = {
@@ -247,6 +248,7 @@ function CronometroAtivo({ estado }: { estado: EstadoCronometro }) {
       <div className={`relogio ${estado.rodandoDesde ? '' : 'pausado'}`} role="timer" aria-live="off">
         {relogio(seg)}
       </div>
+      {!concluindo && <StatusPausa estado={estado} />}
       {!concluindo && <PainelMentor estado={estado} />}
       {!concluindo ? (
         <div className="acoes centralizado">
@@ -262,7 +264,7 @@ function CronometroAtivo({ estado }: { estado: EstadoCronometro }) {
           <button
             className="grande"
             onClick={() => {
-              cronometro.pausar();
+              cronometro.pausarParaConcluir();
               setConcluindo(true);
             }}
           >
@@ -287,6 +289,31 @@ function CronometroAtivo({ estado }: { estado: EstadoCronometro }) {
         />
       )}
     </section>
+  );
+}
+
+/** Pausado: há quanto tempo, que a pausa não conta como estudo e quando o cobrador chama. */
+function StatusPausa({ estado }: { estado: EstadoCronometro }) {
+  const configLocal = useConfigMentor();
+  const eco = useEco();
+  const [agora, setAgora] = useState(Date.now());
+  const pausado = !estado.rodandoDesde && !estado.refeicao && !estado.concluindo && typeof estado.pausadoEm === 'number';
+  useEffect(() => {
+    if (!pausado) return;
+    setAgora(Date.now());
+    const id = setInterval(() => setAgora(Date.now()), 20000);
+    return () => clearInterval(id);
+  }, [pausado, estado.pausadoEm]);
+  if (!pausado) return null;
+  const min = (agora - estado.pausadoEm!) / 60000;
+  const nivel = nivelEfetivo(eco, configLocal.nivel);
+  const quem = nomeDoCobrador(eco) === 'Sócio' ? 'o sócio' : 'o mentor';
+  const limite = nivel ? NIVEIS[nivel].pausa : null;
+  return (
+    <p className="status-pausa suave">
+      ⏸ Pausado há {min < 1 ? 'menos de um minuto' : duracaoFalada(min)}. A pausa não conta como estudo.
+      {limite != null && min < limite && ` Depois de ${limite} min de pausa, ${quem} chama.`}
+    </p>
   );
 }
 

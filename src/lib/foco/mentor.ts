@@ -106,6 +106,14 @@ export interface Ausencia {
   descontadoMs: number;
 }
 
+/**
+ * Um recado sobre uma pausa só vale enquanto AQUELA pausa continua: retomou (por qualquer botão), concluiu,
+ * descartou ou pausou de novo, o recado some. Sem isso, o aviso de pausa ficava na tela com o cronômetro rodando.
+ */
+export function recadoDaPausaVale(pausa: number, c: { rodandoDesde: number | null; pausadoEm?: number | null; concluindo?: boolean } | null): boolean {
+  return !!c && !c.rodandoDesde && c.pausadoEm === pausa && !c.concluindo;
+}
+
 export interface EstadoMentor {
   /** Saiu do app com o cronômetro rodando (ms) e de qual sessão (iniciadoEm do cronômetro). */
   saiuEm: number | null;

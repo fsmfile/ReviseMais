@@ -595,6 +595,7 @@ main { padding-bottom: 6rem; }
 .convite-mentor { margin: 0 0 1rem; padding: 0.75rem; border-radius: 12px; border: 1px dashed var(--primaria); background: color-mix(in srgb, var(--primaria) 6%, var(--superficie)); text-align: left; }
 .convite-mentor p { margin: 0 0 0.5rem; }
 .status-refeicao { margin: 0 0 0.75rem; color: var(--texto-suave); }
+.status-pausa { margin: 0 0 0.75rem; font-size: 0.9rem; }
 .pagina-foco { display: grid; gap: 1rem; max-width: 720px; margin: 0 auto; }
 .pagina-foco h1 { margin-bottom: 0; }
 .niveis-mentor { display: grid; gap: 0.5rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); }
