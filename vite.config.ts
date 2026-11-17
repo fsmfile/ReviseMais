@@ -29,6 +29,13 @@ export default defineConfig({
         background_color: '#f6f7fb',
         display: 'standalone',
         start_url: '.',
+        // Android (Chrome, app instalado): o EstudeMais aparece no menu Compartilhar. A questão chega em
+        // /?compartilhar=1&text=... e o app abre o formulário com ela (src/main.tsx).
+        share_target: {
+          action: '/?compartilhar=1',
+          method: 'GET',
+          params: { title: 'title', text: 'text', url: 'url' },
+        },
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },

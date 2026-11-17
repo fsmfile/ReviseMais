@@ -232,3 +232,13 @@ button.fantasma:hover, .botao.fantasma:hover { background: var(--superficie-2); 
 .qst-pergunta { border-left: 4px solid var(--primaria); }
 .qst-resposta h3 { font-size: 0.95rem; margin: 0.8rem 0 0.4rem; }
 .qst-fora { background: var(--amarelo-fundo); border: 1px solid var(--amarelo); border-radius: 8px; padding: 0.5rem 0.8rem; margin: 0 0 0.6rem; }
+
+/* Colar a questão (formulário de questão nova) */
+.colar-questao textarea { width: 100%; box-sizing: border-box; }
+.colar-resumo { margin: 10px 0 0; padding: 10px 12px; border-radius: 10px; background: rgba(31, 58, 95, 0.08); font-weight: 600; }
+.colar-ajuda { margin-top: 10px; }
+.colar-ajuda details { margin-top: 6px; }
+.colar-ajuda summary { cursor: pointer; font-weight: 600; padding: 10px 0; min-height: 20px; }
+.colar-passos { padding-left: 20px; }
+.colar-passos li { margin-bottom: 6px; }
+.colar-ajuda code { word-break: break-all; font-size: 0.85em; }

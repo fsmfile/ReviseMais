@@ -15,14 +15,19 @@ export type Rota =
   | { tela: 'foco' }
   | { tela: 'questoes' }
   | { tela: 'caderno' }
-  | { tela: 'questao-nova' }
+  /** `texto`: questão copiada que chegou pelo Compartilhar (Android) ou pelo Atalho (iPhone). */
+  | { tela: 'questao-nova'; texto?: string }
   | { tela: 'questao'; id: string }
   | { tela: 'questao-editar'; id: string }
   /** Resultado de um caso atendido no Advogando (a busca leva os dados). */
   | { tela: 'advogando'; busca: string };
 
 function ler(): Rota {
-  const [caminho, busca = ''] = location.hash.replace(/^#/, '').split('?');
+  const bruto = location.hash.replace(/^#/, '');
+  // A busca começa no primeiro "?": um "?" sem codificar dentro do texto do Atalho não pode cortar o texto.
+  const q = bruto.indexOf('?');
+  const caminho = q < 0 ? bruto : bruto.slice(0, q);
+  const busca = q < 0 ? '' : bruto.slice(q + 1);
   const [, tela, id] = caminho.split('/');
   switch (tela) {
     case 'plano': {
@@ -39,6 +44,10 @@ function ler(): Rota {
     }
     case 'advogando':
       return { tela, busca };
+    case 'questao-nova': {
+      const texto = new URLSearchParams(busca).get('texto')?.trim();
+      return texto ? { tela, texto } : { tela };
+    }
     case 'historico':
     case 'tempo':
     case 'painel':
@@ -49,7 +58,6 @@ function ler(): Rota {
     case 'foco':
     case 'questoes':
     case 'caderno':
-    case 'questao-nova':
       return { tela };
     default:
       return { tela: 'hoje' };

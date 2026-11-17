@@ -442,6 +442,67 @@ try {
       await ir('#/questoes');
       nota('fluxo: novas depois de abrir q1 (esperado 0)', await js(`document.querySelectorAll('.qst-item.nova').length`));
     }
+    if (quer('colar')) {
+      // Colar a questão copiada do QConcursos (letra numa linha, texto na seguinte): separa e preenche o formulário.
+      const qc = ['Q3185443', 'Ano: 2024 Banca: FGV Órgão: OAB Prova: FGV - 2024 - OAB - Exame de Ordem Unificado XLI - Primeira Fase', 'Direito Constitucional', 'Sobre o mandado de segurança, assinale a afirmativa correta.', 'A', 'É cabível contra ato de gestão comercial.', 'B', 'O prazo é decadencial de 120 dias.', 'C', 'Cabe contra lei em tese.', 'D', 'Admite dilação probatória ampla.', 'Responder', 'Você errou!', 'Gabarito Comentado', 'Comentários', 'Estatísticas', 'Cadernos', 'Criar anotações', 'Notificar erro', 'Gabarito: B'].join('\n');
+      await js(`localStorage.removeItem('revisemais:rascunho-questao:nova')`);
+      await ir('#/questao-nova');
+      await cmd('Page.reload');
+      await dormir(800);
+      await esperarApp();
+      await foto('colar-vazio', ap);
+      await digitar('#colar-questao', qc);
+      await clicar('.colar-questao .acoes button', 'Separar as partes');
+      await dormir(400);
+      nota('colar: resumo', await js(`document.querySelector('.colar-resumo')?.textContent`));
+      nota('colar: enunciado', await js(`document.querySelector('.pagina-form textarea[placeholder^="Cole ou"]')?.value`));
+      nota('colar: alternativas', await js(`[...document.querySelectorAll('.qst-alt-campo input')].map((i) => i.value)`));
+      nota('colar: banca/prova', await js(`[...document.querySelectorAll('.qst-duas input')].map((i) => i.value)`));
+      nota('colar: resposta certa marcada', await js(`[...document.querySelectorAll('.qst-escolha')][1].querySelector('.chip.sel')?.textContent`));
+      await foto('colar-separado', ap);
+    }
+    if (quer('colar-link')) {
+      // Atalho do iPhone: #/questao-nova?texto=... abre já preenchido.
+      const t = 'Banca: Cebraspe\nJulgue o item: o habeas corpus é gratuito.\nCerto\nErrado\nGabarito: Certo';
+      await js(`localStorage.removeItem('revisemais:rascunho-questao:nova')`);
+      await js(`location.hash = '#/hoje'`);
+      await js(`location.hash = ${JSON.stringify('#/questao-nova?texto=' + encodeURIComponent(t))}`);
+      await dormir(900);
+      nota('link: resumo', await js(`document.querySelector('.colar-resumo')?.textContent`));
+      nota('link: formato certo/errado', await js(`document.querySelector('.qst-filtros .chip.sel')?.textContent + ' | endereço: ' + location.hash`));
+      await foto('colar-link', ap);
+      // Texto longo e com "?" sem codificar no meio.
+      await js(`localStorage.removeItem('revisemais:rascunho-questao:nova')`);
+      await js(`location.hash = '#/hoje'`);
+      await js(`location.hash = '#/questao-nova?texto=Qual o prazo? A) um B) dois C) tres'`);
+      await dormir(900);
+      nota('link: com ? solto', await js(`document.querySelector('.colar-resumo')?.textContent`));
+    }
+    if (quer('colar-compartilhar')) {
+      // Android: o menu Compartilhar abre /?compartilhar=1&text=... (aqui, simulado abrindo o endereço).
+      const t = 'Q1\nAno: 2023 Banca: FGV Órgão: OAB Prova: FGV - 2023 - OAB - Exame XXXVIII - Primeira Fase\nQual é o prazo?\nA\nDez dias.\nB\nVinte dias.\nGabarito: A\nhttps://www.qconcursos.com/questoes/abc';
+      await js(`localStorage.removeItem('revisemais:rascunho-questao:nova')`);
+      await cmd('Page.navigate', { url: `${URL_APP}?compartilhar=1&title=QConcursos&text=${encodeURIComponent(t)}` });
+      await dormir(800);
+      await esperarApp();
+      await dormir(500);
+      nota('compartilhar: endereço depois', await js(`location.pathname + location.search + location.hash`));
+      nota('compartilhar: resumo', await js(`document.querySelector('.colar-resumo')?.textContent`));
+      nota('compartilhar: alternativas', await js(`[...document.querySelectorAll('.qst-alt-campo input')].map((i) => i.value)`));
+      await foto('colar-compartilhar', ap);
+    }
+    if (quer('colar-iphone')) {
+      // Ajuda do iPhone (só aparece no iPhone/iPad): simula o navegador do iPhone.
+      await cmd('Emulation.setUserAgentOverride', { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1' });
+      await ir('#/questao-nova');
+      await cmd('Page.reload');
+      await dormir(800);
+      await esperarApp();
+      nota('iphone: ajuda aparece', await js(`[...document.querySelectorAll('.colar-ajuda summary')].map((x) => x.textContent)`));
+      await js(`document.querySelectorAll('.colar-ajuda details').forEach((d) => (d.open = true))`);
+      await foto('colar-iphone', ap);
+      await cmd('Emulation.setUserAgentOverride', { userAgent: '' });
+    }
     if (quer('vazio')) {
       await js(`localStorage.clear()`);
       await cmd('Page.reload');

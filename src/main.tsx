@@ -4,8 +4,18 @@ import { registerSW } from 'virtual:pwa-register';
 import { App } from './App';
 import { emManutencao } from './lib/backend';
 import { Manutencao } from './pages/Manutencao';
+import { enderecoDaQuestaoColada, textoCompartilhado } from './lib/colarQuestao';
 import './styles.css';
 import './repaginacao.css';
+
+// Questão que chegou pelo menu Compartilhar do Android (share_target do manifest: /?compartilhar=1&text=...)
+// ou por ?texto=: vira o endereço interno #/questao-nova?texto=..., que o formulário lê e separa.
+try {
+  const compartilhado = textoCompartilhado(location.search);
+  if (compartilhado) history.replaceState(null, '', `${import.meta.env.BASE_URL}${enderecoDaQuestaoColada(compartilhado)}`);
+} catch {
+  /* sem isso o app abre normalmente */
+}
 
 // App instalado (PWA): quando sai uma versão nova, ela é ativada e a página recarrega sozinha.
 // Também procura atualização ao voltar para o app e a cada 30 minutos.

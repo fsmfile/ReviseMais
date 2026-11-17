@@ -3,6 +3,7 @@ import { href, ir } from '../lib/rota';
 import { useDados } from '../lib/store';
 import { LETRAS, montarQuestao, NOME_MONITOR, rascunhoDe, rascunhoVazio, validarRascunho, alternativasDe, type Rascunho } from '../lib/questoes';
 import { salvarQuestao, useQuestoes } from '../lib/questoesStore';
+import { aplicarColada, LIMITE_ATALHO, LIMITE_COLADA, lerColada, resumoColada, temQuestao } from '../lib/colarQuestao';
 
 const chaveRascunho = (id?: string) => `revisemais:rascunho-questao:${id ?? 'nova'}`;
 function lerRascunho(id?: string): Rascunho | null {
@@ -29,7 +30,7 @@ const apagarRascunho = (id?: string) => {
 };
 
 /** `id` presente = editando uma questão pendente. */
-export function QuestaoForm({ id }: { id?: string }) {
+export function QuestaoForm({ id, texto }: { id?: string; texto?: string }) {
   const { questoes, carregando } = useQuestoes();
   const existente = id ? questoes.find((q) => q.id === id) : undefined;
   if (id && carregando && !existente) return <div className="carregando">Carregando…</div>;
@@ -52,10 +53,10 @@ export function QuestaoForm({ id }: { id?: string }) {
         </a>
       </div>
     );
-  return <Formulario key={id ?? 'nova'} id={id} inicial={existente ? rascunhoDe(existente) : null} />;
+  return <Formulario key={id ?? 'nova'} id={id} inicial={existente ? rascunhoDe(existente) : null} texto={texto} />;
 }
 
-function Formulario({ id, inicial }: { id?: string; inicial: Rascunho | null }) {
+function Formulario({ id, inicial, texto }: { id?: string; inicial: Rascunho | null; texto?: string }) {
   const { dados } = useDados();
   // O rascunho do aparelho vale mais que a questão gravada: é o que a pessoa estava digitando.
   const recuperado = useRef(lerRascunho(id));
@@ -65,11 +66,54 @@ function Formulario({ id, inicial }: { id?: string; inicial: Rascunho | null }) 
   const [salvando, setSalvando] = useState(false);
   const [erroGravar, setErroGravar] = useState<string | null>(null);
   const [avisoRascunho, setAvisoRascunho] = useState(!!recuperado.current);
+  const [colada, setColada] = useState('');
+  const [resumo, setResumo] = useState('');
+  const textoTratado = useRef('');
 
   // Rascunho guardado no aparelho a cada digitação.
   useEffect(() => {
     guardarRascunho(id, r);
   }, [id, r]);
+
+  // Separa o texto da questão colada. `perguntar`: se já há questão escrita, confirma antes de trocar.
+  const separar = (bruto: string, perguntar: boolean) => {
+    let t = bruto;
+    let aviso = '';
+    if (t.length > LIMITE_COLADA) {
+      t = t.slice(0, LIMITE_COLADA);
+      aviso = ' O texto era muito grande e foi cortado: confira o final.';
+    }
+    const lida = lerColada(t);
+    if (!Object.keys(lida.rascunho).length) {
+      setResumo(resumoColada(lida));
+      return;
+    }
+    const jaTem = temQuestao(r);
+    let substituir = false;
+    if (jaTem && perguntar) substituir = window.confirm('Já tem uma questão escrita aqui. Quer trocar o enunciado e as alternativas pelo que você colou?');
+    const novo = aplicarColada(r, lida.rascunho, substituir);
+    if (jaTem && !substituir) {
+      const completou = novo.banca !== r.banca || novo.prova !== r.prova || novo.materia !== r.materia;
+      setResumo(`${perguntar ? 'Mantive a questão que já estava escrita.' : 'O formulário já tem uma questão escrita. Toque em "Separar as partes" para trocar.'}${completou ? ' Completei só banca, prova e matéria.' : ''}`);
+      setR(novo);
+      return;
+    }
+    setR(novo);
+    setVisiveis(Math.max(4, novo.alternativas.map((x) => !!x.trim()).lastIndexOf(true) + 1));
+    setColada('');
+    setResumo(resumoColada(lida) + aviso);
+  };
+
+  // Questão que chegou pelo Compartilhar (Android) ou pelo Atalho (iPhone): vem em `texto`.
+  useEffect(() => {
+    if (id || !texto || textoTratado.current === texto) return;
+    textoTratado.current = texto;
+    setColada(texto);
+    separar(texto, false);
+    // Tira o texto do endereço: recarregar a página não repete e o endereço não fica enorme.
+    history.replaceState(null, '', `${location.pathname}${location.search}#/questao-nova`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, texto]);
 
   const planos = useMemo(() => [...dados.planos].sort((a, b) => a.ordem - b.ordem), [dados.planos]);
   const disciplinas = useMemo(() => dados.disciplinas.filter((d) => d.plano_id === r.planoId).sort((a, b) => a.ordem - b.ordem), [dados.disciplinas, r.planoId]);
@@ -120,6 +164,31 @@ function Formulario({ id, inicial }: { id?: string; inicial: Rascunho | null }) 
       <p className="suave">
         Copie a questão como estava na prova e conte o que você estudou sobre ela. {NOME_MONITOR} confere a resposta e comenta depois. Enquanto não comentar, você pode editar.
       </p>
+      {!id && (
+        <section className="cartao colar-questao">
+          <h2>Colar a questão</h2>
+          <p className="suave">Copie a questão inteira (no QConcursos ou em outro site) e cole aqui: o app separa enunciado e alternativas.</p>
+          <textarea
+            id="colar-questao"
+            rows={5}
+            value={colada}
+            onChange={(e) => setColada(e.target.value)}
+            aria-label="Texto da questão copiada"
+            placeholder="Cole aqui o texto da questão."
+          />
+          <div className="acoes">
+            <button onClick={() => separar(colada, true)} disabled={!colada.trim()}>
+              Separar as partes
+            </button>
+          </div>
+          {resumo && (
+            <p className="colar-resumo" role="status">
+              {resumo}
+            </p>
+          )}
+          <AjudaColar />
+        </section>
+      )}
       {avisoRascunho && (
         <p className="aviso-edital">
           Recuperei o que você estava escrevendo. <button className="link" onClick={descartar}>Descartar e começar de novo</button>
@@ -305,6 +374,53 @@ function Formulario({ id, inicial }: { id?: string; inicial: Rascunho | null }) 
         </a>
       </div>
       <p className="suave pequeno">O que você digita fica guardado neste aparelho enquanto escreve.</p>
+    </div>
+  );
+}
+
+const noIphone = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const noAndroid = () => /Android/i.test(navigator.userAgent);
+
+/** Ajuda curta: foto ou print, Android (Compartilhar) e iPhone (Atalho). */
+function AjudaColar() {
+  const iphone = noIphone();
+  const android = noAndroid();
+  return (
+    <div className="colar-ajuda">
+      <details>
+        <summary>Só tenho uma foto ou um print da questão</summary>
+        <p className="suave">
+          O app não lê imagem, mas o celular lê por você. No iPhone, abra a foto e toque no texto (Texto ao Vivo), selecione tudo e toque em Copiar. No Android, abra a foto no Google Fotos e toque em Lens (ou segure o dedo sobre o texto), selecione e copie. Depois cole aqui em cima.
+        </p>
+      </details>
+      {android && (
+        <details>
+          <summary>Mandar do Android pelo menu Compartilhar</summary>
+          <p className="suave">
+            Com o EstudeMais instalado na tela inicial (menu do Chrome, "Instalar app"), selecione o texto da questão no QConcursos, toque em Compartilhar e escolha EstudeMais. O formulário abre já com a questão separada.
+          </p>
+        </details>
+      )}
+      {iphone && (
+        <details>
+          <summary>Mandar do iPhone pelo menu Compartilhar</summary>
+          <p className="suave">O iPhone não deixa o app aparecer sozinho no menu Compartilhar. Você cria um Atalho uma vez só, e ele passa a aparecer lá:</p>
+          <ol className="suave colar-passos">
+            <li>Abra o app Atalhos e toque em + (novo atalho).</li>
+            <li>Toque em "Adicionar Ação" e procure por "Receber". Escolha a ação que recebe o que veio da Folha de Compartilhamento, e deixe só "Texto" como tipo aceito.</li>
+            <li>Adicione a ação que codifica um texto para endereço de internet (procure por "Codificar" ou "URL"; costuma se chamar "Codificar URL"). Ela deve usar a "Entrada da Folha de Compartilhamento".</li>
+            <li>
+              Adicione a ação "URL" e escreva: <code>https://estudemais-wheat.vercel.app/#/questao-nova?texto=</code> e, logo depois do sinal de igual, toque na variável com o resultado da ação anterior (o "Texto codificado").
+            </li>
+            <li>Adicione a ação que abre um endereço ("Abrir URLs") com essa URL.</li>
+            <li>Dê o nome "Mandar ao EstudeMais" ao atalho (toque no nome, no alto).</li>
+            <li>Toque no botão de detalhes do atalho (i) e ligue "Mostrar na Folha de Compartilhamento".</li>
+          </ol>
+          <p className="suave">
+            Para usar: no QConcursos (ou em qualquer site), selecione o texto da questão, toque em Compartilhar e escolha "Mandar ao EstudeMais". O atalho abre o Safari: se o app pedir, entre na sua conta lá. Questões muito longas (mais de {LIMITE_ATALHO.toLocaleString('pt-BR')} letras) podem chegar cortadas; nesse caso, cole o texto na caixa acima.
+          </p>
+        </details>
+      )}
     </div>
   );
 }

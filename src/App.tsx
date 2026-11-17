@@ -231,7 +231,7 @@ function Estrutura({ email }: { email?: string }) {
           ) : rota.tela === 'caderno' ? (
             <Caderno />
           ) : rota.tela === 'questao-nova' ? (
-            <QuestaoForm />
+            <QuestaoForm texto={rota.texto} />
           ) : rota.tela === 'questao-editar' ? (
             <QuestaoForm key={rota.id} id={rota.id} />
           ) : rota.tela === 'questao' ? (
