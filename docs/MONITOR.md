@@ -58,6 +58,6 @@ O texto que a pessoa escreve (enunciado, respostas, o que estudou) é **processa
 
 ## Limites conhecidos
 
-- **Conta do mesmo aparelho:** a inscrição de notificação é uma linha por aparelho (`endpoint`). Se outra conta entrar no mesmo aparelho, a linha da primeira pertence a ela e a gravação da segunda é recusada pela regra de segurança (falha em silêncio): só a primeira conta recebe o aviso com texto. Para resolver, um passo de servidor que transfira a linha (função `security definer`).
+- **Conta do mesmo aparelho:** a inscrição de notificação é uma linha por aparelho (`endpoint`). O app grava pela função `registrar_inscricao` (migração 0006, `security definer`): se outra conta entrar no mesmo aparelho, a linha passa para ela, e o aviso vai para quem está usando o aparelho agora.
 - A pessoa pode alterar o próprio `comentario_monitor` direto pela API (a regra "dono" deixa). Não afeta ninguém além dela; se algum dia o comentário virar prova de algo (selo, ranking), proteger com coluna só do servidor.
 - O agente pode errar. Por isso o app mostra o aviso de IA, as fontes com link e o estado "não bate com as fontes" / "não foi possível fechar". Não há revisão humana por padrão; vale o dono olhar as questões em que a resposta não bateu (a skill lista).

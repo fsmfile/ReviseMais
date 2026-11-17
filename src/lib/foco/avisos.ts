@@ -115,14 +115,15 @@ export async function prepararAvisos(): Promise<void> {
 
 /**
  * Guarda a inscrição completa deste aparelho na conta (tabela `inscricoes_push`), para o Monitor avisar com texto.
- * Falha em silêncio: sem a tabela (migração 0006) ou com o aparelho já ligado a outra conta, o resto do app segue igual.
+ * Falha em silêncio: sem a tabela (migração 0006), o resto do app segue igual.
  */
 async function gravarInscricao(): Promise<void> {
   if (!supabase || !subscricao || !acesso) return;
   const linha = linhaInscricao(subscricao, acesso.usuario);
   if (!linha) return;
   try {
-    await supabase.from('inscricoes_push').upsert(linha, { onConflict: 'endpoint' });
+    // Pela função do banco: se o aparelho estava em outra conta, a inscrição passa para a conta de agora.
+    await supabase.rpc('registrar_inscricao', { p_endpoint: linha.endpoint, p_app: linha.app, p_p256dh: linha.p256dh, p_auth: linha.auth });
   } catch {
     /* tenta de novo na próxima abertura */
   }

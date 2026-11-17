@@ -67,3 +67,20 @@ begin
       'create policy "dono" on public.%I for all to authenticated using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()))', t);
   end loop;
 end $$;
+
+-- O aparelho recebe os avisos da conta que está usando agora: se o mesmo celular entrar em outra conta,
+-- a inscrição passa para ela (a regra "dono" sozinha não deixaria trocar o dono da linha).
+create or replace function public.registrar_inscricao(p_endpoint text, p_app text, p_p256dh text, p_auth text)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  insert into public.inscricoes_push (endpoint, user_id, app, p256dh, auth, atualizado_em)
+  select p_endpoint, auth.uid(), p_app, p_p256dh, p_auth, now()
+  where auth.uid() is not null
+  on conflict (endpoint) do update
+    set user_id = excluded.user_id, app = excluded.app, p256dh = excluded.p256dh, auth = excluded.auth, atualizado_em = now();
+$$;
+revoke all on function public.registrar_inscricao(text, text, text, text) from public, anon;
+grant execute on function public.registrar_inscricao(text, text, text, text) to authenticated;
