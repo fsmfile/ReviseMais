@@ -32,7 +32,8 @@ describe('lerQuestaoColada: cópia do QConcursos (letra sozinha na linha)', () =
     expect(p.prova).toBe('FGV - 2024 - OAB - Exame de Ordem Unificado XLI - Primeira Fase');
   });
   it('não deixa cabeçalho, número nem lixo no enunciado', () => {
-    expect(p.enunciado).toBe('Direito Constitucional\nSobre o mandado de segurança, assinale a afirmativa correta.');
+    expect(p.enunciado).toBe('Sobre o mandado de segurança, assinale a afirmativa correta.');
+    expect(p.materia).toBe('Direito Constitucional');
     expect(p.enunciado).not.toMatch(/Q3185443|Ano:|Banca|Responder|Você errou/);
   });
   it('separa as 4 alternativas na ordem', () => {
@@ -146,6 +147,50 @@ describe('lerQuestaoColada: cabeçalho em outras formas', () => {
   it('"Prova:" no meio do enunciado fica no enunciado', () => {
     const p = lerQuestaoColada('O examinador disse o seguinte.\nProva: é difícil.\nA) sim\nB) não');
     expect(p.prova).toBe('é difícil.');
+  });
+});
+
+describe('lerQuestaoColada: matéria antes do enunciado', () => {
+  it('"Direito Constitucional" sozinho depois do cabeçalho', () => {
+    const p = lerQuestaoColada(`${CAB}\nDireito Constitucional\nO prazo é de quanto?\nA) um\nB) dois`);
+    expect(p.materia).toBe('Direito Constitucional');
+    expect(p.enunciado).toBe('O prazo é de quanto?');
+  });
+  it('"Matéria > Assunto": fica a matéria e o assunto é descartado', () => {
+    const p = lerQuestaoColada(`${CAB}\nDireito Constitucional > Mandado de Segurança\nO prazo é de quanto?\nA) um\nB) dois`);
+    expect(p.materia).toBe('Direito Constitucional');
+    expect(p.enunciado).toBe('O prazo é de quanto?');
+  });
+  it('formato X > Y vale para qualquer nome de matéria', () => {
+    const p = lerQuestaoColada('Ética Profissional > Honorários\nO advogado pode cobrar?\nA) sim\nB) não');
+    expect(p.materia).toBe('Ética Profissional');
+    expect(p.enunciado).toBe('O advogado pode cobrar?');
+  });
+  it('outras disciplinas: Processo, Legislação, Noções de, Língua', () => {
+    for (const m of ['Direito Processual Civil', 'Legislação Especial', 'Noções de Direito Penal', 'Língua Portuguesa', 'Estatuto da Advocacia e da OAB']) {
+      const p = lerQuestaoColada(`${m}\nPergunta?\nA) um\nB) dois`);
+      expect(p.materia).toBe(m);
+      expect(p.enunciado).toBe('Pergunta?');
+    }
+  });
+  it('enunciado que começa com "Direito de greve é..." continua no enunciado', () => {
+    const p = lerQuestaoColada('Direito de greve é assegurado ao servidor público?\nA) sim\nB) não');
+    expect(p.materia).toBeUndefined();
+    expect(p.enunciado).toBe('Direito de greve é assegurado ao servidor público?');
+  });
+  it('frase de enunciado sem pontuação final, com verbo, não vira matéria', () => {
+    const p = lerQuestaoColada('Direito de greve é assegurado ao servidor\nA) sim\nB) não');
+    expect(p.materia).toBeUndefined();
+    expect(p.enunciado).toBe('Direito de greve é assegurado ao servidor');
+  });
+  it('linha com ">" e pontuação (frase) não vira matéria', () => {
+    const p = lerQuestaoColada('Se x > y, então o prazo aumenta.\nA) sim\nB) não');
+    expect(p.materia).toBeUndefined();
+  });
+  it('o rótulo "Disciplina:" vale mais que a linha solta', () => {
+    const p = lerQuestaoColada('Disciplina: Direito Civil\nDireito Penal\nPergunta?\nA) um\nB) dois');
+    expect(p.materia).toBe('Direito Civil');
+    expect(p.enunciado).toBe('Direito Penal\nPergunta?');
   });
 });
 

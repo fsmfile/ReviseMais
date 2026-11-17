@@ -123,6 +123,25 @@ function tirarGabarito(t: string): { resposta: string; texto: string } {
   return { resposta: ultimo.valor, texto };
 }
 
+const PREFIXO_DISCIPLINA = /^(?:Direito|Legisla[çc][ãa]o|[ÉE]tica|Estatuto|Processo|No[çc][õo]es\s+de|L[íi]ngua|Filosofia|Sociologia|Medicina\s+Legal|Criminologia|Hermen[êe]utica|Introdu[çc][ãa]o\s+ao)(?![\p{L}])/iu;
+const VERBO_NO_MEIO = /\s(?:é|são|foi|foram|era|pode|podem|deve|devem|cabe|cabem|assegura|garante|prevê|dispõe|estabelece|há|não|se|que|ao|aos|ser|está|estão)\s/iu;
+
+/** A linha é o nome da matéria (e talvez do assunto)? Devolve a matéria ou null. Conservador: frase de enunciado não vale. */
+function linhaDeMateria(linha: string): string | null {
+  const l = linha.trim();
+  if (!l || l.length > 120 || /[.?!:;,]$/.test(l)) return null;
+  if (l.includes('>')) {
+    const [antes, ...depois] = l.split('>');
+    const materia = antes.trim();
+    const assunto = depois.join('>').trim();
+    // O assunto não é guardado (o formulário só tem matéria): descartado.
+    return materia && assunto && materia.length <= 60 && !/[.?!:;]/.test(materia) ? materia : null;
+  }
+  if (l.length > 70 || !PREFIXO_DISCIPLINA.test(l)) return null;
+  if (l.split(/\s+/).length > 6 || VERBO_NO_MEIO.test(` ${l} `)) return null;
+  return l;
+}
+
 const NUMERO_DE_QUESTAO = /^(?:Q\s?\d{1,9}|#?\d{5,9}|Quest[ãa]o\s+\d+)$/i;
 
 /** Lê o texto colado. Só devolve o que achou; o resto o formulário deixa como está. */
@@ -184,6 +203,15 @@ export function lerColada(bruto: string): ColadaLida {
     }
     comecou = true;
     resto.push(l);
+  }
+  // A matéria que o QConcursos põe antes do enunciado ("Direito Constitucional" ou "Direito Constitucional > Mandado de Segurança").
+  if (!meta.materia) {
+    const k = resto.findIndex((x) => x.trim());
+    const m = k >= 0 ? linhaDeMateria(resto[k]) : null;
+    if (m) {
+      meta.materia = m;
+      resto.splice(k, 1);
+    }
   }
   t = resto.join('\n').replace(/\n{3,}/g, '\n\n').trim();
   for (let n = 0; n < 4 && RX_LIXO_FIM.test(t) && t.replace(RX_LIXO_FIM, '').trim(); n++) t = t.replace(RX_LIXO_FIM, '').trim();
