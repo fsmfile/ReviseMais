@@ -16,6 +16,7 @@ const CAMINHOS: Record<string, string> = {
   painel: 'M3 20h18 M6 20v-8 M12 20V5 M18 20v-11',
   evolucao: 'M3 17l6-6 4 4 8-8 M15 7h6v6',
   calendario: 'M4 6h16v14H4z M4 10h16 M8 3v4 M16 3v4',
+  mesclar: 'M6 3v4a5 5 0 0 0 5 5h1 M18 3v4a5 5 0 0 1-5 5h-1 M12 12v9 M9 18l3 3 3-3',
   comparar: 'M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1 M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1',
   menu: 'M4 6h16 M4 12h16 M4 18h16',
   play: 'M8 5l11 7-11 7z',

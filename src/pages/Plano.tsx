@@ -3,6 +3,7 @@ import { Percentual } from '../components/Campos';
 import { ChipsCorrelacao } from '../components/Correlacao';
 import { ChipClientes, SeloComprovado, useComprovacoes } from '../components/Advogando';
 import { HistoricoAssunto } from '../components/HistoricoAssunto';
+import { MesclarCom } from '../components/MesclarCom';
 import { Modal } from '../components/Modal';
 import { RegistrarEstudo } from '../components/RegistrarEstudo';
 import { SeletorCorMatriz } from '../components/SeletorCorMatriz';
@@ -26,7 +27,7 @@ type Filtro = 'todos' | 'nao' | 'estudados' | 'atrasados' | 'comuns';
 
 export function Plano({ id, destaque }: { id: string; destaque?: string }) {
   const { dados, acoes, executar, correlacoes } = useDados();
-  const { estudosPorAssunto, revisoesPorAssunto, fonteEstudo, idEfetivo } = useIndices();
+  const { estudosPorAssunto, revisoesPorAssunto, fonteEstudo, idEfetivo, grupo } = useIndices();
   const plano = dados.planos.find((p) => p.id === id);
   const [busca, setBusca] = useState('');
   const [filtro, setFiltro] = useState<Filtro>('todos');
@@ -36,6 +37,7 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
   const [editando, setEditando] = useState(false);
   const [novaDisc, setNovaDisc] = useState('');
   const [colorindo, setColorindo] = useState<{ tipo: 'disciplina' | 'assunto'; id: string } | null>(null);
+  const [mesclando, setMesclando] = useState<string | null>(null);
   const [comSubitens, setComSubitens] = useState(true);
   const corMateria = useCorMateria();
   const comprovados = useComprovacoes();
@@ -430,6 +432,18 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
               { icone: 'estudo', rotulo: 'Registrar estudo', acao: () => setEstudando(a.id) },
               { icone: 'cronometro', rotulo: 'Cronometrar estudo', acao: () => (location.hash = href({ tela: 'estudar', assunto: a.id })) },
               { icone: 'historico', rotulo: expandido === a.id ? 'Ocultar histórico' : 'Ver histórico', acao: () => setExpandido(expandido === a.id ? null : a.id) },
+              { icone: 'mesclar', rotulo: 'Mesclar com…', acao: () => setMesclando(a.id) },
+              ...(grupo(a.id).length > 1
+                ? [
+                    {
+                      icone: 'mesclar',
+                      rotulo: 'Desfazer mesclagem',
+                      acao: () =>
+                        confirm('Separar este assunto dos outros planos? As revisões pendentes ficam com os outros.') &&
+                        executar(() => acoes.separarAssunto(a.id)),
+                    },
+                  ]
+                : []),
               {
                 icone: 'cor',
                 rotulo: 'Alterar cor',
@@ -450,6 +464,7 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
         );
       })()}
 
+      {mesclando && <MesclarCom assuntoId={mesclando} aoFechar={() => setMesclando(null)} />}
       {adicionando && (
         <AdicionarAssuntos
           disciplinaId={adicionando}

@@ -8,7 +8,7 @@ import { estadoRevisao } from './StatusRevisoes';
 /** Histórico de estudos e revisões de um assunto (aparece ao expandir a linha). */
 export function HistoricoAssunto({ assuntoId }: { assuntoId: string }) {
   const { acoes, executar } = useDados();
-  const { estudosPorAssunto, revisoesPorAssunto, fonteEstudo } = useIndices();
+  const { estudosPorAssunto, revisoesPorAssunto, fonteEstudo, grupo, contexto } = useIndices();
   const [concluindo, setConcluindo] = useState<string | null>(null);
   const fonte = fonteEstudo(assuntoId);
   const id = fonte?.id ?? assuntoId;
@@ -23,6 +23,22 @@ export function HistoricoAssunto({ assuntoId }: { assuntoId: string }) {
         <p className="nota-compartilhado pequeno">
           Estudado em <strong>{fonte.via.plano.nome}</strong> › {fonte.via.disciplina.nome} › {fonte.via.assunto?.nome}. Estudo e revisões são compartilhados entre os
           dois planos.
+        </p>
+      )}
+      {grupo(assuntoId).length > 1 && (
+        <p className="nota-compartilhado pequeno">
+          Mesclado com{' '}
+          {grupo(assuntoId)
+            .filter((x) => x !== assuntoId)
+            .map((x) => contexto(x))
+            .filter((c) => !!c)
+            .map((c, k) => (
+              <span key={c!.assunto.id}>
+                {k > 0 && '; '}
+                <strong>{c!.plano.nome}</strong> › {c!.assunto.nome.length > 70 ? c!.assunto.nome.slice(0, 69) + '…' : c!.assunto.nome}
+              </span>
+            ))}
+          . Estudo e revisões valem para todos.
         </p>
       )}
       {estudos.map((e) => (

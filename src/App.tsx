@@ -9,6 +9,7 @@ import { href, useRota, type Rota } from './lib/rota';
 import { ProvedorDados, useDados } from './lib/store';
 import { Calendario } from './pages/Calendario';
 import { Comparar } from './pages/Comparar';
+import { Repetidos } from './pages/Repetidos';
 import { Desempenho } from './pages/Desempenho';
 import { Hoje } from './pages/Hoje';
 import { Login } from './pages/Login';
@@ -74,14 +75,15 @@ const PRINCIPAIS: ItemMenu[] = [
 ];
 const FERRAMENTAS: ItemMenu[] = [
   { rota: { tela: 'comparar' }, icone: 'comparar', rotulo: 'Comparar editais' },
+  { rota: { tela: 'repetidos' }, icone: 'mesclar', rotulo: 'Assuntos repetidos' },
   { rota: { tela: 'calendario' }, icone: 'calendario', rotulo: 'Alertas no calendário' },
 ];
 /** O que aparece em "Mais" (celular e tablet): tudo o que não está na barra inferior. */
 const SECOES: { titulo: string; itens: ItemMenu[] }[] = [
   { titulo: 'Acompanhamento', itens: PRINCIPAIS.slice(3, 6) },
   { titulo: 'Questões', itens: PRINCIPAIS.slice(6) },
-  { titulo: 'Planos e editais', itens: [{ rota: { tela: 'novo' }, icone: 'mais', rotulo: 'Novo plano' }, FERRAMENTAS[0]] },
-  { titulo: 'Avisos', itens: [FERRAMENTAS[1]] },
+  { titulo: 'Planos e editais', itens: [{ rota: { tela: 'novo' }, icone: 'mais', rotulo: 'Novo plano' }, FERRAMENTAS[0], FERRAMENTAS[1]] },
+  { titulo: 'Avisos', itens: [FERRAMENTAS[2]] },
 ];
 
 function Estrutura({ email }: { email?: string }) {
@@ -222,6 +224,8 @@ function Estrutura({ email }: { email?: string }) {
             <Desempenho />
           ) : rota.tela === 'comparar' ? (
             <Comparar />
+          ) : rota.tela === 'repetidos' ? (
+            <Repetidos />
           ) : rota.tela === 'advogando' ? (
             <ResultadoAdvogando key={rota.busca} busca={rota.busca} />
           ) : rota.tela === 'foco' ? (

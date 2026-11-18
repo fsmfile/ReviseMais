@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { BotaoProvar } from '../components/Advogando';
+import { AvisoRepetidos } from '../components/AvisoRepetidos';
 import { ConcluirRevisao } from '../components/ConcluirRevisao';
 import { Percentual } from '../components/Campos';
 import { Icone } from '../components/Icone';
@@ -126,6 +127,7 @@ export function Hoje() {
 
       <div className="hoje-grade">
       <div className="hoje-principal">
+      <AvisoRepetidos />
 
       {atrasadas.length > 0 && (
         <section>

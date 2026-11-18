@@ -333,6 +333,7 @@ const TELAS = [
   ['tempo', '#/tempo'],
   ['desempenho', '#/desempenho'],
   ['comparar', '#/comparar'],
+  ['repetidos', '#/repetidos'],
   ['calendario', '#/calendario'],
   ['novo', '#/novo'],
   ['questoes', '#/questoes'],
@@ -546,6 +547,31 @@ try {
       await dormir(400);
       nota('atrasadas depois de revisar uma (esperado 5 / 5)', await contarAtrasadas());
       await foto('hoje-revisei', ap);
+    }
+    if (quer('mesclar')) {
+      // Assunto repetido entre planos: aviso na Hoje, sugestão na tela de repetidos; mesclar junta as revisões.
+      await regravarExemplo();
+      await ir('#/hoje');
+      nota('aviso de repetidos na Hoje (esperado 1)', await js(`document.querySelectorAll('.aviso-repetidos').length`));
+      await ir('#/repetidos');
+      nota('sugestões (esperado 1)', await js(`document.querySelectorAll('.sugestao-mescla').length`));
+      await clicar('.sugestao-mescla .acoes button', 'Mesclar');
+      await dormir(400);
+      nota('sugestões depois de mesclar (esperado 0)', await js(`document.querySelectorAll('.sugestao-mescla').length`));
+      await ir('#/hoje');
+      nota('atrasadas depois de mesclar: cartão / itens (esperado 5 / 5)', await contarAtrasadas());
+      nota('etiquetas no item mesclado (esperado 2)', await js(`[...document.querySelectorAll('.lista-revisoes li.atrasada')].find((li) => li.textContent.includes('Organização do Estado'))?.querySelectorAll('.tag').length ?? 0`));
+      await foto('hoje-mesclado', ap);
+      // "Mesclar com…" no menu do assunto (para o que o app não sugere).
+      await ir('#/plano/p1');
+      await clicar('button', 'Expandir tudo');
+      await dormir(200);
+      await clicar('.nome-assunto', 'Nacionalidade');
+      await dormir(200);
+      await clicar('.folha-item', 'Mesclar com');
+      await dormir(300);
+      nota('Mesclar com…: itens na lista', await js(`document.querySelectorAll('.lista-mesclar li').length`));
+      await fotoTela('mesclar-com', ap);
     }
     if (quer('vazio')) {
       await js(`localStorage.clear()`);

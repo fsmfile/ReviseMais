@@ -137,6 +137,22 @@ Detalhes e passo a passo do dono: `docs/ECOSSISTEMA.md` no repositório do Advog
 - **Tempo em dobro:** ir para o Advogando pelos botões daqui pausa o cronômetro (`pausarParaOEscritorio`); se ele rodou
   durante o atendimento, o registro do resultado desconta o tempo que já entrou pela sessão do escritório.
 
+## Revisões a fazer e assuntos repetidos (18/11/2026)
+
+Pedido de uma usuária: atraso do mesmo assunto não se acumula e revisar num plano vale nos outros.
+
+- **Um item por assunto** (ou grupo mesclado) nas revisões a fazer, com "sem revisar há N dias": `src/lib/revisoes.ts`
+  (`revisoesAFazer`, `contarAFazer`). Hoje, Painel, título da aba e Mentor contam assuntos, não marcos vencidos.
+- **Revisar resolve o assunto** (`planoDeConclusao`, aplicado em `acoes.concluirRevisao` por todos os caminhos): as outras
+  pendentes já vencidas são apagadas e, se a revisão foi feita com atraso, as seguintes recontam a partir do dia feito.
+  "Adiar para amanhã" adia o assunto inteiro (`adiarRevisoes`).
+- **Assuntos mesclados** (migração `0007`): `assuntos.mesclado_em` aponta para a raiz do grupo; estudos e revisões ficam
+  no assunto onde aconteceram e `src/lib/indices.ts` (`useIndices`) faz qualquer membro enxergar o grupo. Sugestões, mesclar,
+  separar e apagar sem perder o ciclo: `src/lib/mesclagem.ts`. "Não são iguais" fica em `assuntos_distintos` (tabela opcional).
+  Telas: `#/repetidos` (menu Ferramentas), aviso na Hoje (`AvisoRepetidos`), "Mesclar com…"/"Desfazer mesclagem" no menu do assunto.
+- Só vira sugestão o grupo com dois ou mais assuntos estudados (revisões duplicadas); nomes parecidos ou um contido no outro.
+- Roteiros de captura: `npm run navegar -- hoje-revisei,mesclar`.
+
 ## Minhas questões e o Monitor
 
 Cadastro de questões de simulado com o que a pessoa estudou; o **Monitor** (agentes de IA, rodados pelo dono no PC, em lote) comenta

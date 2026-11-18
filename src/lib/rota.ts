@@ -11,6 +11,8 @@ export type Rota =
   | { tela: 'importar'; id: string }
   | { tela: 'desempenho' }
   | { tela: 'comparar' }
+  /** Assuntos que parecem iguais em planos diferentes (sugestões de mesclagem). */
+  | { tela: 'repetidos' }
   | { tela: 'calendario' }
   | { tela: 'foco' }
   | { tela: 'questoes' }
@@ -54,6 +56,7 @@ function ler(): Rota {
     case 'novo':
     case 'desempenho':
     case 'comparar':
+    case 'repetidos':
     case 'calendario':
     case 'foco':
     case 'questoes':
