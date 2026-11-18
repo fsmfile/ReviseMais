@@ -154,3 +154,5 @@ fala, ícone = `/mascote/<papel>-<expressao>.png`, selo = `/mascote/badge.png`; 
 O desenho fica em `src/lib/mascote/rosto.ts`, **arquivo compartilhado**: igual a `src/mascote/rosto.ts` do Advogando; mude nos dois.
 Expressão por situação: `src/lib/mascote/expressoes.ts`. Componentes `Rosto` e `Fala`. Imagens: `npm run mascote`. Tudo em `docs/MASCOTE.md`.
 Confirmações pequenas ("salvo") ficam sem rosto.
+**O mascote fica só dentro do app e nas notificações.** O ícone e o logotipo do app (`public/icon*.{svg,png}`, `apple-touch-icon.png`,
+`theme_color` `#1f3a5f`) continuam sendo a marca "M" com selo "+"; não troque pelo mascote (pedido do dono em 18/11/2026).

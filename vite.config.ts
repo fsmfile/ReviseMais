@@ -25,7 +25,7 @@ export default defineConfig({
         short_name: 'EstudeMais',
         description: 'Organize matérias, revisões espaçadas e editais verticalizados.',
         lang: 'pt-BR',
-        theme_color: '#2459c4',
+        theme_color: '#1f3a5f',
         background_color: '#f6f7fb',
         display: 'standalone',
         start_url: '.',

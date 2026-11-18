@@ -1,15 +1,16 @@
 // Gera as imagens do mascote a partir de src/lib/mascote/rosto.ts, num navegador sem janela (o mesmo
 // jeito do scripts/navegar.mjs: Edge ou Chrome instalado, pelo protocolo de depuração).
 //
-//   npm run mascote                       gera tudo em public/ (rostos, selo e ícones do app)
+//   npm run mascote                       gera tudo em public/mascote/ (rostos e selo)
 //   npm run mascote -- --folha=arq.png    só uma folha de conferência (todos os papéis e expressões, ampliados);
 //                                         --lado=400 amplia, --so=monitor-feliz,monitor-comemorando escolhe quais
 //
 // Saída:
 //   public/mascote/<papel>-<expressao>.png   mentor, monitor e sócio (modo integrado), 192x192, colorido, fundo transparente (ícone da notificação)
 //   public/mascote/badge.png                 96x96, branco puro sobre transparente (selo pequeno da barra de cima do Android)
-//   public/icon.svg, icon-192.png, icon-512.png, icon-maskable-512.png, apple-touch-icon.png
-//                                            ícone do app: Mentor feliz, claro, sobre o azul principal do EstudeMais
+//
+// O ícone e o logotipo do app (public/icon.svg, icon-192.png, icon-512.png, icon-maskable-512.png, apple-touch-icon.png:
+// o "M" com selo "+") são a marca do EstudeMais e NÃO são gerados aqui. O mascote fica só dentro do app e nas notificações.
 import { spawn, execSync } from 'node:child_process';
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -136,30 +137,7 @@ try {
     //    então sem o preenchimento da cabeça e com o desenho mais cheio, para ler pequeno.
     const selo = (await rostoCor('neutro', 'mentor', 96, '#ffffff')).replace(/fill-opacity="\.08"/g, 'fill-opacity="0"').replace('stroke-width="3.4"', 'stroke-width="4.6"');
     await tirar(selo, 96, 96, join('public', 'mascote', 'badge.png'));
-
-    // 3. Ícone do app: Mentor feliz, claro, sobre o azul principal. `vista` recorta a grade 64x64 em volta da cabeça.
-    const feliz = await rostoCor('feliz', 'mentor', 64, '#ffffff');
-    const interno = feliz.replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
-    const atributos = 'fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" style="color:#ffffff"';
-    /** Ícone quadrado de 512 unidades: `fundo` (rect) e o rosto com `lado` unidades de largura, centralizado. */
-    const icone = (lado, raio) => {
-      const x = (512 - lado) / 2;
-      return (
-        `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">` +
-        `<rect width="512" height="512" rx="${raio}" fill="${COR}"/>` +
-        `<svg x="${x}" y="${x}" width="${lado}" height="${lado}" viewBox="4 0.8 56 56" ${atributos}>${interno}</svg>` +
-        `</svg>`
-      );
-    };
-    const svgApp = icone(400, 112);
-    writeFileSync(join('public', 'icon.svg'), svgApp + '\n');
-    await tirar(svgApp.replace('width="512" height="512"', 'width="192" height="192"'), 192, 192, join('public', 'icon-192.png'));
-    await tirar(svgApp, 512, 512, join('public', 'icon-512.png'));
-    // Maskable: fundo até as bordas (o sistema recorta) e o rosto dentro dos 80% centrais.
-    await tirar(icone(290, 0), 512, 512, join('public', 'icon-maskable-512.png'));
-    // iPhone: 180x180, fundo opaco e sem cantos (o iOS arredonda sozinho).
-    await tirar(icone(340, 0).replace('width="512" height="512"', 'width="180" height="180"'), 180, 180, join('public', 'apple-touch-icon.png'));
-    console.log(`${n} rostos + selo + ícones do app gerados em public/`);
+    console.log(`${n} rostos + selo gerados em public/mascote/`);
   }
   ws.close();
 } finally {

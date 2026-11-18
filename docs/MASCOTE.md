@@ -41,8 +41,9 @@ Com os óculos, `feliz` e `comemorando` ficavam apertados (boca colada nas lente
 
 `npm run mascote` (Edge ou Chrome sem janela, como o `npm run navegar`) gera a partir de `rosto.ts`:
 
-- `public/mascote/<papel>-<expressao>.png` (192x192, colorido, fundo transparente; mentor, monitor e sócio) e `public/mascote/badge.png` (96x96, branco puro);
-- o ícone do app (Mentor `feliz`, claro, sobre o azul principal): `public/icon.svg`, `icon-192.png`, `icon-512.png`, `icon-maskable-512.png` (rosto dentro dos 80% centrais) e `apple-touch-icon.png`.
+- `public/mascote/<papel>-<expressao>.png` (192x192, colorido, fundo transparente; mentor, monitor e sócio) e `public/mascote/badge.png` (96x96, branco puro).
+
+**O ícone e o logotipo do app não são o mascote.** `public/icon.svg`, `icon-192.png`, `icon-512.png`, `icon-maskable-512.png` e `apple-touch-icon.png` (o "M" branco com selo "+" sobre `#1f3a5f`, a mesma cor do `theme_color`) são a marca do EstudeMais: aparecem na tela inicial do celular, na aba do navegador, no topo/menu do app, no login e na manutenção. O script não mexe neles. O mascote fica só dentro do app (falas) e nas notificações (decisão do dono em 18/11/2026).
 
 `npm run mascote -- --folha=capturas/folha.png` faz só uma folha de conferência (`--lado=400` amplia, `--so=monitor-feliz,monitor-comemorando` escolhe quais).
 
