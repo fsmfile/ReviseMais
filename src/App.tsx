@@ -4,6 +4,7 @@ import { modoLocal, supabase, tabelasFaltando } from './lib/backend';
 import { nomeCurto } from './lib/abreviar';
 import { useArrastarOrdem } from './lib/arrastar';
 import { hoje } from './lib/datas';
+import { contarAFazer } from './lib/revisoes';
 import { href, useRota, type Rota } from './lib/rota';
 import { ProvedorDados, useDados } from './lib/store';
 import { Calendario } from './pages/Calendario';
@@ -100,7 +101,8 @@ function Estrutura({ email }: { email?: string }) {
   const [menuAberto, setMenuAberto] = useState(false);
   useEffect(() => setMenuAberto(false), [rota, larga]);
   const { novas: questoesNovas } = useQuestoes();
-  const pendHoje = dados.revisoes.filter((r) => !r.concluida_em && r.data_prevista <= hoje()).length;
+  // Um por assunto (ou grupo mesclado), por mais marcos que tenham vencido.
+  const pendHoje = contarAFazer(dados, hoje()).total;
 
   useEffect(() => {
     document.title = pendHoje ? `(${pendHoje}) EstudeMais` : 'EstudeMais';

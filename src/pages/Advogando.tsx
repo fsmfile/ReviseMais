@@ -56,7 +56,7 @@ export function ResultadoAdvogando({ busca }: { busca: string }) {
 
 function Registrar({ r, busca }: { r: Resultado; busca: string }) {
   const { dados, acoes, executar } = useDados();
-  const { contexto, estudosPorAssunto } = useIndices();
+  const { contexto, estudosPorAssunto, revisoesPorAssunto } = useIndices();
   const cat = useCatalogoAdvogando();
   const pct = percentual(r);
   const caso = cat.casos.find((c) => c.id === r.caso);
@@ -90,15 +90,14 @@ function Registrar({ r, busca }: { r: Resultado; busca: string }) {
   // O que acontece ao registrar: conclui a revisão (a do link ou a que já venceu) ou começa o ciclo.
   const plano = useMemo(() => {
     if (!escolhido) return null;
-    const pend = dados.revisoes
-      .filter((x) => x.assunto_id === escolhido && !x.concluida_em)
-      .sort((a, b) => a.data_prevista.localeCompare(b.data_prevista));
+    // Pelo índice: assunto mesclado enxerga as revisões do grupo, mesmo gravadas no assunto de outro plano.
+    const pend = (revisoesPorAssunto.get(escolhido) ?? []).filter((x) => !x.concluida_em);
     const doLink = r.revisao ? pend.find((x) => x.id === r.revisao) : undefined;
     const vencida = pend.find((x) => x.data_prevista <= hoje());
     const revisao = doLink ?? vencida;
     const estudado = (estudosPorAssunto.get(escolhido) ?? []).length > 0;
     return { revisao, estudado };
-  }, [escolhido, dados.revisoes, r.revisao, estudosPorAssunto]);
+  }, [escolhido, r.revisao, estudosPorAssunto, revisoesPorAssunto]);
 
   const registrar = async () => {
     if (!alvo || !plano) return;
@@ -157,7 +156,7 @@ function Registrar({ r, busca }: { r: Resultado; busca: string }) {
   if (feito) {
     const ctx = feito !== 'antes' ? contexto(feito) : null;
     const prox = ctx
-      ? dados.revisoes.filter((x) => x.assunto_id === ctx.assunto.id && !x.concluida_em).sort((a, b) => a.data_prevista.localeCompare(b.data_prevista))[0]
+      ? (revisoesPorAssunto.get(ctx.assunto.id) ?? []).find((x) => !x.concluida_em)
       : undefined;
     return (
       <div className="pagina-advogando">

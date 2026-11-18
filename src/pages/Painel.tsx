@@ -5,6 +5,7 @@ import { FichaCandidato } from '../components/Advogando';
 import { deISO, diasEntre, formatarCurto, formatarData, hoje, paraISO, somarDias } from '../lib/datas';
 import { href } from '../lib/rota';
 import { useCorMateria } from '../lib/cores';
+import { contarAFazer } from '../lib/revisoes';
 import { useDados, useIndices } from '../lib/store';
 
 const media = (l: number[]) => (l.length ? Math.round((l.reduce((s, x) => s + x, 0) / l.length) * 10) / 10 : null);
@@ -83,7 +84,9 @@ export function Painel() {
     // Situação das revisões.
     const noPrazo = feitas.filter((r) => r.concluida_em! <= r.data_prevista).length;
     const comAtraso = feitas.length - noPrazo;
-    const atrasadas = pendentes.filter((r) => r.data_prevista < ref).length;
+    // Revisões a fazer contam por assunto (ou grupo mesclado), não por marco vencido.
+    const aFazer = contarAFazer(dados, ref, planoId ? ids : undefined);
+    const atrasadas = aFazer.atrasadas;
 
     // Acertos por disciplina.
     const porDisc = new Map<string, number[]>();
@@ -127,7 +130,7 @@ export function Painel() {
       noPrazo,
       comAtraso,
       atrasadas,
-      paraHoje: pendentes.filter((r) => r.data_prevista === ref).length,
+      paraHoje: aFazer.hoje,
       disciplinas,
       progresso,
       prova: provas[0],

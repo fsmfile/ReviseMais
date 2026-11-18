@@ -1,7 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { backend, novoId } from './backend';
-import { REVISOES } from './datas';
-import { calcularCorrelacoes, fontesDeEstudo, normalizar, type MapaCorrelacoes } from './correlacao';
+import { REVISOES, hoje } from './datas';
+import { calcularCorrelacoes, normalizar, type MapaCorrelacoes } from './correlacao';
+import { montarIndices } from './indices';
+import { membrosDoGrupo, planoDeAdiamento, planoDeConclusao } from './revisoes';
 import type { DisciplinaExtraida } from './editalParser';
 import type { Assunto, Dados, Disciplina, Estudo, Plano, Revisao, Sessao } from './types';
 
@@ -35,6 +37,11 @@ function useAcoes(dados: Dados, setDados: (f: (d: Dados) => Dados) => void) {
       if (!mudaram.length) return;
       setDados((d) => ({ ...d, disciplinas: d.disciplinas.map((x) => (nova.has(x.id) ? { ...x, ordem: nova.get(x.id)! } : x)) }));
       await Promise.all(mudaram.map((d) => backend.atualizar('disciplinas', d.id, { ordem: nova.get(d.id)! })));
+    };
+    /** Revisões pendentes do assunto e dos assuntos mesclados com ele. */
+    const pendentesDoGrupo = (assuntoId: string) => {
+      const grupo = new Set(membrosDoGrupo(dados.assuntos, assuntoId));
+      return dados.revisoes.filter((r) => grupo.has(r.assunto_id) && !r.concluida_em);
     };
     const filhosDoPlano = (planoId: string) => {
       const discs = dados.disciplinas.filter((d) => d.plano_id === planoId).map((d) => d.id);
@@ -278,8 +285,10 @@ function useAcoes(dados: Dados, setDados: (f: (d: Dados) => Dados) => void) {
           percentual: null,
           questoes: null,
         }));
+        // Assunto mesclado: as pendentes do grupo inteiro dão lugar ao ciclo novo.
+        const grupo = new Set(membrosDoGrupo(dados.assuntos, n.assunto_id));
         const antigas = n.substituirPendentes
-          ? dados.revisoes.filter((r) => r.assunto_id === n.assunto_id && !r.concluida_em).map((r) => r.id)
+          ? dados.revisoes.filter((r) => grupo.has(r.assunto_id) && !r.concluida_em).map((r) => r.id)
           : [];
         if (antigas.length) await backend.excluir('revisoes', antigas);
         await backend.inserir('estudos', [estudo as never]);
@@ -299,9 +308,34 @@ function useAcoes(dados: Dados, setDados: (f: (d: Dados) => Dados) => void) {
         await remover({ est: [id], rev: dados.revisoes.filter((r) => r.estudo_id === id).map((r) => r.id) });
       },
 
+      /**
+       * Conclui uma revisão (ou desfaz, com `concluida_em` nulo). Feita, ela resolve as outras pendentes do assunto
+       * (e do grupo mesclado) já vencidas; se foi feita com atraso, as seguintes recontam a partir do dia dela.
+       */
       async concluirRevisao(id: string, patch: Pick<Revisao, 'concluida_em' | 'percentual' | 'questoes'>) {
+        const r = dados.revisoes.find((x) => x.id === id);
+        const m =
+          r && patch.concluida_em
+            ? planoDeConclusao(r, pendentesDoGrupo(r.assunto_id), patch.concluida_em)
+            : { apagar: [], reagendar: [] };
         await backend.atualizar('revisoes', id, patch);
-        setDados((d) => ({ ...d, revisoes: d.revisoes.map((x) => (x.id === id ? { ...x, ...patch } : x)) }));
+        if (m.apagar.length) await backend.excluir('revisoes', m.apagar);
+        await Promise.all(m.reagendar.map((x) => backend.atualizar('revisoes', x.id, { data_prevista: x.data_prevista })));
+        const fora = new Set(m.apagar);
+        const novaData = new Map(m.reagendar.map((x) => [x.id, x.data_prevista]));
+        setDados((d) => ({
+          ...d,
+          revisoes: d.revisoes
+            .filter((x) => !fora.has(x.id))
+            .map((x) => (x.id === id ? { ...x, ...patch } : novaData.has(x.id) ? { ...x, data_prevista: novaData.get(x.id)! } : x)),
+        }));
+      },
+      /** "Adiar para amanhã": leva para `para` todas as revisões vencidas do assunto (e do grupo mesclado). */
+      async adiarRevisoes(assuntoId: string, para: string) {
+        const mudancas = planoDeAdiamento(pendentesDoGrupo(assuntoId), hoje(), para);
+        await Promise.all(mudancas.map((x) => backend.atualizar('revisoes', x.id, { data_prevista: x.data_prevista })));
+        const novaData = new Map(mudancas.map((x) => [x.id, x.data_prevista]));
+        setDados((d) => ({ ...d, revisoes: d.revisoes.map((x) => (novaData.has(x.id) ? { ...x, data_prevista: novaData.get(x.id)! } : x)) }));
       },
       async criarSessao(nova: Omit<Sessao, 'id'>) {
         const sessao: Sessao = { id: novoId(), ...nova };
@@ -404,41 +438,8 @@ export function useDados(): Ctx {
   return c;
 }
 
-/** Índices auxiliares usados em várias telas. */
+/** Índices auxiliares usados em várias telas (ver `montarIndices`). */
 export function useIndices() {
   const { dados, correlacoes } = useDados();
-  return useMemo(() => {
-    const planos = new Map(dados.planos.map((p) => [p.id, p]));
-    const disciplinas = new Map(dados.disciplinas.map((d) => [d.id, d]));
-    const assuntos = new Map(dados.assuntos.map((a) => [a.id, a]));
-    const estudosPorAssunto = new Map<string, Estudo[]>();
-    for (const e of dados.estudos) {
-      const l = estudosPorAssunto.get(e.assunto_id) ?? [];
-      l.push(e);
-      estudosPorAssunto.set(e.assunto_id, l);
-    }
-    for (const l of estudosPorAssunto.values()) l.sort((a, b) => a.data.localeCompare(b.data));
-    const revisoesPorAssunto = new Map<string, Revisao[]>();
-    for (const r of dados.revisoes) {
-      const l = revisoesPorAssunto.get(r.assunto_id) ?? [];
-      l.push(r);
-      revisoesPorAssunto.set(r.assunto_id, l);
-    }
-    for (const l of revisoesPorAssunto.values()) l.sort((a, b) => a.data_prevista.localeCompare(b.data_prevista));
-    const contexto = (assuntoId: string) => {
-      const a = assuntos.get(assuntoId);
-      const d = a && disciplinas.get(a.disciplina_id);
-      const p = d && planos.get(d.plano_id);
-      return a && d && p ? { assunto: a, disciplina: d, plano: p } : null;
-    };
-    const fontes = fontesDeEstudo(assuntos.keys(), correlacoes, (id) => {
-      const l = estudosPorAssunto.get(id);
-      return l?.length ? l[l.length - 1].data : undefined;
-    });
-    /** De onde vem o estudo do assunto (ele mesmo ou um equivalente de outro plano); undefined = não estudado. */
-    const fonteEstudo = (assuntoId: string) => fontes.get(assuntoId);
-    /** Id cujos estudos/revisões valem para o assunto (estudo compartilhado entre planos). */
-    const idEfetivo = (assuntoId: string) => fontes.get(assuntoId)?.id ?? assuntoId;
-    return { planos, disciplinas, assuntos, estudosPorAssunto, revisoesPorAssunto, contexto, fonteEstudo, idEfetivo };
-  }, [dados, correlacoes]);
+  return useMemo(() => montarIndices(dados, correlacoes), [dados, correlacoes]);
 }

@@ -106,6 +106,9 @@ function dadosExemplo() {
   estudar('p2-d1-a0', 3, 68, 1);
   estudar('p2-d1-a1', 6, 40, 0);
   estudar('p2-d0-a0', 2, 75, 0);
+  // "Organização do Estado" estudado na OAB e na PGE há 12 dias, sem revisar: 48h e 1 semana vencidas nos dois (assunto repetido).
+  estudar('p1-d1-a3', 12, 60, 0);
+  estudar('p2-d0-a2', 12, 70, 0);
   const tipos = ['teoria', 'questoes', 'revisao', 'lei_seca', 'videoaula'];
   const materias = [['p1', 'p1-d0', 'Ética Profissional'], ['p1', 'p1-d1', 'Direito Constitucional'], ['p1', 'p1-d2', 'Direito Civil'], ['p2', 'p2-d1', 'Direito Administrativo'], ['p1', 'p1-d4', 'Direito Penal']];
   let n = 0;
@@ -523,6 +526,26 @@ try {
       await js(`document.querySelectorAll('.colar-ajuda details').forEach((d) => (d.open = true))`);
       await foto('colar-iphone', ap);
       await cmd('Emulation.setUserAgentOverride', { userAgent: '' });
+    }
+    /** Volta aos dados de exemplo (os roteiros abaixo mexem nos dados). */
+    const regravarExemplo = async () => {
+      await js(`localStorage.setItem('revisemais:dados', ${JSON.stringify(JSON.stringify(dadosExemplo()))});`);
+      await cmd('Page.reload');
+      await dormir(800);
+      await esperarApp();
+    };
+    const contarAtrasadas = () => js(`[document.querySelector('.cartao-num.alerta strong')?.textContent ?? '0', document.querySelectorAll('.lista-revisoes li.atrasada').length].join(' / ')`);
+    if (quer('hoje-revisei')) {
+      // Um item por assunto: 48h e 1 semana vencidas do mesmo assunto aparecem uma vez; revisar resolve as duas.
+      await regravarExemplo();
+      await ir('#/hoje');
+      nota('atrasadas: cartão / itens (esperado 6 / 6)', await contarAtrasadas());
+      await clicar('.lista-revisoes li.atrasada .revisei');
+      await dormir(200);
+      await clicar('.lista-revisoes li.atrasada .concluir button', 'Concluir');
+      await dormir(400);
+      nota('atrasadas depois de revisar uma (esperado 5 / 5)', await contarAtrasadas());
+      await foto('hoje-revisei', ap);
     }
     if (quer('vazio')) {
       await js(`localStorage.clear()`);

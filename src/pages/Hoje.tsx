@@ -5,32 +5,43 @@ import { Percentual } from '../components/Campos';
 import { Icone } from '../components/Icone';
 import { ResumoTempo } from '../components/ResumoTempo';
 import { nomeCurto } from '../lib/abreviar';
-import { descreverPrazo, formatarCurto, hoje, rotuloRevisao, somarDias } from '../lib/datas';
+import { descreverPrazo, diasEntre, formatarCurto, hoje, rotuloRevisao, somarDias } from '../lib/datas';
+import { revisoesAFazer, type ItemRevisao } from '../lib/revisoes';
 import { href } from '../lib/rota';
 import { useDados, useIndices } from '../lib/store';
-import type { Revisao } from '../lib/types';
 
 export function Hoje() {
   const { dados, acoes, executar } = useDados();
-  const { contexto } = useIndices();
+  const { contexto, raiz } = useIndices();
   const [aberta, setAberta] = useState<string | null>(null);
   const ref = hoje();
   const nomes = useMemo(() => dados.planos.map((p) => p.nome), [dados.planos]);
 
   const { atrasadas, deHoje, proximas, feitasSemana, mediaSemana, estudosSemana } = useMemo(() => {
     const pend = dados.revisoes.filter((r) => !r.concluida_em).sort((a, b) => a.data_prevista.localeCompare(b.data_prevista));
+    // Um item por assunto (ou grupo mesclado): o mesmo assunto com 48h e 1 semana vencidas aparece uma vez só.
+    const aFazer = revisoesAFazer(dados, ref);
     const semanaAtras = somarDias(ref, -7);
+    // Agenda: o mesmo assunto (ou grupo) aparece uma vez por dia.
+    const vistos = new Set<string>();
+    const futuras = pend.filter((r) => {
+      if (r.data_prevista <= ref || r.data_prevista > somarDias(ref, 7)) return false;
+      const k = `${raiz(r.assunto_id)}|${r.data_prevista}`;
+      if (vistos.has(k)) return false;
+      vistos.add(k);
+      return true;
+    });
     const feitas = dados.revisoes.filter((r) => r.concluida_em && r.concluida_em > semanaAtras);
     const comPct = [...feitas, ...dados.estudos.filter((e) => e.data > semanaAtras)].filter((x) => x.percentual != null);
     return {
-      atrasadas: pend.filter((r) => r.data_prevista < ref),
-      deHoje: pend.filter((r) => r.data_prevista === ref),
-      proximas: pend.filter((r) => r.data_prevista > ref && r.data_prevista <= somarDias(ref, 7)),
+      atrasadas: aFazer.filter((x) => x.atrasada),
+      deHoje: aFazer.filter((x) => !x.atrasada),
+      proximas: futuras,
       feitasSemana: feitas.length,
       estudosSemana: dados.estudos.filter((e) => e.data > semanaAtras).length,
       mediaSemana: comPct.length ? Math.round(comPct.reduce((s, x) => s + (x.percentual ?? 0), 0) / comPct.length) : null,
     };
-  }, [dados, ref]);
+  }, [dados, ref, raiz]);
 
   if (!dados.planos.length) {
     return (
@@ -44,17 +55,25 @@ export function Hoje() {
     );
   }
 
-  const Item = ({ r }: { r: Revisao }) => {
-    const c = contexto(r.assunto_id);
+  const Item = ({ item }: { item: ItemRevisao }) => {
+    const r = item.revisao;
+    const c = contexto(item.raiz) ?? contexto(r.assunto_id);
     if (!c) return null;
+    // Uma etiqueta por plano do grupo (assunto mesclado em vários planos).
+    const planosDoItem = [...new Map(item.assuntos.flatMap((id) => (contexto(id) ? [contexto(id)!.plano] : [])).map((p) => [p.id, p])).values()];
+    const semRevisar = item.ultimoContato ? diasEntre(item.ultimoContato, ref) : 0;
+    const prazo =
+      item.atrasada && semRevisar > 0 ? `sem revisar há ${semRevisar} ${semRevisar === 1 ? 'dia' : 'dias'}` : descreverPrazo(r.data_prevista, ref);
     return (
-      <li className={`item-rev ${r.data_prevista < ref ? 'atrasada' : ''}`}>
+      <li className={`item-rev ${item.atrasada ? 'atrasada' : ''}`}>
         <div className="item-rev-topo">
-          <span className="tag" style={{ ['--cor' as string]: c.plano.cor }} title={c.plano.nome}>
-            {nomeCurto(c.plano.nome, nomes)}
-          </span>
+          {planosDoItem.map((p) => (
+            <span key={p.id} className="tag" style={{ ['--cor' as string]: p.cor }} title={p.nome}>
+              {nomeCurto(p.nome, nomes)}
+            </span>
+          ))}
           <span className="tipo-rev">{rotuloRevisao(r.tipo)}</span>
-          <span className="prazo">{descreverPrazo(r.data_prevista, ref)}</span>
+          <span className="prazo">{prazo}</span>
         </div>
         <a className="item-rev-titulo" href={href({ tela: 'plano', id: c.plano.id, assunto: c.assunto.id })}>
           <span className="item-rev-disc">{c.disciplina.nome}</span>
@@ -70,7 +89,7 @@ export function Hoje() {
               <Icone nome="check" tamanho={18} /> Revisei
             </button>
             <BotaoProvar revisao={r} />
-            <button className="fantasma adiar" title="Passar esta revisão para amanhã" onClick={() => executar(() => acoes.reagendarRevisao(r.id, somarDias(ref, 1)))}>
+            <button className="fantasma adiar" title="Passar este assunto para amanhã" onClick={() => executar(() => acoes.adiarRevisoes(item.raiz, somarDias(ref, 1)))}>
               Adiar para amanhã
             </button>
           </div>
@@ -114,8 +133,8 @@ export function Hoje() {
             <Icone nome="alerta" /> Revisões atrasadas <span className="conta-secao">{atrasadas.length}</span>
           </h2>
           <ul className="lista-revisoes">
-            {atrasadas.map((r) => (
-              <Item key={r.id} r={r} />
+            {atrasadas.map((x) => (
+              <Item key={x.raiz} item={x} />
             ))}
           </ul>
         </section>
@@ -127,8 +146,8 @@ export function Hoje() {
         </h2>
         {deHoje.length ? (
           <ul className="lista-revisoes">
-            {deHoje.map((r) => (
-              <Item key={r.id} r={r} />
+            {deHoje.map((x) => (
+              <Item key={x.raiz} item={x} />
             ))}
           </ul>
         ) : (

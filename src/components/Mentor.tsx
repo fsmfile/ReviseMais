@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { casosDoAssunto, pausadoPeloEscritorio, useCatalogoAdvogando, type CatalogoAdvogando } from '../lib/advogando';
 import { cronometro, decorridoSeg, pausaDeDescanso, useCronometro, type EstadoCronometro } from '../lib/cronometro';
 import { hoje } from '../lib/datas';
+import { contarAFazer } from '../lib/revisoes';
 import { duracaoFalada, falar, type Contexto, type Nivel, type Situacao } from '../lib/foco/falas';
 import { desconta, gravarEstado, lerConfig, lerEstado, NIVEIS, recadoDaPausaVale, ROTULO_MOTIVO, useConfigMentor, vezesNoDia, type Ausencia } from '../lib/foco/mentor';
 import { appsUsados, type Motivo } from '../lib/foco/sensor';
@@ -32,7 +33,7 @@ const minuscula = (s: string) => (s.length > 1 && s[1] === s[1].toLowerCase() ? 
 /** O que o mentor sabe para falar: matéria, revisões de hoje, cliente do Advogando, tempo de hoje. */
 export function montarContexto(c: EstadoCronometro | null, dados: Dados, cat: CatalogoAdvogando, extra: Contexto = {}): Contexto {
   const ref = hoje();
-  const pend = dados.revisoes.filter((r) => !r.concluida_em && r.data_prevista <= ref).length;
+  const pend = contarAFazer(dados, ref).total;
   const ctx: Contexto = { pend, ...extra };
   if (!c) return ctx;
   ctx.materia = c.materia;
@@ -121,7 +122,7 @@ export function Mentor() {
   useEffect(() => {
     const ref = hoje();
     publicarResumo({
-      revisoesHoje: dados.revisoes.filter((r) => !r.concluida_em && r.data_prevista <= ref).length,
+      revisoesHoje: contarAFazer(dados, ref).total,
       cronometro: crono ? { materia: crono.materia, rodando: !!crono.rodandoDesde } : null,
     });
   }, [dados.revisoes, crono, eco.integrado]);
