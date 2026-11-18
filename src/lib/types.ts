@@ -28,6 +28,8 @@ export interface Assunto {
   nivel: number;
   ordem: number;
   cor?: string | null;
+  /** Raiz do grupo de assuntos mesclados (o mesmo assunto em planos diferentes). Null/ausente = não mesclado ou é a raiz. */
+  mesclado_em?: string | null;
 }
 
 export interface Estudo {
