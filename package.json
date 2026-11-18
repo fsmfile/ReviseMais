@@ -11,6 +11,7 @@
     "typecheck": "tsc -b",
     "edital": "vite-node scripts/analisar-edital.ts --",
     "navegar": "node scripts/navegar.mjs",
+    "mascote": "node scripts/gerar-mascote.mjs",
     "monitor:exportar": "node scripts/monitor/rodar.mjs exportar",
     "monitor:aplicar": "node scripts/monitor/rodar.mjs aplicar"
   },

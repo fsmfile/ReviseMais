@@ -5,6 +5,27 @@
 const VIBRACAO = [90, 70, 90, 70, 260];
 const RECADOS = 'estudemais-recados';
 
+// Mascote: toda notificação sai com o nome de quem fala no título e o rosto da expressão do recado como ícone
+// (public/mascote/<papel>-<expressao>.png, gerado por scripts/gerar-mascote.mjs). Aviso antigo, sem papel e expressão,
+// cai no Mentor neutro. Espelha identidadeDoAviso de src/lib/mascote/expressoes.ts (um teste confere os dois).
+const NOMES_DO_PAPEL = { mentor: 'Mentor', socio: 'Sócio', monitor: 'Monitor' };
+const EXPRESSOES = ['neutro', 'feliz', 'comemorando', 'pensando', 'surpreso', 'preocupado', 'bravo', 'sonolento'];
+function identidadeDoAviso(papel, expressao) {
+  const conhecido = Object.prototype.hasOwnProperty.call(NOMES_DO_PAPEL, papel);
+  const p = conhecido ? papel : 'mentor';
+  const e = conhecido && EXPRESSOES.indexOf(expressao) >= 0 ? expressao : 'neutro';
+  return { titulo: NOMES_DO_PAPEL[p], icon: '/mascote/' + p + '-' + e + '.png', badge: '/mascote/badge.png' };
+}
+/** Opções da notificação a partir de um recado ou aviso ({ papel, expressao, titulo, texto, url }). */
+function opcoesDoAviso(d, extras) {
+  const id = identidadeDoAviso(d && d.papel, d && d.expressao);
+  return {
+    titulo: d && d.papel ? id.titulo : (d && d.titulo) || id.titulo,
+    opcoes: Object.assign({ body: (d && d.texto) || '', icon: id.icon, badge: id.badge, renotify: true, vibrate: VIBRACAO }, extras),
+  };
+}
+self.avisosMascote = { identidadeDoAviso, opcoesDoAviso };
+
 async function recadoDoMentor() {
   const cache = await caches.open(RECADOS);
   const url = new URL('./__recado-mentor', self.registration.scope).href;
@@ -17,7 +38,7 @@ async function recadoDoMentor() {
   return agora < recado.avisarEm + 3 * 3600000 ? recado : null;
 }
 
-// Aviso COM texto (ex.: o Monitor comentou uma questão): o script do dono manda { titulo, texto, url } e é isso que aparece.
+// Aviso COM texto (ex.: o Monitor comentou uma questão): o script do dono manda { papel, expressao, texto, url } (e, nos antigos, { titulo, texto, url }).
 function dadosDoAviso(e) {
   if (!e.data) return null;
   try {
@@ -25,41 +46,25 @@ function dadosDoAviso(e) {
     return d && (d.titulo || d.texto) ? d : null;
   } catch {
     const t = e.data.text();
-    return t ? { titulo: 'EstudeMais', texto: t } : null;
+    return t ? { texto: t } : null;
   }
 }
 
 self.addEventListener('push', (e) => {
   const aviso = dadosDoAviso(e);
   if (aviso) {
-    e.waitUntil(
-      self.registration.showNotification(aviso.titulo || 'EstudeMais', {
-        body: aviso.texto || '',
-        icon: 'icon-192.png',
-        badge: 'icon-192.png',
-        tag: aviso.tag || 'aviso',
-        renotify: true,
-        vibrate: VIBRACAO,
-        data: { url: aviso.url || './', ir: true },
-      }),
-    );
+    const n = opcoesDoAviso(aviso, { tag: aviso.tag || 'aviso', data: { url: aviso.url || './', ir: true } });
+    e.waitUntil(self.registration.showNotification(n.titulo, n.opcoes));
     return;
   }
   e.waitUntil(
     recadoDoMentor()
       .catch(() => null)
-      .then((recado) =>
+      .then((recado) => {
         // Todo toque precisa mostrar algo (o iPhone corta os avisos de quem recebe toque e não mostra nada).
-        self.registration.showNotification(recado ? recado.titulo : 'EstudeMais', {
-          body: recado ? recado.texto : 'Seu estudo está esperando você.',
-          icon: 'icon-192.png',
-          badge: 'icon-192.png',
-          tag: 'mentor',
-          renotify: true,
-          vibrate: VIBRACAO,
-          data: { url: (recado && recado.url) || './#/estudar' },
-        }),
-      ),
+        const n = opcoesDoAviso(recado || { texto: 'Seu estudo está esperando você.' }, { tag: 'mentor', data: { url: (recado && recado.url) || './#/estudar' } });
+        return self.registration.showNotification(n.titulo, n.opcoes);
+      }),
   );
 });
 
