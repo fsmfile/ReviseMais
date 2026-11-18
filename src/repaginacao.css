@@ -203,6 +203,11 @@ button.fantasma:hover, .botao.fantasma:hover { background: var(--superficie-2); 
 .qst-escolha { border: 0; padding: 0; margin: 0 0 0.6rem; min-width: 0; }
 .qst-escolha legend { font-size: 0.85rem; color: var(--texto-suave); padding: 0; }
 .qst-aguardando { border-left: 4px solid var(--amarelo); }
+/* Aviso no celular quando o Monitor comentar (AvisoDoMonitor) */
+.qst-aviso-celular { margin: 0.8rem 0 0; padding-top: 0.8rem; border-top: 1px solid var(--grade); }
+.qst-aviso-celular p { margin: 0 0 0.6rem; }
+.qst-aviso-celular button { gap: 0.45rem; }
+.qst-aviso-celular.ligado { display: flex; align-items: center; gap: 0.4rem; color: var(--verde); }
 .qst-monitor { border-left: 4px solid var(--primaria); }
 .qst-monitor h3 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
 .qst-monitor header h2 { margin-bottom: 0.1rem; }

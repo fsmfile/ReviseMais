@@ -120,18 +120,62 @@ export async function prepararAvisos(): Promise<void> {
 
 /**
  * Guarda a inscrição completa deste aparelho na conta (tabela `inscricoes_push`), para o Monitor avisar com texto.
- * Falha em silêncio: sem a tabela (migração 0006), o resto do app segue igual.
+ * Devolve se o banco aceitou. Quem só dispara (abertura do app, Foco) segue igual se falhar: sem a tabela (migração 0006),
+ * o resto do app funciona. Erro do banco não lança: o `rpc` devolve `{ error }`.
  */
-async function gravarInscricao(): Promise<void> {
-  if (!supabase || !subscricao || !acesso) return;
+async function gravarInscricao(): Promise<boolean> {
+  if (!supabase || !subscricao || !acesso) return false;
   const linha = linhaInscricao(subscricao, acesso.usuario);
-  if (!linha) return;
+  if (!linha) return false;
   try {
     // Pela função do banco: se o aparelho estava em outra conta, a inscrição passa para a conta de agora.
-    await supabase.rpc('registrar_inscricao', { p_endpoint: linha.endpoint, p_app: linha.app, p_p256dh: linha.p256dh, p_auth: linha.auth });
+    const { error } = await supabase.rpc('registrar_inscricao', { p_endpoint: linha.endpoint, p_app: linha.app, p_p256dh: linha.p256dh, p_auth: linha.auth });
+    return !error;
   } catch {
-    /* tenta de novo na próxima abertura */
+    return false; /* tenta de novo na próxima abertura */
   }
+}
+
+export type SituacaoAviso = 'ligado' | 'pode-ligar' | 'instalar-iphone' | 'bloqueado' | 'sem-suporte';
+
+/** O que o cartão "Aguardando o Monitor" mostra sobre o aviso no celular. */
+export function situacaoDoAviso(a: { iphoneSemInstalar: boolean; suporta: boolean; permissao: NotificationPermission | 'indisponivel'; naConta: boolean }): SituacaoAviso {
+  if (a.iphoneSemInstalar) return 'instalar-iphone';
+  if (!a.suporta) return 'sem-suporte';
+  if (a.permissao === 'denied') return 'bloqueado';
+  return a.permissao === 'granted' && a.naConta ? 'ligado' : 'pode-ligar';
+}
+
+/**
+ * Este aparelho está inscrito E a inscrição está gravada na conta de agora? Só assim o Monitor consegue avisar.
+ * Confere lendo a linha de volta do banco: a função `registrar_inscricao` não grava nada (e não dá erro) sem conta.
+ * `gravar`: grava antes de conferir (ao ligar); sem isso, só confere (ao abrir a tela).
+ */
+export async function inscricaoNaConta(gravar: boolean): Promise<boolean> {
+  if (!supabase) return false;
+  if (!acesso) {
+    const s = (await supabase.auth.getSession()).data.session;
+    acesso = s ? { token: s.access_token, usuario: s.user.id } : null;
+  }
+  if (!subscricao) {
+    subscricao = await inscricao(false);
+    endpoint = subscricao?.endpoint ?? null;
+  }
+  if (!acesso || !subscricao) return false;
+  if (gravar && !(await gravarInscricao())) return false;
+  try {
+    const { data, error } = await supabase.from('inscricoes_push').select('endpoint').eq('endpoint', subscricao.endpoint).maybeSingle();
+    return !error && !!data;
+  } catch {
+    return false;
+  }
+}
+
+/** Liga o aviso do Monitor neste aparelho: permissão, inscrição e a linha na conta, conferida no banco. Devolve a mensagem de erro, se houver. */
+export async function ativarAvisosDoMonitor(): Promise<string | null> {
+  const erro = await ativarAvisos();
+  if (erro) return erro;
+  return (await inscricaoNaConta(true)) ? null : 'O aparelho aceitou, mas não consegui guardar o aviso na sua conta. Tente de novo.';
 }
 
 /** Pedido que sobrevive à saída do app (keepalive): o navegador termina de enviar mesmo com a tela escondida. */

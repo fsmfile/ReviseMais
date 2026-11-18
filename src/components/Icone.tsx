@@ -30,6 +30,8 @@ const CAMINHOS: Record<string, string> = {
   caderno: 'M6 3h12v18H6z M3 7h3 M3 12h3 M3 17h3 M10 8h5',
   ordenar: 'M7 4v16 M3 8l4-4 4 4 M17 20V4 M13 16l4 4 4-4',
 };
+// O sino da aba Hoje também é o do aviso no celular.
+CAMINHOS.sino = CAMINHOS.hoje;
 
 export function Icone({ nome, tamanho = 20, titulo }: { nome: keyof typeof CAMINHOS | string; tamanho?: number; titulo?: string }) {
   return (

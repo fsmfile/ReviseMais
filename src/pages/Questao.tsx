@@ -4,6 +4,7 @@ import { AVISO_IA, DO_MONITOR, acertou, estadoDe, lerComentarioMonitor, NOME_MON
 import { excluirQuestao, marcarLida, useQuestoes } from '../lib/questoesStore';
 import { Fala } from '../components/Fala';
 import { Rosto } from '../components/Rosto';
+import { AvisoDoMonitor } from '../components/AvisoDoMonitor';
 import { expressaoDoMonitor } from '../lib/mascote/expressoes';
 import { dataCurta, ResultadoMarcado, SeloEstado } from './Questoes';
 
@@ -125,8 +126,9 @@ export function Questao({ id }: { id: string }) {
           <h2>Aguardando {NOME_MONITOR}</h2>
           <p>
             {NOME_MONITOR_CAP} passa pelas questões de tempos em tempos, confere a resposta nas fontes oficiais e comenta o que você escreveu. Quando comentar,
-            avisamos no celular (se as notificações estiverem ligadas) e a marca <strong>nova</strong> aparece na lista. Até lá você ainda pode editar.
+            a marca <strong>nova</strong> aparece na lista. Até lá você ainda pode editar.
           </p>
+          <AvisoDoMonitor />
         </section>
       ) : comentario ? (
         <ComentarioDoMonitor c={comentario} q={q} />
