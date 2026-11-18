@@ -32,6 +32,13 @@ export interface Assunto {
   mesclado_em?: string | null;
 }
 
+/** Par de assuntos que a pessoa disse que não são iguais (não volta como sugestão de mesclagem). assunto_a < assunto_b. */
+export interface ParDistinto {
+  id: string;
+  assunto_a: string;
+  assunto_b: string;
+}
+
 export interface Estudo {
   id: string;
   assunto_id: string;
