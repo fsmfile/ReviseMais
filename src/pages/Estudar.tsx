@@ -6,7 +6,8 @@ import { href, ir } from '../lib/rota';
 import { useDados, useIndices } from '../lib/store';
 import { relogio, TIPOS_ESTUDO } from '../lib/tempo';
 import type { TipoEstudo } from '../lib/types';
-import { recadoDoMentor, montarContexto, nivelEfetivo, nomeDoCobrador } from '../components/Mentor';
+import { recadoDoMentor, montarContexto, nivelEfetivo, nomeDoCobrador, papelDoCobrador } from '../components/Mentor';
+import { Rosto } from '../components/Rosto';
 import { useEco } from '../lib/ecossistema';
 import { useCatalogoAdvogando } from '../lib/advogando';
 import { duracaoFalada, falar } from '../lib/foco/falas';
@@ -311,8 +312,11 @@ function StatusPausa({ estado }: { estado: EstadoCronometro }) {
   const limite = nivel ? NIVEIS[nivel].pausa : null;
   return (
     <p className="status-pausa suave">
-      ⏸ Pausado há {min < 1 ? 'menos de um minuto' : duracaoFalada(min)}. A pausa não conta como estudo.
-      {limite != null && min < limite && ` Depois de ${limite} min de pausa, ${quem} chama.`}
+      <Rosto papel={papelDoCobrador(eco)} expressao="sonolento" tamanho={32} />
+      <span>
+        ⏸ Pausado há {min < 1 ? 'menos de um minuto' : duracaoFalada(min)}. A pausa não conta como estudo.
+        {limite != null && min < limite && ` Depois de ${limite} min de pausa, ${quem} chama.`}
+      </span>
     </p>
   );
 }
@@ -360,7 +364,8 @@ function PainelMentor({ estado }: { estado: EstadoCronometro }) {
         className="secundario"
         onClick={() => {
           cronometro.pausarParaRefeicao(tipo, minutos);
-          recadoDoMentor({ texto: falar(tipo === 'almoco' ? 'almocoInicio' : 'jantaInicio', config.nivel || 1, montarContexto(estado, dados, cat, { lim: minutos })) });
+          const situacao = tipo === 'almoco' ? 'almocoInicio' : 'jantaInicio';
+          recadoDoMentor({ texto: falar(situacao, config.nivel || 1, montarContexto(estado, dados, cat, { lim: minutos })), situacao });
         }}
       >
         {r.icone} Pausa para {r.nome} ({minutos} min)

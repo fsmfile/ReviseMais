@@ -8,6 +8,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFile
 import { basename, join } from 'node:path';
 import { createRequire } from 'node:module';
 import { lit, sql } from './api.ts';
+import { cargaDoAviso } from './aviso.ts';
 import { chaveTexto, validarItem, type ItemSaida, type Pendente } from './esquema.ts';
 
 // web-push é CommonJS: o require evita o problema de importação padrão no vite-node.
@@ -132,13 +133,7 @@ if (!SIMULAR && !SEM_AVISO && comentadas.size) {
       const subs = await sql<{ endpoint: string; p256dh: string; auth: string }>(
         `select endpoint, p256dh, auth from public.inscricoes_push where user_id = ${lit(user_id)} and app = 'estudemais'`,
       );
-      const uma = lista.length === 1;
-      const carga = JSON.stringify({
-        titulo: 'EstudeMais',
-        texto: uma ? `O Monitor comentou sua questão de ${lista[0].materia}` : `O Monitor comentou ${lista.length} questões suas`,
-        url: `${APP_URL}#/${uma ? `questao/${lista[0].id}` : 'questoes'}`,
-        tag: 'monitor',
-      });
+      const carga = JSON.stringify(cargaDoAviso(lista, APP_URL));
       for (const s of subs) {
         try {
           await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, carga, { TTL: 86400 });

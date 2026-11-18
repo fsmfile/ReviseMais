@@ -22,6 +22,9 @@ import {
 import { href } from '../lib/rota';
 import { useDados } from '../lib/store';
 import type { Dados } from '../lib/types';
+import { expressaoDoMentor, identidadeDoAviso, NOME_DO_PAPEL } from '../lib/mascote/expressoes';
+import type { Papel } from '../lib/mascote/rosto';
+import { Fala } from './Fala';
 import { Modal } from './Modal';
 
 const minuscula = (s: string) => (s.length > 1 && s[1] === s[1].toLowerCase() ? s[0].toLowerCase() + s.slice(1) : s);
@@ -59,6 +62,11 @@ export function nomeDoCobrador(eco: Eco): string {
   return eco.disponivel && eco.integrado ? 'Sócio' : 'Mentor';
 }
 
+/** Quem fala no rosto: o Sócio (modo integrado com o Advogando) ou o Mentor. */
+export function papelDoCobrador(eco: Eco): Papel {
+  return nomeDoCobrador(eco) === 'Sócio' ? 'socio' : 'mentor';
+}
+
 const SITUACAO_DO_MOTIVO: Record<Motivo, Situacao> = {
   redes: 'motivoRedes',
   mensagens: 'motivoMensagens',
@@ -71,6 +79,8 @@ const SITUACAO_DO_MOTIVO: Record<Motivo, Situacao> = {
 
 export interface Recado {
   texto: string;
+  /** Situação do recado: define a expressão do rosto (src/lib/mascote/expressoes.ts). Sem ela, rosto sério. */
+  situacao?: Situacao;
   /** Mostra o botão de continuar o cronômetro. */
   continuar?: boolean;
   /** Recado sobre uma pausa (o pausadoEm dela): some quando essa pausa acaba. */
@@ -87,6 +97,8 @@ interface Retorno {
   ausencia: Ausencia;
   fala: string;
   resposta?: string;
+  /** Situação da resposta (o que a pessoa estava fazendo): define a expressão do rosto dela. */
+  situacaoResposta?: Situacao;
   ctx: Contexto;
 }
 
@@ -152,11 +164,13 @@ export function Mentor() {
         avisos.push(
           setTimeout(() => {
             const corpo = falar('fora', n, contexto(c, { min: minutos }));
+            const quem = papelDoCobrador(lerEco());
+            const id = identidadeDoAviso(quem, expressaoDoMentor('fora', n));
             navigator.serviceWorker
               ?.getRegistration()
               .then((r) => {
-                if (r) return r.showNotification('EstudeMais', { body: corpo, tag: 'mentor', icon: '/icon-192.png' });
-                new Notification('EstudeMais', { body: corpo });
+                if (r) return r.showNotification(id.titulo, { body: corpo, tag: 'mentor', icon: id.icon, badge: id.badge });
+                new Notification(id.titulo, { body: corpo, icon: id.icon });
               })
               .catch(() => {});
           }, minutos * 60000),
@@ -166,20 +180,22 @@ export function Mentor() {
     /** O recado que deve chegar enquanto a pessoa está fora, e quando (null: nada a cobrar). */
     const recadoDeFora = (c: EstadoCronometro): RecadoDeFora | null => {
       const agora = Date.now();
-      const titulo = `${NIVEIS[n].icone} Recado do ${nomeDoCobrador(lerEco()) === 'Sócio' ? 'sócio' : 'mentor'}`;
+      const papel = papelDoCobrador(lerEco());
+      const titulo = NOME_DO_PAPEL[papel];
       const url = './#/estudar';
       if (c.rodandoDesde) {
         const tol = NIVEIS[n].tolerancia;
-        return { titulo, texto: falar('fora', n, contexto(c, { min: tol })), avisarEm: agora + tol * 60000, url };
+        return { titulo, papel, expressao: expressaoDoMentor('fora', n), texto: falar('fora', n, contexto(c, { min: tol })), avisarEm: agora + tol * 60000, url };
       }
       // Pausado: só cobra a pausa longa (ou o fim da refeição), nunca a ida ao Advogando nem a conclusão da sessão, e só uma vez.
       if (!pausaDeDescanso(c) || pausadoPeloEscritorio() || lerEstado().avisouPausa === c.pausadoEm) return null;
       if (c.refeicao) {
         const em = c.refeicao.ate + 2 * 60000;
-        return em > agora ? { titulo, texto: falar(c.refeicao.tipo === 'almoco' ? 'almocoFim' : 'jantaFim', n, contexto(c, { min: 2 })), avisarEm: em, url } : null;
+        const fim = c.refeicao.tipo === 'almoco' ? 'almocoFim' : 'jantaFim';
+        return em > agora ? { titulo, papel, expressao: expressaoDoMentor(fim, n), texto: falar(fim, n, contexto(c, { min: 2 })), avisarEm: em, url } : null;
       }
       const em = c.pausadoEm + NIVEIS[n].pausa * 60000;
-      return em > agora ? { titulo, texto: falar('pausaLonga', n, contexto(c, { min: NIVEIS[n].pausa })), avisarEm: em, url } : null;
+      return em > agora ? { titulo, papel, expressao: expressaoDoMentor('pausaLonga', n), texto: falar('pausaLonga', n, contexto(c, { min: NIVEIS[n].pausa })), avisarEm: em, url } : null;
     };
 
     /** Saiu do app: com o aparelho inscrito, o servidor chama na hora certa (mesmo com o app congelado); senão, o próprio app (computador). */
@@ -205,11 +221,12 @@ export function Mentor() {
       }
       if (c.refeicao) {
         if (agora < c.refeicao.ate + 2 * 60000) return;
-        setRecado({ texto: falar(c.refeicao.tipo === 'almoco' ? 'almocoFim' : 'jantaFim', n, contexto(c, { min: (agora - c.refeicao.ate) / 60000 })), continuar: true, pausa: c.pausadoEm });
+        const fim = c.refeicao.tipo === 'almoco' ? 'almocoFim' : 'jantaFim';
+        setRecado({ texto: falar(fim, n, contexto(c, { min: (agora - c.refeicao.ate) / 60000 })), situacao: fim, continuar: true, pausa: c.pausadoEm });
       } else {
         const min = (agora - c.pausadoEm) / 60000;
         if (min < NIVEIS[n].pausa) return;
-        setRecado({ texto: falar('pausaLonga', n, contexto(c, { min })), continuar: true, pausa: c.pausadoEm });
+        setRecado({ texto: falar('pausaLonga', n, contexto(c, { min })), situacao: 'pausaLonga', continuar: true, pausa: c.pausadoEm });
       }
       gravarEstado({ ...st, avisouPausa: c.pausadoEm });
     };
@@ -226,7 +243,7 @@ export function Mentor() {
           // Modo integrado: estava no Advogando? É estudo (elogio, sem desconto). Já cobrado lá? Não cobra de novo.
           const noOutro = await tempoNoOutroApp(inicio, fim);
           if (noOutro >= 0.6) {
-            setRecado({ texto: falar('estudouNoOutro', n, contexto(c, { min: min * noOutro })) });
+            setRecado({ texto: falar('estudouNoOutro', n, contexto(c, { min: min * noOutro })), situacao: 'estudouNoOutro' });
             return;
           }
           if (await jaCobradaNoOutro(inicio, fim)) return;
@@ -277,7 +294,7 @@ export function Mentor() {
     const ausencia = { ...r.ausencia, motivo, descontadoMs: ms };
     const st = lerEstado();
     gravarEstado({ ...st, ausencias: st.ausencias.map((a) => (a.id === ausencia.id ? ausencia : a)) });
-    return { ...r, ausencia, resposta: falar(SITUACAO_DO_MOTIVO[motivo], n, r.ctx) };
+    return { ...r, ausencia, resposta: falar(SITUACAO_DO_MOTIVO[motivo], n, r.ctx), situacaoResposta: SITUACAO_DO_MOTIVO[motivo] };
   }
 
   const naoDescontar = () => {
@@ -290,18 +307,21 @@ export function Mentor() {
   };
 
   const perfil = nivel ? NIVEIS[nivel as Nivel] : null;
+  const papel = papelDoCobrador(eco);
   const fechar = () => setRetorno(null);
 
   return (
     <>
       {recado && perfil && (
         <div className="recado-mentor" role="status">
-          <span className="recado-icone" aria-hidden="true">
-            {perfil.icone}
-          </span>
-          <p>{recado.texto}</p>
-          <div className="recado-acoes">
-            {recado.continuar && cronometro.estado() && !cronometro.estado()!.rodandoDesde && (
+          <Fala papel={papel} expressao={recado.situacao ? expressaoDoMentor(recado.situacao, nivel as Nivel) : 'neutro'}>
+            {recado.texto}
+          </Fala>
+          <button className="icone mini" aria-label="Fechar recado" onClick={() => setRecado(null)}>
+            ×
+          </button>
+          {recado.continuar && cronometro.estado() && !cronometro.estado()!.rodandoDesde && (
+            <div className="recado-continuar">
               <button
                 className="pequeno"
                 onClick={() => {
@@ -311,17 +331,16 @@ export function Mentor() {
               >
                 ▶ Continuar
               </button>
-            )}
-            <button className="icone mini" aria-label="Fechar recado" onClick={() => setRecado(null)}>
-              ×
-            </button>
-          </div>
+            </div>
+          )}
         </div>
       )}
       {retorno && perfil && (
         <Modal titulo={`${perfil.icone} ${nomeDoCobrador(eco)} ${perfil.nome.toLowerCase()}`} aoFechar={fechar}>
           <div className="retorno-mentor">
-            <p className="fala-mentor">{retorno.fala}</p>
+            <Fala papel={papel} expressao={expressaoDoMentor('voltou', nivel as Nivel)}>
+              {retorno.fala}
+            </Fala>
             {!retorno.resposta ? (
               <>
                 <p className="suave pequeno">Onde você estava? O tempo fora só continua contando se era estudo.</p>
@@ -340,7 +359,9 @@ export function Mentor() {
                     Visto pelo app: {retorno.ausencia.app}, {duracaoFalada((retorno.ausencia.fim - retorno.ausencia.inicio) / 60000)}.
                   </p>
                 )}
-                <p className="fala-mentor resposta">{retorno.resposta}</p>
+                <Fala className="resposta" papel={papel} expressao={expressaoDoMentor(retorno.situacaoResposta ?? 'motivoOutro', nivel as Nivel)}>
+                  {retorno.resposta}
+                </Fala>
                 <p className="pequeno">
                   {retorno.ausencia.descontadoMs ? (
                     <>

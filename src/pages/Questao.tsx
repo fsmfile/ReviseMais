@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { href, ir } from '../lib/rota';
 import { AVISO_IA, DO_MONITOR, acertou, estadoDe, lerComentarioMonitor, NOME_MONITOR, NOME_MONITOR_CAP, type ComentarioMonitor, type Questao as TQuestao, type RespostaPergunta } from '../lib/questoes';
 import { excluirQuestao, marcarLida, useQuestoes } from '../lib/questoesStore';
+import { Fala } from '../components/Fala';
+import { Rosto } from '../components/Rosto';
+import { expressaoDoMonitor } from '../lib/mascote/expressoes';
 import { dataCurta, ResultadoMarcado, SeloEstado } from './Questoes';
 
 const seguro = (url?: string) => (url && /^https?:\/\//i.test(url) ? url : undefined);
@@ -158,12 +161,15 @@ function ComentarioDoMonitor({ c, q }: { c: ComentarioMonitor; q: TQuestao }) {
   const eu = c.sobre_o_que_voce_escreveu;
   return (
     <section className="cartao qst-monitor" aria-label={`Comentário ${DO_MONITOR}`}>
-      <header>
-        <h2>Comentário {DO_MONITOR}</h2>
-        <p className="qst-ia pequeno">
-          Comentário {DO_MONITOR} · {AVISO_IA}
-          {q.comentada_em && <> · {dataCurta(q.comentada_em)}</>}
-        </p>
+      <header className="qst-cabeca">
+        <Rosto papel="monitor" expressao={expressaoDoMonitor('comentou')} tamanho={48} />
+        <div>
+          <h2>Comentário {DO_MONITOR}</h2>
+          <p className="qst-ia pequeno">
+            Comentário {DO_MONITOR} · {AVISO_IA}
+            {q.comentada_em && <> · {dataCurta(q.comentada_em)}</>}
+          </p>
+        </div>
       </header>
 
       <div className={`qst-conferencia ${ro.confere === true ? 'ok' : ro.confere === false ? 'diferente' : 'duvida'}`}>
@@ -270,13 +276,15 @@ function RespostaDaPergunta({ r }: { r: RespostaPergunta }) {
   return (
     <div className="qst-resposta">
       <h3>Resposta {DO_MONITOR}</h3>
-      {!r.relacionada && (
-        <p className="qst-fora">
-          <strong>Este ponto é de outro assunto e não aparece nesta questão.</strong> {r.por_que}
-        </p>
-      )}
-      {r.relacionada && r.por_que && <p className="suave">{r.por_que}</p>}
-      <p className="qst-texto">{r.resposta}</p>
+      <Fala papel="monitor" expressao={expressaoDoMonitor(r.relacionada ? 'respostaRelacionada' : 'respostaForaDoAssunto')}>
+        {!r.relacionada && (
+          <p className="qst-fora">
+            <strong>Este ponto é de outro assunto e não aparece nesta questão.</strong> {r.por_que}
+          </p>
+        )}
+        {r.relacionada && r.por_que && <p className="suave">{r.por_que}</p>}
+        <p className="qst-texto">{r.resposta}</p>
+      </Fala>
       {r.fontes && r.fontes.length > 0 && (
         <ul className="qst-itens qst-fontes">
           {r.fontes.map((f, i) => (

@@ -5,6 +5,7 @@
 // chamar. O Worker da Cloudflare do Advogando confere a cada minuto e manda só o "toque" (sem conteúdo);
 // o service worker daqui (public/sw-avisos.js) lê o recado do cache e mostra. Ao voltar antes, tudo é apagado.
 import { supabase, supabaseChave, supabaseUrl } from '../backend';
+import type { Expressao, Papel } from '../mascote/rosto';
 
 /** Chave pública dos avisos: a MESMA do Advogando (src/engine/notificacoes.ts e wrangler.jsonc de lá). Pública por natureza. */
 export const CHAVE_PUBLICA = 'BB3lgkmI-z442TKZMlWELm_uSn3PkhLQKj3op1_Xzn_Oxk7QsvQITxzs1a0Z5uCetOWx-0p_30r8Ogmjoa88eNk';
@@ -13,7 +14,11 @@ export const CACHE_RECADOS = 'estudemais-recados';
 const enderecoRecado = () => new URL('./__recado-mentor', location.href.split('#')[0]).href;
 
 export interface Recado {
+  /** Nome de quem fala ("Mentor" ou "Sócio"): é o título da notificação. */
   titulo: string;
+  /** Quem fala e com que cara: o service worker escolhe o ícone /mascote/<papel>-<expressao>.png. Sem isso (recado antigo): Mentor neutro. */
+  papel?: Papel;
+  expressao?: Expressao;
   texto: string;
   /** Quando chamar (ms). */
   avisarEm: number;

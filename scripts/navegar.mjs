@@ -402,11 +402,32 @@ try {
       await esperarApp();
       await ir('#/estudar');
       await dormir(500);
-      nota('pausa longa: recado do mentor', await js(`document.querySelector('.recado-mentor p')?.textContent ?? '(sem recado)'`));
+      nota('pausa longa: recado do mentor', await js(`document.querySelector('.recado-mentor .mascote-texto')?.textContent ?? '(sem recado)'`));
       await foto('estudar-pausa-longa', ap);
+      await fotoTela('estudar-pausa-longa-tela', ap);
       await clicar('.cronometro-cartao .acoes button.secundario.grande', '▶ Continuar');
       await dormir(400);
       nota('depois de continuar pelo botão grande, recado some', await js(`document.querySelector('.recado-mentor') === null`));
+      await js(`localStorage.removeItem('revisemais:cronometro'); localStorage.removeItem('revisemais:mentor'); localStorage.removeItem('revisemais:mentor-estado');`);
+    }
+    if (quer('mentor-voltou')) {
+      // A pessoa saiu do app com o cronômetro rodando (20 min, mentor exigente) e voltou: a janela do Mentor com o rosto, e a resposta ao motivo.
+      const inicio = new Date(Date.now() - 3600000).toISOString();
+      const crono = JSON.stringify({ plano_id: null, disciplina_id: null, assunto_id: null, materia: 'Direito Constitucional', tipo: 'teoria', iniciadoEm: inicio, rodandoDesde: Date.now() - 600000, acumuladoMs: 1200000, pausadoEm: null });
+      const estado = JSON.stringify({ saiuEm: Date.now() - 20 * 60000, sessao: inicio, avisouPausa: null, ausencias: [] });
+      await js(`localStorage.setItem('revisemais:mentor', ${JSON.stringify(JSON.stringify({ nivel: 2, escolhido: true, almocoMin: 60, jantaMin: 45, notificar: false }))}); localStorage.setItem('revisemais:cronometro', ${JSON.stringify(crono)}); localStorage.setItem('revisemais:mentor-estado', ${JSON.stringify(estado)});`);
+      await cmd('Page.reload');
+      await dormir(800);
+      await esperarApp();
+      await ir('#/estudar');
+      await dormir(600);
+      for (let i = 0; i < 20 && !(await js(`!!document.querySelector('.retorno-mentor')`)); i++) await dormir(400);
+      nota('mentor voltou: rosto na janela', await js(`document.querySelectorAll('.retorno-mentor .mascote-rosto svg').length`));
+      await fotoTela('mentor-voltou', ap);
+      await clicar('.retorno-mentor .motivo', 'Redes');
+      await dormir(400);
+      nota('mentor voltou: rostos depois da resposta (esperado 2)', await js(`document.querySelectorAll('.retorno-mentor .mascote-rosto svg').length`));
+      await fotoTela('mentor-voltou-resposta', ap);
       await js(`localStorage.removeItem('revisemais:cronometro'); localStorage.removeItem('revisemais:mentor'); localStorage.removeItem('revisemais:mentor-estado');`);
     }
     if (quer('questoes-fluxo')) {

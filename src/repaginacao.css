@@ -242,3 +242,36 @@ button.fantasma:hover, .botao.fantasma:hover { background: var(--superficie-2); 
 .colar-passos { padding-left: 20px; }
 .colar-passos li { margin-bottom: 6px; }
 .colar-ajuda code { word-break: break-all; font-size: 0.85em; }
+
+/* ───────── Mascote (Mentor e Monitor): rosto, fala em balão ───────── */
+/* O rosto usa a cor do papel; a primária muda no tema escuro e o rosto acompanha. O Sócio (modo integrado) usa a mesma cor do EstudeMais aqui. */
+:root { --mascote-mentor: var(--primaria); --mascote-socio: var(--primaria); --mascote-monitor: var(--primaria); }
+.mascote-rosto { display: inline-block; flex: none; line-height: 0; }
+.mascote-rosto svg { display: block; }
+.mascote-fala { display: flex; align-items: flex-start; gap: 0.7rem; min-width: 0; }
+.mascote-balao { position: relative; flex: 1; min-width: 0; padding: 0.45rem 0.8rem 0.55rem; border: 1.5px solid var(--primaria); border-radius: 14px; background: var(--superficie); }
+/* rabinho do balão, apontando para o rosto */
+.mascote-balao::before { content: ""; position: absolute; left: -7px; top: 16px; width: 11px; height: 11px; background: var(--superficie); border-left: 1.5px solid var(--primaria); border-bottom: 1.5px solid var(--primaria); transform: rotate(45deg); }
+.mascote-nome { display: block; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.02em; color: var(--primaria); margin-bottom: 0.1rem; }
+.mascote-texto { overflow-wrap: anywhere; line-height: 1.4; }
+.mascote-texto > p { margin: 0 0 0.5rem; }
+.mascote-texto > p:last-child { margin-bottom: 0; }
+/* No recado flutuante e na janela do Mentor o balão não precisa de moldura dupla */
+.recado-mentor { display: grid; grid-template-columns: 1fr auto; align-items: start; gap: 0.4rem 0.5rem; }
+.recado-mentor .mascote-balao { border-color: transparent; background: transparent; padding-right: 0; padding-top: 0.15rem; }
+.recado-mentor .mascote-balao::before { display: none; }
+.recado-mentor .recado-continuar { grid-column: 1; padding-left: 3.2rem; }
+.retorno-mentor .mascote-texto { font-size: 1.04rem; }
+.retorno-mentor .mascote-fala.resposta .mascote-balao { background: var(--superficie-2); }
+.retorno-mentor .mascote-fala.resposta .mascote-balao::before { background: var(--superficie-2); }
+/* Pausa: rosto pequeno ao lado do texto, sem balão */
+.status-pausa { display: flex; align-items: center; gap: 0.6rem; }
+.status-pausa > span:last-child { min-width: 0; }
+/* Monitor: cabeça do comentário e resposta à pergunta */
+.qst-monitor header.qst-cabeca { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.4rem; }
+.qst-monitor header.qst-cabeca .qst-ia { margin: 0; }
+.qst-resposta .mascote-fala { margin: 0.2rem 0 0.6rem; }
+.qst-resposta .qst-fora { margin: 0 0 0.5rem; }
+.qst-vazio-topo { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.4rem; }
+.qst-vazio-topo h2 { margin: 0; }
+.qst-item-topo strong { display: inline-flex; align-items: center; gap: 0.45rem; min-width: 0; }

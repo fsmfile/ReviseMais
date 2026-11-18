@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Icone } from '../components/Icone';
 import { href } from '../lib/rota';
+import { Rosto } from '../components/Rosto';
 import { acertou, agruparPorMateria, estadoDe, NOME_MONITOR, NOME_MONITOR_CAP, ROTULO_ESTADO, type Questao } from '../lib/questoes';
 import { anotarAprendizado, excluirAprendizado, useQuestoes } from '../lib/questoesStore';
 
@@ -70,7 +71,10 @@ export function Questoes() {
         <div className="carregando">Carregando suas questões…</div>
       ) : !questoes.length ? (
         <section className="cartao qst-vazio">
-          <h2>Sua primeira questão</h2>
+          <div className="qst-vazio-topo">
+            <Rosto papel="monitor" expressao="neutro" tamanho={48} />
+            <h2>Sua primeira questão</h2>
+          </div>
           <p>
             Fez um simulado e uma questão te ensinou algo? Cadastre aqui: o enunciado, as alternativas, o que você marcou, a resposta certa e o que você estudou
             sobre ela. {NOME_MONITOR_CAP} (como o monitor da faculdade: ajuda, mas não é professor) confere a resposta nas fontes, comenta o que você escreveu e
@@ -96,7 +100,10 @@ export function Questoes() {
               <li key={q.id}>
                 <a className={`cartao qst-item ${estadoDe(q) === 'nova' ? 'nova' : ''}`} href={href({ tela: 'questao', id: q.id })}>
                   <span className="qst-item-topo">
-                    <strong>{q.materia}</strong>
+                    <strong>
+                      {estadoDe(q) === 'nova' && <Rosto papel="monitor" expressao="pensando" tamanho={28} className="qst-item-rosto" />}
+                      {q.materia}
+                    </strong>
                     <SeloEstado q={q} />
                   </span>
                   <span className="qst-trecho">{q.enunciado}</span>
