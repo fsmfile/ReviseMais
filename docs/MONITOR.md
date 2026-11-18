@@ -29,11 +29,19 @@ Todas com RLS "dono" (`user_id = auth.uid()`); a migração pode rodar mais de u
 
 Sem a tabela (migração não rodada), o app avisa na tela e o resto segue igual.
 
-## Como o dono roda (2 a 3 vezes por semana)
+## Como roda
 
-No Claude Code, dentro desta pasta: **`/monitor`** (skill `.claude/skills/monitor/SKILL.md`). É separado da atualização das leis do Advogando. Por baixo:
+**Sozinho (fase de testes, poucas pessoas):** a tarefa do Windows "EstudeMais - Monitor" chama `scripts/monitor/agendado.vbs` a cada 5 minutos (sem abrir janela), que chama `agendado.ps1`:
 
-1. `npm run monitor:exportar` lê as pendentes de todas as pessoas (só leitura) e grava `monitor/lotes/AAAA-MM-DD-lote-N.json` (uma pessoa por lote, até 6 questões; `-- --por-lote N` muda) e `monitor/pendentes/AAAA-MM-DD.json`. Cada lote leva também o caderno da pessoa nessas matérias e as outras questões dela (para apontar parecidas).
+- Checagem barata, sem Claude: `exportar -- --ociosos 20 --automatico` só exporta quem está há **20 minutos sem cadastrar nem editar** questão pendente. Se a pessoa cadastra outra no meio, a contagem dela recomeça; quem ainda está cadastrando não segura os outros. Na prática o comentário sai entre 20 e 25 minutos depois da última questão, mais o tempo da rodada.
+- Só quando sai lote novo, roda o Claude Code sem janela (`claude -p`), do passo 2 ao 5 da skill, só com esses lotes. Permissões restritas ao que o Monitor usa (o texto das questões vem das pessoas: nada de comando livre).
+- Rodada que falha não fica gastando tokens: a questão espera 1 hora para nova tentativa e, depois de 3, sai da fila automática (`monitor/automatico.json`) com uma linha `DESISTIU` em `monitor/logs/AAAA-MM-DD_avisos.log`.
+- Logs: `monitor/logs/AAAA-MM-DD_HHmm.log` (cada rodada com Claude) e `monitor/logs/ultima-checagem.txt` (a checagem mais recente). Só roda com o dono logado no Windows; com o PC desligado, roda quando ele volta.
+- Pausar: desabilitar a tarefa no Agendador de Tarefas.
+
+**À mão:** no Claude Code, dentro desta pasta, **`/monitor`** (skill `.claude/skills/monitor/SKILL.md`). É separado da atualização das leis do Advogando. Por baixo:
+
+1. `npm run monitor:exportar` lê as pendentes de todas as pessoas (só leitura) e grava `monitor/lotes/AAAA-MM-DD-HHmm-lote-N.json` (uma pessoa por lote, até 6 questões; `-- --por-lote N` muda; a hora no nome evita que duas rodadas do mesmo dia se sobreponham) e `monitor/pendentes/AAAA-MM-DD-HHmm.json`. Cada lote leva também o caderno da pessoa nessas matérias e as outras questões dela (para apontar parecidas).
 2. Agentes `monitor` comentam cada lote em paralelo e gravam `monitor/comentarios/<mesmo nome>.json` (esquema abaixo). Eles só afirmam o que abriram nas fontes oficiais; sem prova, marcam dúvida.
 3. `npm run monitor:aplicar -- --todos --simular` valida sem gravar. `npm run monitor:aplicar -- --todos` grava.
 4. O resumo para o dono sai da skill.

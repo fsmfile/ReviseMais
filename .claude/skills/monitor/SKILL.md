@@ -5,16 +5,16 @@ description: Roda a rodada do Monitor do EstudeMais. Exporta as questões penden
 
 # Rodada do Monitor
 
-O dono chama isto 2 a 3 vezes por semana. Fale com ele em português simples. O app não usa IA: tudo aqui roda no PC dele e grava o resultado no banco. Cada questão gasta tokens dele: avise o tamanho da rodada antes de começar se passar de umas 30 questões.
+Na fase de testes, isto roda sozinho: a tarefa do Windows "EstudeMais - Monitor" checa a cada 5 minutos e roda a rodada 20 minutos depois que a pessoa para de cadastrar (`scripts/monitor/agendado.ps1`, log em `monitor/logs/`). O dono também pode chamar à mão. Fale com ele em português simples. O app não usa IA: tudo aqui roda no PC dele e grava o resultado no banco. Cada questão gasta tokens dele: avise o tamanho da rodada antes de começar se passar de umas 30 questões.
 
 Pré-requisito: o `.env` do AdvogandoGame (chaves) no caminho que `scripts/monitor/rodar.mjs` espera, ou a variável `MONITOR_ENV`. **Nunca imprima o conteúdo de chaves ou tokens.** As pastas `monitor/` têm dados pessoais e estão no `.gitignore`: nunca as coloque no git nem as cole em outro lugar.
 
 ## 1. Exportar
 `npm run monitor:exportar` (opcional: `-- --por-lote 6`).
-Diz quantas questões pendentes há e cria `monitor/lotes/AAAA-MM-DD-lote-N.json`. Se não houver pendentes, diga isso ao dono e pare.
+Diz quantas questões pendentes há, cria `monitor/lotes/AAAA-MM-DD-HHmm-lote-N.json` e lista os nomes dos lotes criados. Se não houver pendentes, diga isso ao dono e pare.
 
 ## 2. Comentar, em paralelo
-Para cada arquivo em `monitor/lotes/` da data de hoje, chame o agente `monitor` (todos de uma vez, na mesma mensagem, no máximo uns 6 ao mesmo tempo). Prompt de cada um: "Comente o lote `monitor/lotes/<arquivo>`; grave `monitor/comentarios/<arquivo>`."
+Para cada lote que o exportar acabou de listar (só esses: a pasta guarda lotes de rodadas anteriores, já aplicados), chame o agente `monitor` (todos de uma vez, na mesma mensagem, no máximo uns 6 ao mesmo tempo). Prompt de cada um: "Comente o lote `monitor/lotes/<arquivo>`; grave `monitor/comentarios/<arquivo>`."
 Ao fim, confira que cada lote tem seu arquivo em `monitor/comentarios/`. Lote sem arquivo: rode o agente de novo só para ele.
 Lembre os agentes: quando a questão tem `pergunta`, a resposta a ela é obrigatória, mesmo se for de outro assunto (aí dizem isso e por quê, e respondem de forma útil, com fonte). Anote o que cada agente relatar de `confere: false` ou `"duvida"` e de fontes inacessíveis.
 
