@@ -6,6 +6,9 @@ const linhas = [
   { data_prevista: '2026-12-01', tipo: '7d', assunto: 'Atos administrativos', disciplina: 'Direito Administrativo', plano: 'PGE 2026' },
 ];
 
+/** O .ics dobra linhas compridas (quebra + espaço); desfaz antes de procurar texto. */
+const desdobrar = (ics: string) => ics.replace(/\r?\n[ \t]/g, '');
+
 describe('calendário assinável (/api/calendario)', () => {
   afterEach(() => vi.unstubAllGlobals());
 
@@ -16,6 +19,24 @@ describe('calendário assinável (/api/calendario)', () => {
     expect(ics).toContain('DTSTART;VALUE=DATE:20261201');
     expect(ics).toContain('TRIGGER;RELATED=START:PT8H');
     expect(ics.split('\r\n').every((l) => new TextEncoder().encode(l).length <= 75)).toBe(true);
+  });
+
+  it('assunto mesclado em vários planos aparece uma vez no dia (coluna grupo, migração 0008)', () => {
+    const mesclado = [
+      { data_prevista: '2027-01-18', tipo: '2m', assunto: 'Organização do Estado', disciplina: 'Direito Constitucional', plano: 'OAB', grupo: 'g1' },
+      { data_prevista: '2027-01-18', tipo: '2m', assunto: 'Organização do Estado brasileiro', disciplina: 'Direito Constitucional', plano: 'PGERJ', grupo: 'g1' },
+      { data_prevista: '2027-01-18', tipo: '2m', assunto: 'Atos administrativos', disciplina: 'Direito Administrativo', plano: 'OAB', grupo: 'g2' },
+    ];
+    const ics = desdobrar(montarIcs(mesclado, 8, new Date('2026-11-01T00:00:00Z')));
+    expect(ics.match(/Organização do Estado/g)).toHaveLength(1);
+    expect(ics).toContain('Atos administrativos');
+    expect(ics).toContain('2 revisões');
+  });
+
+  it('sem a coluna grupo (função antiga), lista todas como antes', () => {
+    const ics = desdobrar(montarIcs(linhas, 8, new Date('2026-11-01T00:00:00Z')));
+    expect(ics).toContain('Poder constituinte');
+    expect(ics).toContain('Atos administrativos');
   });
 
   it('busca as revisões pelo token e responde text/calendar', async () => {

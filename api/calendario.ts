@@ -22,6 +22,8 @@ interface Linha {
   assunto: string;
   disciplina: string;
   plano: string;
+  /** Raiz do grupo de assuntos mesclados (migração 0008); ausente na função antiga. */
+  grupo?: string | null;
 }
 
 const esc = (s: string) => s.replace(/\\/g, '\\\\').replace(/;/g, '\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
@@ -51,7 +53,14 @@ function dobrar(l: string): string {
 
 export function montarIcs(linhas: Linha[], hora: number, agora = new Date()): string {
   const porDia = new Map<string, string[]>();
+  // Assunto mesclado em vários planos: uma linha por dia.
+  const vistos = new Set<string>();
   for (const r of linhas) {
+    if (r.grupo) {
+      const k = `${r.data_prevista}|${r.grupo}`;
+      if (vistos.has(k)) continue;
+      vistos.add(k);
+    }
     const l = porDia.get(r.data_prevista) ?? [];
     l.push(`• [${r.plano}] ${r.disciplina} — ${r.assunto} (${ROTULO[r.tipo] ?? r.tipo})`);
     porDia.set(r.data_prevista, l);

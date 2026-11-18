@@ -152,7 +152,7 @@ Pedido de uma usuária: atraso do mesmo assunto não se acumula e revisar num pl
   Telas: `#/repetidos` (menu Ferramentas), aviso na Hoje (`AvisoRepetidos`), "Mesclar com…"/"Desfazer mesclagem" no menu do assunto.
 - Só vira sugestão o grupo com dois ou mais assuntos estudados (revisões duplicadas); nomes parecidos ou um contido no outro.
 - Agenda da Hoje, gráfico de 14 dias do Painel e o .ics baixado mostram uma revisão por grupo por dia (`umaPorGrupoPorDia`).
-  O calendário assinável (`api/calendario.ts` + função SQL `revisoes_calendario`) ainda lista uma por revisão.
+  O calendário assinável faz o mesmo com a coluna `grupo` da função SQL `revisoes_calendario` (migração 0008).
 - Roteiros de captura: `npm run navegar -- hoje-revisei,mesclar`.
 
 ## Minhas questões e o Monitor
