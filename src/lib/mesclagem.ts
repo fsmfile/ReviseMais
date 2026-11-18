@@ -31,6 +31,22 @@ export function paresDistintos(ids: string[]): [string, string][] {
   return r;
 }
 
+/**
+ * Pares "não são iguais" que ainda precisam ser gravados: em ordem (a < b), sem par de um assunto com ele mesmo, sem
+ * repetir, sem os já gravados e sem os que estão sendo gravados agora (duplo clique).
+ */
+export function paresNovos(existentes: ParDistinto[], emAndamento: ReadonlySet<string>, pares: [string, string][]): [string, string][] {
+  const ja = new Set([...existentes.map((x) => `${x.assunto_a}|${x.assunto_b}`), ...emAndamento]);
+  const r: [string, string][] = [];
+  for (const [x, y] of pares) {
+    const [a, b] = x < y ? [x, y] : [y, x];
+    if (a === b || ja.has(`${a}|${b}`)) continue;
+    ja.add(`${a}|${b}`);
+    r.push([a, b]);
+  }
+  return r;
+}
+
 /** Ajudantes comuns: plano de cada assunto, ordem de exibição e escolha da raiz. */
 function contexto(d: DadosMesclagem) {
   const porId = new Map(d.assuntos.map((a) => [a.id, a]));
@@ -88,6 +104,8 @@ export interface SugestaoMesclagem {
   disciplina: string;
   /** Assuntos do grupo sugerido, na ordem dos planos. */
   assuntos: string[];
+  /** Os mesmos assuntos por unidade: assunto solto ou grupo já mesclado (uma caixa de marcar por unidade). */
+  unidades: string[][];
   pendentesAntes: number;
   pendentesDepois: number;
 }
@@ -174,10 +192,13 @@ export function sugestoesDe(d: DadosMesclagem, grupos: string[][]): SugestaoMesc
     const comEstudo = [...raizes].filter((r) => assuntos.some((id) => cx.raiz(id) === r && estudados.has(id)));
     if (comEstudo.length < 2) continue;
     const pendentesAntes = assuntos.reduce((n, id) => n + (cx.pendentes.get(id)?.length ?? 0), 0);
+    const porUnidade = new Map<string, string[]>();
+    for (const id of assuntos) porUnidade.set(cx.raiz(id), [...(porUnidade.get(cx.raiz(id)) ?? []), id]);
     sugestoes.push({
       chave: [...assuntos].sort().join('|'),
       disciplina: cx.disc.get(cx.porId.get(assuntos[0])!.disciplina_id)?.nome ?? '',
       assuntos,
+      unidades: [...porUnidade.values()],
       pendentesAntes,
       pendentesDepois: pendentesAntes - mesclarCom(cx, assuntos).apagarRevisoes.length,
     });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { calcularCorrelacoes, LIMIAR_ASSUNTO } from './correlacao';
-import { paresDistintos, parecidos, planoDeExclusao, planoDeMesclagem, planoDeSeparacao, prepararSugestoes, sugerirMesclagens, sugestoesDe } from './mesclagem';
+import { paresDistintos, paresNovos, parecidos, planoDeExclusao, planoDeMesclagem, planoDeSeparacao, prepararSugestoes, sugerirMesclagens, sugestoesDe } from './mesclagem';
 import type { Assunto, Dados, Estudo, ParDistinto, Revisao } from './types';
 
 // Nomes reais da conta que reclamou (18/11/2026), todos em "Direito Constitucional".
@@ -88,6 +88,23 @@ describe('sugestões de mesclagem', () => {
     expect(sugerirMesclagens(dMesclado, [], c)).toEqual([]);
     const doisMesclados: D = { ...d, assuntos: d.assuntos.map((a) => (a.id === 'oab' ? { ...a, mesclado_em: 'cremerj' } : a)) };
     expect(sugerirMesclagens(doisMesclados, [], c).map((s) => s.assuntos)).toEqual([['cremerj', 'oab', 'pgerj']]);
+  });
+});
+
+describe('unidades da sugestão (uma caixa por assunto solto ou grupo já mesclado)', () => {
+  it('assuntos soltos: uma unidade cada', () => {
+    expect(sugerirMesclagens(d, [], c)[0].unidades).toEqual([['cremerj'], ['oab'], ['pgerj']]);
+  });
+  it('grupo já mesclado vira uma unidade só', () => {
+    const doisMesclados: D = { ...d, assuntos: d.assuntos.map((a) => (a.id === 'oab' ? { ...a, mesclado_em: 'cremerj' } : a)) };
+    expect(sugerirMesclagens(doisMesclados, [], c)[0].unidades).toEqual([['cremerj', 'oab'], ['pgerj']]);
+  });
+});
+
+describe('pares "não são iguais" a gravar', () => {
+  it('ordena, tira repetidos, iguais, já gravados e em andamento', () => {
+    const existentes: ParDistinto[] = [{ id: 'p', assunto_a: 'a', assunto_b: 'b' }];
+    expect(paresNovos(existentes, new Set(['c|d']), [['b', 'a'], ['d', 'c'], ['e', 'e'], ['f', 'a'], ['a', 'f']])).toEqual([['a', 'f']]);
   });
 });
 

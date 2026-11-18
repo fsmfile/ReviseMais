@@ -31,14 +31,24 @@ export function Repetidos() {
 function CartaoSugestao({ s }: { s: SugestaoMesclagem }) {
   const { dados, acoes, executar } = useDados();
   const { contexto, grupo } = useIndices();
-  const [marcados, setMarcados] = useState(() => new Set(s.assuntos));
+  // Uma caixa por unidade: assunto solto ou grupo já mesclado (desmarcar parte de um grupo não teria efeito).
+  const [marcados, setMarcados] = useState(() => new Set(s.unidades.map((u) => u[0])));
+  const [salvando, setSalvando] = useState(false);
   const nomes = dados.planos.map((p) => p.nome);
-  const escolhidos = s.assuntos.filter((id) => marcados.has(id));
-  const fora = s.assuntos.filter((id) => !marcados.has(id));
+  const escolhidos = s.unidades.filter((u) => marcados.has(u[0])).flat();
+  const fora = s.unidades.filter((u) => !marcados.has(u[0])).flat();
+  const unidadesMarcadas = s.unidades.filter((u) => marcados.has(u[0])).length;
+  // Um toque só: enquanto grava, os botões ficam travados (duplo clique gravaria duas vezes).
+  const fazer = async (f: () => Promise<void>) => {
+    if (salvando) return;
+    setSalvando(true);
+    await executar(f);
+    setSalvando(false);
+  };
   // Quantas revisões pendentes os marcados têm hoje e quantas sobram depois de mesclar.
   const membros = new Set(escolhidos.flatMap((id) => grupo(id)));
   const antes = dados.revisoes.filter((r) => !r.concluida_em && membros.has(r.assunto_id)).length;
-  const depois = escolhidos.length >= 2 ? antes - planoDeMesclagem(dados, escolhidos).apagarRevisoes.length : antes;
+  const depois = unidadesMarcadas >= 2 ? antes - planoDeMesclagem(dados, escolhidos).apagarRevisoes.length : antes;
   const alternar = (id: string) =>
     setMarcados((m) => {
       const n = new Set(m);
@@ -53,34 +63,39 @@ function CartaoSugestao({ s }: { s: SugestaoMesclagem }) {
         <Icone nome="mesclar" /> {s.disciplina}
       </h2>
       <ul className="sugestao-assuntos">
-        {s.assuntos.map((id) => {
-          const c = contexto(id);
-          if (!c) return null;
+        {s.unidades.map((u) => {
+          const cs = u.map((id) => contexto(id)).filter((c) => !!c).map((c) => c!);
+          if (!cs.length) return null;
           return (
-            <li key={id}>
+            <li key={u[0]}>
               <label>
-                <input type="checkbox" checked={marcados.has(id)} onChange={() => alternar(id)} />
-                <span className="tag" style={{ ['--cor' as string]: c.plano.cor }} title={c.plano.nome}>
-                  {nomeCurto(c.plano.nome, nomes)}
+                <input type="checkbox" checked={marcados.has(u[0])} onChange={() => alternar(u[0])} />
+                <span className="sugestao-planos">
+                  {cs.map((c) => (
+                    <span key={c.assunto.id} className="tag" style={{ ['--cor' as string]: c.plano.cor }} title={c.plano.nome}>
+                      {nomeCurto(c.plano.nome, nomes)}
+                    </span>
+                  ))}
                 </span>
-                <span className="sugestao-nome" title={c.assunto.nome}>
-                  {c.assunto.nome}
+                <span className="sugestao-nome" title={cs.map((c) => c.assunto.nome).join(' · ')}>
+                  {cs[0].assunto.nome}
+                  {cs.length > 1 && <span className="suave"> (já mesclados)</span>}
                 </span>
               </label>
             </li>
           );
         })}
       </ul>
-      {escolhidos.length >= 2 && antes > depois && (
+      {unidadesMarcadas >= 2 && antes > depois && (
         <p className="pequeno suave">
           {antes} {antes === 1 ? 'revisão pendente passa' : 'revisões pendentes passam'} a ser {depois}.
         </p>
       )}
       <div className="acoes">
-        <button disabled={escolhidos.length < 2} onClick={() => executar(() => acoes.mesclarAssuntos(escolhidos, fora))}>
+        <button disabled={unidadesMarcadas < 2 || salvando} onClick={() => fazer(() => acoes.mesclarAssuntos(escolhidos, fora))}>
           Mesclar
         </button>
-        <button className="fantasma" onClick={() => executar(() => acoes.dispensarSugestao(s.assuntos))}>
+        <button className="fantasma" disabled={salvando} onClick={() => fazer(() => acoes.dispensarSugestao(s.assuntos))}>
           Não são iguais
         </button>
       </div>

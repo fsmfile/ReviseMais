@@ -1,4 +1,5 @@
 import { somarDias } from './datas';
+import { raizDe, umaPorGrupoPorDia } from './revisoes';
 import type { Dados } from './types';
 import { rotuloRevisao } from './datas';
 
@@ -36,8 +37,12 @@ export function gerarIcs(d: Dados, horaAlerta = 8, desde?: string): string {
   const disc = new Map(d.disciplinas.map((x) => [x.id, x]));
   const plano = new Map(d.planos.map((p) => [p.id, p]));
   const porDia = new Map<string, string[]>();
-  for (const r of d.revisoes) {
-    if (r.concluida_em || (desde && r.data_prevista < desde)) continue;
+  // Assunto mesclado em vários planos: uma linha por dia.
+  const pendentes = umaPorGrupoPorDia(
+    d.revisoes.filter((r) => !r.concluida_em && !(desde && r.data_prevista < desde)),
+    (id) => raizDe(ass, id),
+  );
+  for (const r of pendentes) {
     const a = ass.get(r.assunto_id);
     const di = a && disc.get(a.disciplina_id);
     const p = di && plano.get(di.plano_id);

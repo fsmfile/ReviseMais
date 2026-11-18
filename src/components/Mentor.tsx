@@ -1,6 +1,6 @@
 // Mentor de foco em ação: percebe quando a pessoa sai do app com o cronômetro rodando,
 // conversa quando ela volta e lembra das pausas longas. Fica montado em todas as telas.
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { casosDoAssunto, pausadoPeloEscritorio, useCatalogoAdvogando, type CatalogoAdvogando } from '../lib/advogando';
 import { cronometro, decorridoSeg, pausaDeDescanso, useCronometro, type EstadoCronometro } from '../lib/cronometro';
 import { hoje } from '../lib/datas';
@@ -119,13 +119,17 @@ export function Mentor() {
   useEffect(() => iniciarEco(), []);
   // Avisos no celular: inscrição e acesso à mão para a hora de sair do app.
   useEffect(() => void prepararAvisos(), []);
+  // Revisões a fazer por assunto: muda com revisões e também com mesclagens (assuntos).
+  const revisoesHoje = useMemo(
+    () => contarAFazer({ assuntos: dados.assuntos, estudos: dados.estudos, revisoes: dados.revisoes }, hoje()).total,
+    [dados.assuntos, dados.estudos, dados.revisoes],
+  );
   useEffect(() => {
-    const ref = hoje();
     publicarResumo({
-      revisoesHoje: contarAFazer(dados, ref).total,
+      revisoesHoje,
       cronometro: crono ? { materia: crono.materia, rodando: !!crono.rodandoDesde } : null,
     });
-  }, [dados.revisoes, crono, eco.integrado]);
+  }, [revisoesHoje, crono, eco.integrado]);
 
   useEffect(() => {
     mostrarRecado = (r) => setRecado(r);

@@ -151,6 +151,8 @@ Pedido de uma usuária: atraso do mesmo assunto não se acumula e revisar num pl
   separar e apagar sem perder o ciclo: `src/lib/mesclagem.ts`. "Não são iguais" fica em `assuntos_distintos` (tabela opcional).
   Telas: `#/repetidos` (menu Ferramentas), aviso na Hoje (`AvisoRepetidos`), "Mesclar com…"/"Desfazer mesclagem" no menu do assunto.
 - Só vira sugestão o grupo com dois ou mais assuntos estudados (revisões duplicadas); nomes parecidos ou um contido no outro.
+- Agenda da Hoje, gráfico de 14 dias do Painel e o .ics baixado mostram uma revisão por grupo por dia (`umaPorGrupoPorDia`).
+  O calendário assinável (`api/calendario.ts` + função SQL `revisoes_calendario`) ainda lista uma por revisão.
 - Roteiros de captura: `npm run navegar -- hoje-revisei,mesclar`.
 
 ## Minhas questões e o Monitor

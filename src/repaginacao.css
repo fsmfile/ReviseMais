@@ -291,6 +291,7 @@ button.fantasma:hover, .botao.fantasma:hover { background: var(--superficie-2); 
 .sugestao-assuntos label:hover { background: var(--superficie-2); }
 .sugestao-assuntos input { margin: 0.15rem 0 0; padding: 0; flex: none; width: 1.15rem; height: 1.15rem; }
 .sugestao-assuntos .tag { flex-shrink: 0; }
+.sugestao-planos { display: inline-flex; flex-wrap: wrap; gap: 0.25rem; flex-shrink: 0; }
 .sugestao-nome { min-width: 0; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .sugestao-mescla .acoes, .aviso-repetidos .acoes { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
 .vazio-repetidos p { margin: 0 0 0.4rem; }

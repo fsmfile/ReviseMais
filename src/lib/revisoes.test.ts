@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { contarAFazer, membrosDoGrupo, planoDeAdiamento, planoDeConclusao, raizDe, revisoesAFazer } from './revisoes';
+import { contarAFazer, membrosDoGrupo, planoDeAdiamento, planoDeConclusao, raizDe, revisoesAFazer, umaPorGrupoPorDia } from './revisoes';
 import type { Assunto, Estudo, Revisao, TipoRevisao } from './types';
 
 const assuntoBase: Assunto = { id: '', disciplina_id: 'd1', codigo: null, nome: 'Assunto', nivel: 1, ordem: 0 };
@@ -74,6 +74,20 @@ describe('grupo de assuntos', () => {
     expect(raizDe(porId, 'A')).toBe('A');
   });
 
+  it('segue a cadeia até a raiz (ponteiro intermediário depois de falha parcial)', () => {
+    const lista = [{ ...assuntoBase, id: 'm1', mesclado_em: 'R1' }, { ...assuntoBase, id: 'R1', mesclado_em: 'R2' }, { ...assuntoBase, id: 'R2' }];
+    const porId = new Map(lista.map((a) => [a.id, a]));
+    expect(raizDe(porId, 'm1')).toBe('R2');
+    expect(raizDe(porId, 'R1')).toBe('R2');
+    expect(membrosDoGrupo(lista, 'm1')).toEqual(['R2', 'm1', 'R1']);
+  });
+
+  it('ciclo de ponteiros não trava: cada um vale como raiz de si mesmo', () => {
+    const porId = new Map([['a', { ...assuntoBase, id: 'a', mesclado_em: 'b' }], ['b', { ...assuntoBase, id: 'b', mesclado_em: 'a' }]]);
+    expect(raizDe(porId, 'a')).toBe('a');
+    expect(raizDe(porId, 'b')).toBe('b');
+  });
+
   it('mesclado_em para assunto que não existe vale como raiz de si mesmo', () => {
     const porId = new Map([['C', { ...assuntoBase, id: 'C', mesclado_em: 'sumiu' }]]);
     expect(raizDe(porId, 'C')).toBe('C');
@@ -118,6 +132,27 @@ describe('concluir revisão', () => {
     expect(m.reagendar).toContainEqual({ id: 'B2m', data_prevista: '2027-01-18' });
     expect(m.reagendar).toContainEqual({ id: 'A2m', data_prevista: '2027-01-18' });
     expect(m.reagendar.map((x) => x.id)).not.toContain('A48');
+  });
+});
+
+describe('"Feita em" no passado com duas sequências', () => {
+  it('não adianta a sequência estudada depois da data informada', () => {
+    const m = planoDeConclusao(A48, pendentesAB, '2026-11-08');
+    expect(m.apagar).toEqual([]);
+    const ids = m.reagendar.map((x) => x.id);
+    expect(ids).not.toContain('B48');
+    expect(ids).not.toContain('B7');
+    expect(ids).not.toContain('B2m');
+    expect(m.reagendar).toContainEqual({ id: 'A7', data_prevista: '2026-11-15' });
+    for (const x of m.reagendar) expect(x.data_prevista >= pendentesAB.find((r) => r.id === x.id)!.data_prevista).toBe(true);
+  });
+});
+
+describe('uma revisão por assunto (ou grupo) por dia', () => {
+  it('membros do mesmo grupo no mesmo dia viram uma só', () => {
+    const porId = new Map(dGrupo.assuntos.map((a) => [a.id, a]));
+    const mesmoDia = [rev('x1', 'A', 'eA', '2m', '2027-01-18'), rev('x2', 'B', 'eB', '2m', '2027-01-18'), rev('x3', 'B', 'eB', '6m', '2027-05-18')];
+    expect(umaPorGrupoPorDia(mesmoDia, (id) => raizDe(porId, id)).map((r) => r.id)).toEqual(['x1', 'x3']);
   });
 });
 

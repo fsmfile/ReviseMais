@@ -566,12 +566,19 @@ try {
       await ir('#/plano/p1');
       await clicar('button', 'Expandir tudo');
       await dormir(200);
-      await clicar('.nome-assunto', 'Nacionalidade');
+      await clicar('.nome-assunto', 'Processo legislativo');
       await dormir(200);
       await clicar('.folha-item', 'Mesclar com');
       await dormir(300);
       nota('Mesclar com…: itens na lista', await js(`document.querySelectorAll('.lista-mesclar li').length`));
       await fotoTela('mesclar-com', ap);
+      // Mesclar à mão dois assuntos ainda não estudados: o histórico tem de dizer com quem está mesclado.
+      await js(`window.confirm = () => true`);
+      await clicar('.item-mesclar', 'Advocacia pública');
+      await dormir(400);
+      await clicar('#a-p1-d1-a4 button[aria-label="Histórico"]');
+      await dormir(300);
+      nota('histórico de assunto mesclado sem estudo diz "Mesclado com" (esperado true)', await js(`(document.querySelector('#a-p1-d1-a4')?.textContent ?? '').includes('Mesclado com')`));
     }
     if (quer('vazio')) {
       await js(`localStorage.clear()`);

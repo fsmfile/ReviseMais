@@ -5,7 +5,7 @@ import { FichaCandidato } from '../components/Advogando';
 import { deISO, diasEntre, formatarCurto, formatarData, hoje, paraISO, somarDias } from '../lib/datas';
 import { href } from '../lib/rota';
 import { useCorMateria } from '../lib/cores';
-import { contarAFazer } from '../lib/revisoes';
+import { contarAFazer, umaPorGrupoPorDia } from '../lib/revisoes';
 import { useDados, useIndices } from '../lib/store';
 
 const media = (l: number[]) => (l.length ? Math.round((l.reduce((s, x) => s + x, 0) / l.length) * 10) / 10 : null);
@@ -25,7 +25,7 @@ const estiloTooltip = {
 
 export function Painel() {
   const { dados } = useDados();
-  const { contexto, fonteEstudo } = useIndices();
+  const { contexto, fonteEstudo, raiz } = useIndices();
   const corMateria = useCorMateria();
   const [planoId, setPlanoId] = useState('');
   const [diaSel, setDiaSel] = useState<string | null>(null);
@@ -75,10 +75,11 @@ export function Painel() {
       semanas.push({ semana: s, media: media(l), n: l.length });
     }
 
-    // Revisões nos próximos 14 dias.
+    // Revisões nos próximos 14 dias (assunto mesclado conta uma vez por dia).
+    const pendentesPorDia = umaPorGrupoPorDia(pendentes, raiz);
     const proximos = Array.from({ length: 14 }, (_, i) => {
       const d = somarDias(ref, i);
-      return { dia: d, n: pendentes.filter((r) => r.data_prevista === d).length };
+      return { dia: d, n: pendentesPorDia.filter((r) => r.data_prevista === d).length };
     });
 
     // Situação das revisões.
@@ -135,7 +136,7 @@ export function Painel() {
       progresso,
       prova: provas[0],
     };
-  }, [dados, planoId, planos, ref, contexto, fonteEstudo]);
+  }, [dados, planoId, planos, ref, contexto, fonteEstudo, raiz]);
 
   // Mapa de constância: 15 semanas (colunas) x 7 dias (linhas).
   const mapa = useMemo(() => {

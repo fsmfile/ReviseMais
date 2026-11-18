@@ -1,9 +1,9 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { backend, mesclagemDisponivel, novoId } from './backend';
 import { REVISOES, hoje } from './datas';
 import { calcularCorrelacoes, normalizar, type MapaCorrelacoes } from './correlacao';
 import { montarIndices } from './indices';
-import { paresDistintos, planoDeExclusao, planoDeMesclagem, planoDeSeparacao, prepararSugestoes, sugestoesDe, type SugestaoMesclagem } from './mesclagem';
+import { paresDistintos, paresNovos, planoDeExclusao, planoDeMesclagem, planoDeSeparacao, prepararSugestoes, sugestoesDe, type SugestaoMesclagem } from './mesclagem';
 import { membrosDoGrupo, planoDeAdiamento, planoDeConclusao } from './revisoes';
 import type { DisciplinaExtraida } from './editalParser';
 import type { Assunto, Dados, Disciplina, Estudo, ParDistinto, Plano, Revisao, Sessao } from './types';
@@ -21,6 +21,8 @@ export interface NovoEstudo {
 }
 
 function useAcoes(dados: Dados, setDados: (f: (d: Dados) => Dados) => void) {
+  // Pares "não são iguais" gravados (ou sendo gravados) nesta sessão: um duplo clique não tenta gravar de novo.
+  const paresGravados = useRef(new Set<string>());
   return useMemo(() => {
     // Cor já escolhida para a mesma matéria em outro plano (mesmo nome normalizado).
     const corHerdada = (nome: string): { cor?: string } => {
@@ -115,16 +117,20 @@ function useAcoes(dados: Dados, setDados: (f: (d: Dados) => Dados) => void) {
     };
     /** Grava pares "não são iguais" que ainda não existem. */
     const gravarDistintos = async (pares: [string, string][]) => {
-      const ja = new Set(dados.assuntos_distintos.map((x) => `${x.assunto_a}|${x.assunto_b}`));
-      const novos: ParDistinto[] = [];
-      for (const [x, y] of pares) {
-        const [a, b] = x < y ? [x, y] : [y, x];
-        if (a === b || ja.has(`${a}|${b}`)) continue;
-        ja.add(`${a}|${b}`);
-        novos.push({ id: novoId(), assunto_a: a, assunto_b: b });
-      }
+      const novos: ParDistinto[] = paresNovos(dados.assuntos_distintos, paresGravados.current, pares).map(([a, b]) => ({
+        id: novoId(),
+        assunto_a: a,
+        assunto_b: b,
+      }));
       if (!novos.length) return;
-      await backend.inserir('assuntos_distintos', novos as never[]);
+      const chaves = novos.map((x) => `${x.assunto_a}|${x.assunto_b}`);
+      for (const k of chaves) paresGravados.current.add(k);
+      try {
+        await backend.inserir('assuntos_distintos', novos as never[]);
+      } catch (e) {
+        for (const k of chaves) paresGravados.current.delete(k);
+        throw e;
+      }
       setDados((d) => ({ ...d, assuntos_distintos: [...d.assuntos_distintos, ...novos] }));
     };
     /**

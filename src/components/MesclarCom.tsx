@@ -10,6 +10,7 @@ export function MesclarCom({ assuntoId, aoFechar }: { assuntoId: string; aoFecha
   const { dados, acoes, executar } = useDados();
   const { contexto, grupo } = useIndices();
   const [busca, setBusca] = useState('');
+  const [salvando, setSalvando] = useState(false);
   const atual = contexto(assuntoId);
 
   const lista = useMemo(() => {
@@ -37,7 +38,9 @@ export function MesclarCom({ assuntoId, aoFechar }: { assuntoId: string; aoFecha
   const escolher = async (outroId: string) => {
     const o = contexto(outroId);
     if (!o) return;
+    if (salvando) return;
     if (!confirm(`Mesclar “${curto(atual.assunto.nome)}” com “${curto(o.assunto.nome)}” (${o.plano.nome})? Estudo e revisões passam a valer para os dois.`)) return;
+    setSalvando(true);
     await executar(() => acoes.mesclarAssuntos([assuntoId, outroId]));
     aoFechar();
   };
@@ -63,7 +66,7 @@ export function MesclarCom({ assuntoId, aoFechar }: { assuntoId: string; aoFecha
         <ul className="lista-mesclar">
           {lista.map((c) => (
             <li key={c.assunto.id}>
-              <button className="item-mesclar" onClick={() => escolher(c.assunto.id)}>
+              <button className="item-mesclar" disabled={salvando} onClick={() => escolher(c.assunto.id)}>
                 <span className="item-mesclar-topo">
                   <span className="tag" style={{ ['--cor' as string]: c.plano.cor }}>
                     {c.plano.nome}

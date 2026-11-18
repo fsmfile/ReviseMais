@@ -3,10 +3,20 @@
 import { REVISOES } from './datas';
 import type { Assunto, Dados, Revisao } from './types';
 
-/** Raiz do grupo: o assunto para onde `mesclado_em` aponta, se ele existir; senão o próprio. */
+/**
+ * Raiz do grupo: segue `mesclado_em` até um assunto que não aponta para ninguém (normalmente é um salto só; mais de
+ * um sobra de uma gravação interrompida). Ponteiro para assunto que não existe para ali; ciclo vale como raiz própria.
+ */
 export function raizDe(porId: Map<string, Assunto>, id: string): string {
-  const alvo = porId.get(id)?.mesclado_em;
-  return alvo && porId.has(alvo) ? alvo : id;
+  const vistos = new Set([id]);
+  let atual = id;
+  for (;;) {
+    const alvo = porId.get(atual)?.mesclado_em;
+    if (!alvo || !porId.has(alvo)) return atual;
+    if (vistos.has(alvo)) return id;
+    vistos.add(alvo);
+    atual = alvo;
+  }
 }
 
 /** Assuntos do grupo de `id` (a raiz primeiro, depois os membros na ordem do array). Sem grupo: `[id]`. */
@@ -87,10 +97,27 @@ export function planoDeConclusao(r: Revisao, pendentesDoGrupo: Revisao[], conclu
   const outras = pendentesDoGrupo.filter((x) => x.id !== r.id && !x.concluida_em);
   const apagar = outras.filter((x) => x.data_prevista <= concluidaEm).map((x) => x.id);
   if (concluidaEm <= r.data_prevista) return { apagar, reagendar: [] };
+  // Recontar só empurra para frente: com "Feita em" no passado, outra sequência do grupo (estudada depois) não adianta.
   const reagendar = outras
     .filter((x) => x.data_prevista > concluidaEm)
-    .map((x) => ({ id: x.id, data_prevista: REVISOES.find((t) => t.tipo === x.tipo)!.calcular(concluidaEm) }));
+    .map((x) => {
+      const nova = REVISOES.find((t) => t.tipo === x.tipo)!.calcular(concluidaEm);
+      return { id: x.id, data_prevista: nova > x.data_prevista ? nova : x.data_prevista, antes: x.data_prevista };
+    })
+    .filter((x) => x.data_prevista !== x.antes)
+    .map(({ id, data_prevista }) => ({ id, data_prevista }));
   return { apagar, reagendar };
+}
+
+/** Agenda e calendário: no mesmo dia, uma revisão por assunto (ou grupo mesclado); fica a primeira da lista. */
+export function umaPorGrupoPorDia(revisoes: Revisao[], raiz: (assuntoId: string) => string): Revisao[] {
+  const vistos = new Set<string>();
+  return revisoes.filter((r) => {
+    const k = `${raiz(r.assunto_id)}|${r.data_prevista}`;
+    if (vistos.has(k)) return false;
+    vistos.add(k);
+    return true;
+  });
 }
 
 /** "Adiar para amanhã": todas as pendentes do grupo vencidas até `ref` vão para `para`. */

@@ -15,7 +15,30 @@ export function HistoricoAssunto({ assuntoId }: { assuntoId: string }) {
   const estudos = [...(estudosPorAssunto.get(id) ?? [])].reverse();
   const revisoes = revisoesPorAssunto.get(id) ?? [];
 
-  if (!estudos.length) return <p className="suave pequeno">Nenhum estudo registrado ainda.</p>;
+  const outros = grupo(assuntoId).filter((x) => x !== assuntoId);
+  const notaGrupo = outros.length > 0 && (
+    <p className="nota-compartilhado pequeno">
+      Mesclado com{' '}
+      {outros
+        .map((x) => contexto(x))
+        .filter((c) => !!c)
+        .map((c, k) => (
+          <span key={c!.assunto.id}>
+            {k > 0 && '; '}
+            <strong>{c!.plano.nome}</strong> › {c!.assunto.nome.length > 70 ? c!.assunto.nome.slice(0, 69) + '…' : c!.assunto.nome}
+          </span>
+        ))}
+      . Estudo e revisões valem para todos.
+    </p>
+  );
+
+  if (!estudos.length)
+    return (
+      <div className="historico">
+        {notaGrupo}
+        <p className="suave pequeno">Nenhum estudo registrado ainda.</p>
+      </div>
+    );
 
   return (
     <div className="historico">
@@ -25,22 +48,7 @@ export function HistoricoAssunto({ assuntoId }: { assuntoId: string }) {
           dois planos.
         </p>
       )}
-      {grupo(assuntoId).length > 1 && (
-        <p className="nota-compartilhado pequeno">
-          Mesclado com{' '}
-          {grupo(assuntoId)
-            .filter((x) => x !== assuntoId)
-            .map((x) => contexto(x))
-            .filter((c) => !!c)
-            .map((c, k) => (
-              <span key={c!.assunto.id}>
-                {k > 0 && '; '}
-                <strong>{c!.plano.nome}</strong> › {c!.assunto.nome.length > 70 ? c!.assunto.nome.slice(0, 69) + '…' : c!.assunto.nome}
-              </span>
-            ))}
-          . Estudo e revisões valem para todos.
-        </p>
-      )}
+      {notaGrupo}
       {estudos.map((e) => (
         <div key={e.id} className="ciclo-estudo">
           <div className="linha-estudo">

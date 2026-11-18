@@ -7,7 +7,7 @@ import { Icone } from '../components/Icone';
 import { ResumoTempo } from '../components/ResumoTempo';
 import { nomeCurto } from '../lib/abreviar';
 import { descreverPrazo, diasEntre, formatarCurto, hoje, rotuloRevisao, somarDias } from '../lib/datas';
-import { revisoesAFazer, type ItemRevisao } from '../lib/revisoes';
+import { revisoesAFazer, umaPorGrupoPorDia, type ItemRevisao } from '../lib/revisoes';
 import { href } from '../lib/rota';
 import { useDados, useIndices } from '../lib/store';
 
@@ -24,14 +24,10 @@ export function Hoje() {
     const aFazer = revisoesAFazer(dados, ref);
     const semanaAtras = somarDias(ref, -7);
     // Agenda: o mesmo assunto (ou grupo) aparece uma vez por dia.
-    const vistos = new Set<string>();
-    const futuras = pend.filter((r) => {
-      if (r.data_prevista <= ref || r.data_prevista > somarDias(ref, 7)) return false;
-      const k = `${raiz(r.assunto_id)}|${r.data_prevista}`;
-      if (vistos.has(k)) return false;
-      vistos.add(k);
-      return true;
-    });
+    const futuras = umaPorGrupoPorDia(
+      pend.filter((r) => r.data_prevista > ref && r.data_prevista <= somarDias(ref, 7)),
+      raiz,
+    );
     const feitas = dados.revisoes.filter((r) => r.concluida_em && r.concluida_em > semanaAtras);
     const comPct = [...feitas, ...dados.estudos.filter((e) => e.data > semanaAtras)].filter((x) => x.percentual != null);
     return {
