@@ -3,7 +3,7 @@
 // (assuntos.mesclado_em aponta para a raiz do grupo). Aqui só se decide o que mudar; o store aplica.
 import { LIMIAR_ASSUNTO, normalizar, similaridade, tokens, type MapaCorrelacoes } from './correlacao';
 import { membrosDoGrupo, raizDe } from './revisoes';
-import type { Assunto, Dados, ParDistinto } from './types';
+import type { Assunto, Dados, ParDistinto, Revisao } from './types';
 
 type DadosMesclagem = Pick<Dados, 'planos' | 'disciplinas' | 'assuntos' | 'estudos' | 'revisoes'>;
 type Apontar = { id: string; mesclado_em: string | null };
@@ -56,7 +56,30 @@ function contexto(d: DadosMesclagem) {
       .map((id) => ({ id, mesclado_em: id === raiz ? null : raiz }))
       .filter((x) => (porId.get(x.id)?.mesclado_em ?? null) !== x.mesclado_em);
   const raiz = (id: string) => raizDe(porId, id);
-  return { porId, disc, planoDe, porOrdem, escolherRaiz, apontarPara, raiz };
+  // Grupos (raiz primeiro, como membrosDoGrupo), estudos e revisões pendentes por assunto: montados uma vez só.
+  const porRaiz = new Map<string, string[]>();
+  for (const a of d.assuntos) {
+    const r = raiz(a.id);
+    porRaiz.set(r, r === a.id ? [a.id, ...(porRaiz.get(r) ?? [])] : [...(porRaiz.get(r) ?? []), a.id]);
+  }
+  const grupo = (id: string) => porRaiz.get(raiz(id)) ?? [id];
+  const estudoPorId = new Map(d.estudos.map((e) => [e.id, e]));
+  const pendentes = new Map<string, Revisao[]>();
+  for (const r of d.revisoes) if (!r.concluida_em) pendentes.set(r.assunto_id, [...(pendentes.get(r.assunto_id) ?? []), r]);
+  return { porId, disc, planoDe, porOrdem, escolherRaiz, apontarPara, raiz, grupo, estudoPorId, pendentes };
+}
+
+/** Mesclagem a partir de um contexto já montado (as sugestões calculam várias com o mesmo contexto). */
+function mesclarCom(cx: ReturnType<typeof contexto>, ids: string[]): PlanoMesclagem {
+  const todos = [...new Set(ids.flatMap(cx.grupo))].sort(cx.porOrdem);
+  const raiz = cx.escolherRaiz(todos);
+  const pend = todos.flatMap((id) => cx.pendentes.get(id) ?? []);
+  const candidatos = [...new Set(pend.map((r) => r.estudo_id))].map((id) => cx.estudoPorId.get(id)).filter((e) => !!e);
+  candidatos.sort(
+    (a, b) => b!.data.localeCompare(a!.data) || Number(b!.assunto_id === raiz) - Number(a!.assunto_id === raiz) || cx.porOrdem(a!.assunto_id, b!.assunto_id),
+  );
+  const fica = candidatos[0]?.id;
+  return { raiz, apontar: cx.apontarPara(todos, raiz), apagarRevisoes: pend.filter((r) => r.estudo_id !== fica).map((r) => r.id) };
 }
 
 export interface SugestaoMesclagem {
@@ -70,20 +93,34 @@ export interface SugestaoMesclagem {
 }
 
 /**
- * Grupos de assuntos que parecem iguais em planos diferentes (disciplinas equivalentes). Só vira sugestão o grupo em
- * que pelo menos dois (assuntos ou grupos já mesclados) têm estudo próprio, que é quando há revisões duplicadas.
+ * Etapa 1 (só a estrutura: planos, disciplinas, assuntos e os "não são iguais"): grupos de assuntos que parecem
+ * iguais em planos diferentes, dentro de disciplinas equivalentes. Cada grupo vem na ordem dos planos e tem ao menos
+ * duas unidades (assunto solto ou grupo já mesclado). É a parte cara: o app só refaz quando a estrutura muda.
  */
-export function sugerirMesclagens(d: DadosMesclagem, distintos: ParDistinto[], correlacoes: MapaCorrelacoes): SugestaoMesclagem[] {
-  const cx = contexto(d);
+export function prepararSugestoes(
+  d: Pick<Dados, 'planos' | 'disciplinas' | 'assuntos'>,
+  distintos: ParDistinto[],
+  correlacoes: MapaCorrelacoes,
+): string[][] {
+  const cx = contexto({ ...d, estudos: [], revisoes: [] });
   const dispensado = new Set(distintos.map((p) => `${p.assunto_a}|${p.assunto_b}`));
   const ehDispensado = (x: string, y: string) => dispensado.has(x < y ? `${x}|${y}` : `${y}|${x}`);
-  const equivalentes = (a: string, b: string) => {
-    const da = cx.disc.get(a)!;
-    const db = cx.disc.get(b)!;
-    return normalizar(da.nome) === normalizar(db.nome) || (correlacoes.disciplinas.get(a) ?? []).some((c) => c.disciplina.id === b);
-  };
+  const nomeDisc = new Map(d.disciplinas.map((x) => [x.id, normalizar(x.nome)]));
+  const equivalentes = (a: string, b: string) =>
+    nomeDisc.get(a) === nomeDisc.get(b) || (correlacoes.disciplinas.get(a) ?? []).some((c) => c.disciplina.id === b);
   const porDisc = new Map<string, Assunto[]>();
   for (const a of d.assuntos) porDisc.set(a.disciplina_id, [...(porDisc.get(a.disciplina_id) ?? []), a]);
+  // Nome normalizado e palavras de cada assunto, calculados uma vez só.
+  const norm = new Map<string, string>();
+  const tok = new Map<string, Set<string>>();
+  const semelhanca = (x: Assunto, y: Assunto) => {
+    for (const a of [x, y]) if (!norm.has(a.id)) (norm.set(a.id, normalizar(a.nome)), tok.set(a.id, tokens(a.nome)));
+    if (norm.get(x.id) === norm.get(y.id)) return 1;
+    const [ta, tb] = [tok.get(x.id)!, tok.get(y.id)!];
+    const s = similaridade(ta, tb);
+    const [curto, longo] = ta.size <= tb.size ? [ta, tb] : [tb, ta];
+    return curto.size >= 3 && [...curto].every((t) => longo.has(t)) ? Math.max(s, LIMIAR_ASSUNTO) : s;
+  };
 
   // Pares candidatos, do mais parecido para o menos.
   const pares: { x: string; y: string; s: number }[] = [];
@@ -93,7 +130,7 @@ export function sugerirMesclagens(d: DadosMesclagem, distintos: ParDistinto[], c
       for (const x of porDisc.get(da.id) ?? [])
         for (const y of porDisc.get(db.id) ?? []) {
           if (cx.raiz(x.id) === cx.raiz(y.id)) continue;
-          const s = parecidos(x.nome, y.nome);
+          const s = semelhanca(x, y);
           if (s >= LIMIAR_ASSUNTO) pares.push({ x: x.id, y: y.id, s });
         }
     }
@@ -118,28 +155,39 @@ export function sugerirMesclagens(d: DadosMesclagem, distintos: ParDistinto[], c
     for (const id of junto) unidade.set(id, junto);
   }
 
+  const grupos: string[][] = [];
+  for (const grupo of new Set(unidade.values())) if (new Set(grupo.map(cx.raiz)).size >= 2) grupos.push([...grupo].sort(cx.porOrdem));
+  return grupos;
+}
+
+/**
+ * Etapa 2 (estudos e revisões): só vira sugestão o grupo em que pelo menos duas unidades têm estudo próprio, que é
+ * quando há revisões duplicadas. Barata: roda a cada estudo ou revisão registrada.
+ */
+export function sugestoesDe(d: DadosMesclagem, grupos: string[][]): SugestaoMesclagem[] {
+  const cx = contexto(d);
   const estudados = new Set(d.estudos.map((e) => e.assunto_id));
-  const vistos = new Set<string[]>();
   const sugestoes: SugestaoMesclagem[] = [];
-  for (const grupo of unidade.values()) {
-    if (vistos.has(grupo)) continue;
-    vistos.add(grupo);
-    const raizes = new Set(grupo.map(cx.raiz));
-    if (raizes.size < 2) continue;
-    const comEstudo = [...raizes].filter((r) => grupo.some((id) => cx.raiz(id) === r && estudados.has(id)));
+  for (const assuntos of grupos) {
+    if (!assuntos.every((id) => cx.porId.has(id))) continue;
+    const raizes = new Set(assuntos.map(cx.raiz));
+    const comEstudo = [...raizes].filter((r) => assuntos.some((id) => cx.raiz(id) === r && estudados.has(id)));
     if (comEstudo.length < 2) continue;
-    const assuntos = [...grupo].sort(cx.porOrdem);
-    const membros = new Set(assuntos);
-    const pendentesAntes = d.revisoes.filter((r) => !r.concluida_em && membros.has(r.assunto_id)).length;
+    const pendentesAntes = assuntos.reduce((n, id) => n + (cx.pendentes.get(id)?.length ?? 0), 0);
     sugestoes.push({
       chave: [...assuntos].sort().join('|'),
-      disciplina: cx.disc.get(cx.porId.get(assuntos[0])!.disciplina_id)!.nome,
+      disciplina: cx.disc.get(cx.porId.get(assuntos[0])!.disciplina_id)?.nome ?? '',
       assuntos,
       pendentesAntes,
-      pendentesDepois: pendentesAntes - planoDeMesclagem(d, assuntos).apagarRevisoes.length,
+      pendentesDepois: pendentesAntes - mesclarCom(cx, assuntos).apagarRevisoes.length,
     });
   }
   return sugestoes;
+}
+
+/** As duas etapas juntas (scripts e testes; o app usa as duas separadas, ver `useSugestoesMesclagem`). */
+export function sugerirMesclagens(d: DadosMesclagem, distintos: ParDistinto[], correlacoes: MapaCorrelacoes): SugestaoMesclagem[] {
+  return sugestoesDe(d, prepararSugestoes(d, distintos, correlacoes));
 }
 
 export interface PlanoMesclagem {
@@ -150,18 +198,7 @@ export interface PlanoMesclagem {
 
 /** Mescla os grupos inteiros dos `ids`: escolhe a raiz e deixa só a sequência pendente do estudo mais recente. */
 export function planoDeMesclagem(d: DadosMesclagem, ids: string[]): PlanoMesclagem {
-  const cx = contexto(d);
-  const todos = [...new Set(ids.flatMap((id) => membrosDoGrupo(d.assuntos, id)))].sort(cx.porOrdem);
-  const raiz = cx.escolherRaiz(todos);
-  const membros = new Set(todos);
-  const pend = d.revisoes.filter((r) => !r.concluida_em && membros.has(r.assunto_id));
-  const estudoPorId = new Map(d.estudos.map((e) => [e.id, e]));
-  const candidatos = [...new Set(pend.map((r) => r.estudo_id))].map((id) => estudoPorId.get(id)).filter((e) => !!e);
-  candidatos.sort(
-    (a, b) => b!.data.localeCompare(a!.data) || Number(b!.assunto_id === raiz) - Number(a!.assunto_id === raiz) || cx.porOrdem(a!.assunto_id, b!.assunto_id),
-  );
-  const fica = candidatos[0]?.id;
-  return { raiz, apontar: cx.apontarPara(todos, raiz), apagarRevisoes: pend.filter((r) => r.estudo_id !== fica).map((r) => r.id) };
+  return mesclarCom(contexto(d), ids);
 }
 
 export interface PlanoSeparacao {

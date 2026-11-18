@@ -1,9 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { backend, novoId } from './backend';
+import { backend, mesclagemDisponivel, novoId } from './backend';
 import { REVISOES, hoje } from './datas';
 import { calcularCorrelacoes, normalizar, type MapaCorrelacoes } from './correlacao';
 import { montarIndices } from './indices';
-import { paresDistintos, planoDeExclusao, planoDeMesclagem, planoDeSeparacao, sugerirMesclagens, type SugestaoMesclagem } from './mesclagem';
+import { paresDistintos, planoDeExclusao, planoDeMesclagem, planoDeSeparacao, prepararSugestoes, sugestoesDe, type SugestaoMesclagem } from './mesclagem';
 import { membrosDoGrupo, planoDeAdiamento, planoDeConclusao } from './revisoes';
 import type { DisciplinaExtraida } from './editalParser';
 import type { Assunto, Dados, Disciplina, Estudo, ParDistinto, Plano, Revisao, Sessao } from './types';
@@ -520,7 +520,14 @@ export function useDados(): Ctx {
 /** Assuntos que parecem iguais em planos diferentes e ainda não foram mesclados nem dispensados. */
 export function useSugestoesMesclagem(): SugestaoMesclagem[] {
   const { dados, correlacoes } = useDados();
-  return useMemo(() => sugerirMesclagens(dados, dados.assuntos_distintos, correlacoes), [dados, correlacoes]);
+  const { planos, disciplinas, assuntos, assuntos_distintos, estudos, revisoes } = dados;
+  // Parte cara (comparar nomes) só quando a estrutura muda; a cada estudo ou revisão, só o filtro barato.
+  // Sem a migração 0007 no banco não há como mesclar: nada é sugerido.
+  const grupos = useMemo(
+    () => (mesclagemDisponivel() ? prepararSugestoes({ planos, disciplinas, assuntos }, assuntos_distintos, correlacoes) : []),
+    [planos, disciplinas, assuntos, assuntos_distintos, correlacoes],
+  );
+  return useMemo(() => sugestoesDe({ planos, disciplinas, assuntos, estudos, revisoes }, grupos), [planos, disciplinas, assuntos, estudos, revisoes, grupos]);
 }
 
 /** Índices auxiliares usados em várias telas (ver `montarIndices`). */

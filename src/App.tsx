@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { modoLocal, supabase, tabelasFaltando } from './lib/backend';
+import { mesclagemDisponivel, modoLocal, supabase, tabelasFaltando } from './lib/backend';
 import { nomeCurto } from './lib/abreviar';
 import { useArrastarOrdem } from './lib/arrastar';
 import { hoje } from './lib/datas';
@@ -78,6 +78,8 @@ const FERRAMENTAS: ItemMenu[] = [
   { rota: { tela: 'repetidos' }, icone: 'mesclar', rotulo: 'Assuntos repetidos' },
   { rota: { tela: 'calendario' }, icone: 'calendario', rotulo: 'Alertas no calendário' },
 ];
+/** "Assuntos repetidos" só aparece com a migração 0007 no banco (sem ela não há como mesclar). */
+const disponivel = (it: ItemMenu) => it.rota.tela !== 'repetidos' || mesclagemDisponivel();
 /** O que aparece em "Mais" (celular e tablet): tudo o que não está na barra inferior. */
 const SECOES: { titulo: string; itens: ItemMenu[] }[] = [
   { titulo: 'Acompanhamento', itens: PRINCIPAIS.slice(3, 6) },
@@ -164,7 +166,7 @@ function Estrutura({ email }: { email?: string }) {
             </div>
             {novoPlano}
             <p className="menu-titulo">Ferramentas</p>
-            {FERRAMENTAS.map((it) => (
+            {FERRAMENTAS.filter(disponivel).map((it) => (
               <LinkMenu key={it.rotulo} item={it} rota={rota} />
             ))}
           </nav>
@@ -315,7 +317,7 @@ function MenuLateral({ rota, email, aoFechar, sair, contadores }: { rota: Rota; 
         {SECOES.map((s) => (
           <div key={s.titulo} className="menu-secao">
             <p className="menu-titulo">{s.titulo}</p>
-            {s.itens.map((it) => (
+            {s.itens.filter(disponivel).map((it) => (
               <LinkMenu key={it.rotulo} item={it} rota={rota} contador={it.rota.tela === 'questoes' ? contadores.questoes : 0} />
             ))}
           </div>

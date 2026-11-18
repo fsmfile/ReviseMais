@@ -17,7 +17,7 @@ import { NavegaSecoes } from '../components/NavegaSecoes';
 import { OrdenarDisciplinas } from '../components/OrdenarDisciplinas';
 import { useArrastarOrdem } from '../lib/arrastar';
 import { StatusRevisoes, estadoRevisao } from '../components/StatusRevisoes';
-import { backend } from '../lib/backend';
+import { backend, mesclagemDisponivel } from '../lib/backend';
 import { diasEntre, formatarData, hoje } from '../lib/datas';
 import { href, ir } from '../lib/rota';
 import { CORES, useDados, useIndices } from '../lib/store';
@@ -432,8 +432,8 @@ export function Plano({ id, destaque }: { id: string; destaque?: string }) {
               { icone: 'estudo', rotulo: 'Registrar estudo', acao: () => setEstudando(a.id) },
               { icone: 'cronometro', rotulo: 'Cronometrar estudo', acao: () => (location.hash = href({ tela: 'estudar', assunto: a.id })) },
               { icone: 'historico', rotulo: expandido === a.id ? 'Ocultar histórico' : 'Ver histórico', acao: () => setExpandido(expandido === a.id ? null : a.id) },
-              { icone: 'mesclar', rotulo: 'Mesclar com…', acao: () => setMesclando(a.id) },
-              ...(grupo(a.id).length > 1
+              ...(mesclagemDisponivel() ? [{ icone: 'mesclar', rotulo: 'Mesclar com…', acao: () => setMesclando(a.id) }] : []),
+              ...(grupo(a.id).length > 1 && mesclagemDisponivel()
                 ? [
                     {
                       icone: 'mesclar',

@@ -29,6 +29,10 @@ const TABELAS: Tabela[] = ['planos', 'disciplinas', 'assuntos', 'estudos', 'revi
 /** Tabelas criadas em migrações posteriores: se ainda não existirem no Supabase, o app funciona sem elas. */
 const OPCIONAIS = new Set<Tabela>(['sessoes', 'assuntos_distintos']);
 export const tabelasFaltando = new Set<Tabela>();
+/** Mesclar assuntos precisa da migração 0007 (coluna assuntos.mesclado_em e tabela assuntos_distintos, criadas juntas). */
+export function mesclagemDisponivel(faltando: ReadonlySet<string> = tabelasFaltando): boolean {
+  return !faltando.has('assuntos_distintos');
+}
 const LOTE = 500;
 
 function lotes<T>(l: T[], n = LOTE): T[][] {

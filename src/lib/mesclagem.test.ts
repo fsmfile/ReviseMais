@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { calcularCorrelacoes, LIMIAR_ASSUNTO } from './correlacao';
-import { paresDistintos, parecidos, planoDeExclusao, planoDeMesclagem, planoDeSeparacao, sugerirMesclagens } from './mesclagem';
+import { paresDistintos, parecidos, planoDeExclusao, planoDeMesclagem, planoDeSeparacao, prepararSugestoes, sugerirMesclagens, sugestoesDe } from './mesclagem';
 import type { Assunto, Dados, Estudo, ParDistinto, Revisao } from './types';
 
 // Nomes reais da conta que reclamou (18/11/2026), todos em "Direito Constitucional".
@@ -88,6 +88,23 @@ describe('sugestões de mesclagem', () => {
     expect(sugerirMesclagens(dMesclado, [], c)).toEqual([]);
     const doisMesclados: D = { ...d, assuntos: d.assuntos.map((a) => (a.id === 'oab' ? { ...a, mesclado_em: 'cremerj' } : a)) };
     expect(sugerirMesclagens(doisMesclados, [], c).map((s) => s.assuntos)).toEqual([['cremerj', 'oab', 'pgerj']]);
+  });
+});
+
+describe('sugestões em duas etapas (estrutura e estudos)', () => {
+  it('o preparo só olha a estrutura; o filtro de estudos dá o mesmo resultado', () => {
+    const grupos = prepararSugestoes(d, [], c);
+    expect(grupos).toEqual([['cremerj', 'oab', 'pgerj']]);
+    const semEstudos: D = { ...d, estudos: [], revisoes: [] };
+    expect(prepararSugestoes(semEstudos, [], c)).toEqual(grupos);
+    expect(sugestoesDe(d, grupos)).toEqual(sugerirMesclagens(d, [], c));
+    const dSoUm: D = { ...d, estudos: [estudo('cremerj')], revisoes: pendentes('cremerj') };
+    expect(sugestoesDe(dSoUm, grupos)).toEqual([]);
+  });
+
+  it('assunto com disciplina que sumiu não derruba a sugestão', () => {
+    const quebrado: D = { ...d, disciplinas: d.disciplinas.filter((x) => x.id !== 'd-cremerj') };
+    expect(() => sugestoesDe(quebrado, [['cremerj', 'oab', 'pgerj']])).not.toThrow();
   });
 });
 
