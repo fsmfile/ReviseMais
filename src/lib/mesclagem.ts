@@ -100,8 +100,13 @@ export function sugerirMesclagens(d: DadosMesclagem, distintos: ParDistinto[], c
   pares.sort((a, b) => b.s - a.s);
 
   // União por grupos (o grupo já mesclado entra inteiro), sem dois assuntos do mesmo plano e sem par dispensado.
+  const porRaiz = new Map<string, string[]>();
+  for (const a of d.assuntos) {
+    const r = cx.raiz(a.id);
+    porRaiz.set(r, r === a.id ? [a.id, ...(porRaiz.get(r) ?? [])] : [...(porRaiz.get(r) ?? []), a.id]);
+  }
   const unidade = new Map<string, string[]>();
-  for (const a of d.assuntos) unidade.set(a.id, membrosDoGrupo(d.assuntos, a.id));
+  for (const a of d.assuntos) unidade.set(a.id, porRaiz.get(cx.raiz(a.id))!);
   for (const { x, y } of pares) {
     const ux = unidade.get(x)!;
     const uy = unidade.get(y)!;

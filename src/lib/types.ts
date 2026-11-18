@@ -84,6 +84,7 @@ export interface Dados {
   estudos: Estudo[];
   revisoes: Revisao[];
   sessoes: Sessao[];
+  assuntos_distintos: ParDistinto[];
 }
 
 export type Tabela = keyof Dados;

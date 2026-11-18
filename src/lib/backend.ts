@@ -24,10 +24,10 @@ export interface Backend {
   excluirPdf(caminho: string): Promise<void>;
 }
 
-const TABELAS: Tabela[] = ['planos', 'disciplinas', 'assuntos', 'estudos', 'revisoes', 'sessoes'];
+const TABELAS: Tabela[] = ['planos', 'disciplinas', 'assuntos', 'estudos', 'revisoes', 'sessoes', 'assuntos_distintos'];
 
 /** Tabelas criadas em migrações posteriores: se ainda não existirem no Supabase, o app funciona sem elas. */
-const OPCIONAIS = new Set<Tabela>(['sessoes']);
+const OPCIONAIS = new Set<Tabela>(['sessoes', 'assuntos_distintos']);
 export const tabelasFaltando = new Set<Tabela>();
 const LOTE = 500;
 
@@ -103,11 +103,11 @@ function backendLocal(): Backend {
   const ler = (): Dados => {
     try {
       const j = JSON.parse(localStorage.getItem(CHAVE) ?? 'null');
-      if (j) return { sessoes: [], ...j };
+      if (j) return { sessoes: [], assuntos_distintos: [], ...j };
     } catch {
       /* ignora */
     }
-    return { planos: [], disciplinas: [], assuntos: [], estudos: [], revisoes: [], sessoes: [] };
+    return { planos: [], disciplinas: [], assuntos: [], estudos: [], revisoes: [], sessoes: [], assuntos_distintos: [] };
   };
   const gravar = (d: Dados) => localStorage.setItem(CHAVE, JSON.stringify(d));
   const pdfs = new Map<string, string>();

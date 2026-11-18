@@ -3,11 +3,12 @@ import { backend, novoId } from './backend';
 import { REVISOES, hoje } from './datas';
 import { calcularCorrelacoes, normalizar, type MapaCorrelacoes } from './correlacao';
 import { montarIndices } from './indices';
+import { paresDistintos, planoDeExclusao, planoDeMesclagem, planoDeSeparacao, sugerirMesclagens, type SugestaoMesclagem } from './mesclagem';
 import { membrosDoGrupo, planoDeAdiamento, planoDeConclusao } from './revisoes';
 import type { DisciplinaExtraida } from './editalParser';
-import type { Assunto, Dados, Disciplina, Estudo, Plano, Revisao, Sessao } from './types';
+import type { Assunto, Dados, Disciplina, Estudo, ParDistinto, Plano, Revisao, Sessao } from './types';
 
-const VAZIO: Dados = { planos: [], disciplinas: [], assuntos: [], estudos: [], revisoes: [], sessoes: [] };
+const VAZIO: Dados = { planos: [], disciplinas: [], assuntos: [], estudos: [], revisoes: [], sessoes: [], assuntos_distintos: [] };
 export const CORES = ['#2f6fdf', '#d9480f', '#2b8a3e', '#9c36b5', '#c2255c', '#0b7285', '#e67700', '#5c7cfa', '#495057'];
 
 export interface NovoEstudo {
@@ -63,6 +64,10 @@ function useAcoes(dados: Dados, setDados: (f: (d: Dados) => Dados) => void) {
       // Filhos antes dos pais (no Supabase o "on delete cascade" também cuida disso).
       if (ids.rev?.length) await backend.excluir('revisoes', ids.rev);
       if (ids.est?.length) await backend.excluir('estudos', ids.est);
+      // Pares "não são iguais" que citam assunto apagado (no Supabase o cascade já apaga; no modo local, não).
+      const apagados = new Set(ids.ass ?? []);
+      const pares = dados.assuntos_distintos.filter((x) => apagados.has(x.assunto_a) || apagados.has(x.assunto_b)).map((x) => x.id);
+      if (pares.length) await backend.excluir('assuntos_distintos', pares);
       if (ids.ass?.length) await backend.excluir('assuntos', ids.ass);
       if (ids.discs?.length) await backend.excluir('disciplinas', ids.discs);
       if (ids.planos?.length) await backend.excluir('planos', ids.planos);
@@ -85,7 +90,53 @@ function useAcoes(dados: Dados, setDados: (f: (d: Dados) => Dados) => void) {
         assuntos: d.assuntos.filter((x) => !a.has(x.id)),
         disciplinas: d.disciplinas.filter((x) => !di.has(x.id)),
         planos: d.planos.filter((x) => !p.has(x.id)),
+        assuntos_distintos: d.assuntos_distintos.filter((x) => !a.has(x.assunto_a) && !a.has(x.assunto_b)),
       }));
+    };
+    /** Grava mudanças de grupo: para onde cada assunto aponta e de qual assunto passam a ser estudos e revisões. */
+    const aplicarGrupo = async (m: {
+      assuntos?: { id: string; mesclado_em: string | null }[];
+      estudos?: { id: string; assunto_id: string }[];
+      revisoes?: { id: string; assunto_id: string }[];
+    }) => {
+      const [as, es, rs] = [m.assuntos ?? [], m.estudos ?? [], m.revisoes ?? []];
+      await Promise.all([
+        ...as.map((x) => backend.atualizar('assuntos', x.id, { mesclado_em: x.mesclado_em })),
+        ...es.map((x) => backend.atualizar('estudos', x.id, { assunto_id: x.assunto_id })),
+        ...rs.map((x) => backend.atualizar('revisoes', x.id, { assunto_id: x.assunto_id })),
+      ]);
+      const [ma, me, mr] = [new Map(as.map((x) => [x.id, x.mesclado_em])), new Map(es.map((x) => [x.id, x.assunto_id])), new Map(rs.map((x) => [x.id, x.assunto_id]))];
+      setDados((d) => ({
+        ...d,
+        assuntos: d.assuntos.map((x) => (ma.has(x.id) ? { ...x, mesclado_em: ma.get(x.id)! } : x)),
+        estudos: d.estudos.map((x) => (me.has(x.id) ? { ...x, assunto_id: me.get(x.id)! } : x)),
+        revisoes: d.revisoes.map((x) => (mr.has(x.id) ? { ...x, assunto_id: mr.get(x.id)! } : x)),
+      }));
+    };
+    /** Grava pares "não são iguais" que ainda não existem. */
+    const gravarDistintos = async (pares: [string, string][]) => {
+      const ja = new Set(dados.assuntos_distintos.map((x) => `${x.assunto_a}|${x.assunto_b}`));
+      const novos: ParDistinto[] = [];
+      for (const [x, y] of pares) {
+        const [a, b] = x < y ? [x, y] : [y, x];
+        if (a === b || ja.has(`${a}|${b}`)) continue;
+        ja.add(`${a}|${b}`);
+        novos.push({ id: novoId(), assunto_a: a, assunto_b: b });
+      }
+      if (!novos.length) return;
+      await backend.inserir('assuntos_distintos', novos as never[]);
+      setDados((d) => ({ ...d, assuntos_distintos: [...d.assuntos_distintos, ...novos] }));
+    };
+    /**
+     * Apaga assuntos (e disciplinas/planos junto). Antes, o que estava gravado num assunto mesclado passa para um
+     * membro do grupo que fica: apagar o plano de uma prova que passou não tira o ciclo dos outros planos.
+     */
+    const removerAssuntos = async (ids: { ass: string[]; discs?: string[]; planos?: string[] }) => {
+      const t = planoDeExclusao(dados, ids.ass);
+      await aplicarGrupo({ assuntos: t.apontar, estudos: t.moverEstudos, revisoes: t.moverRevisoes });
+      const movidos = new Set([...t.moverEstudos, ...t.moverRevisoes].map((x) => x.id));
+      const f = filhosDosAssuntos(ids.ass);
+      await remover({ ...ids, est: f.est.filter((x) => !movidos.has(x)), rev: f.rev.filter((x) => !movidos.has(x)) });
     };
 
     return {
@@ -151,7 +202,8 @@ function useAcoes(dados: Dados, setDados: (f: (d: Dados) => Dados) => void) {
       async excluirPlano(id: string) {
         const p = dados.planos.find((x) => x.id === id);
         if (p?.pdf_path) await backend.excluirPdf(p.pdf_path);
-        await remover({ ...filhosDoPlano(id), planos: [id] });
+        const { discs, ass } = filhosDoPlano(id);
+        await removerAssuntos({ ass, discs, planos: [id] });
       },
       /**
        * Importa disciplinas/assuntos para um plano existente. Disciplina com o mesmo nome de uma que já existe
@@ -227,7 +279,7 @@ function useAcoes(dados: Dados, setDados: (f: (d: Dados) => Dados) => void) {
         setDados((d) => ({ ...d, disciplinas: d.disciplinas.map((x) => (x.id === id ? { ...x, nome } : x)) }));
       },
       async excluirDisciplina(id: string) {
-        await remover({ ...filhosDasDisciplinas([id]), discs: [id] });
+        await removerAssuntos({ ass: filhosDasDisciplinas([id]).ass, discs: [id] });
       },
 
       async criarAssunto(disciplinaId: string, nome: string, codigo: string | null = null) {
@@ -259,10 +311,37 @@ function useAcoes(dados: Dados, setDados: (f: (d: Dados) => Dados) => void) {
       /** Exclui de uma vez todos os assuntos de uma disciplina (e o histórico deles); a disciplina fica. */
       async excluirAssuntosDaDisciplina(disciplinaId: string) {
         const ids = dados.assuntos.filter((x) => x.disciplina_id === disciplinaId).map((x) => x.id);
-        if (ids.length) await remover({ ...filhosDosAssuntos(ids), ass: ids });
+        if (ids.length) await removerAssuntos({ ass: ids });
       },
       async excluirAssunto(id: string) {
-        await remover({ ...filhosDosAssuntos([id]), ass: [id] });
+        await removerAssuntos({ ass: [id] });
+      },
+
+      /** Mescla os assuntos (e os grupos deles). `deixarDeFora`: desmarcados na sugestão, gravados como "não são iguais". */
+      async mesclarAssuntos(ids: string[], deixarDeFora: string[] = []) {
+        const p = planoDeMesclagem(dados, ids);
+        await aplicarGrupo({ assuntos: p.apontar });
+        if (p.apagarRevisoes.length) {
+          await backend.excluir('revisoes', p.apagarRevisoes);
+          const fora = new Set(p.apagarRevisoes);
+          setDados((d) => ({ ...d, revisoes: d.revisoes.filter((x) => !fora.has(x.id)) }));
+        }
+        await gravarDistintos(deixarDeFora.flatMap((f) => ids.map((i): [string, string] => [f, i])));
+      },
+      /** Tira o assunto do grupo; o ciclo pendente fica com os outros. */
+      async separarAssunto(id: string) {
+        const p = planoDeSeparacao(dados, id);
+        const para = p.para;
+        await aplicarGrupo({
+          assuntos: p.apontar,
+          estudos: para ? p.moverEstudos.map((x) => ({ id: x, assunto_id: para })) : [],
+          revisoes: para ? p.moverRevisoes.map((x) => ({ id: x, assunto_id: para })) : [],
+        });
+        await gravarDistintos(p.distintos);
+      },
+      /** "Não são iguais": a sugestão não volta. */
+      async dispensarSugestao(ids: string[]) {
+        await gravarDistintos(paresDistintos(ids));
       },
 
       /** Registra um estudo e agenda as revisões de 48h, 1 semana, 2 meses e 6 meses. */
@@ -436,6 +515,12 @@ export function useDados(): Ctx {
   const c = useContext(Contexto);
   if (!c) throw new Error('useDados fora do ProvedorDados');
   return c;
+}
+
+/** Assuntos que parecem iguais em planos diferentes e ainda não foram mesclados nem dispensados. */
+export function useSugestoesMesclagem(): SugestaoMesclagem[] {
+  const { dados, correlacoes } = useDados();
+  return useMemo(() => sugerirMesclagens(dados, dados.assuntos_distintos, correlacoes), [dados, correlacoes]);
 }
 
 /** Índices auxiliares usados em várias telas (ver `montarIndices`). */

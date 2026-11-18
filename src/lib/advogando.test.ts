@@ -55,6 +55,7 @@ describe('ponte com o Advogando', () => {
         { id: 'e2', assunto_id: 'sig', data: d, percentual: 90, questoes: null, observacao: null },
       ],
       revisoes: [],
+      assuntos_distintos: [],
       sessoes: [
         { id: 's', plano_id: 'p', disciplina_id: 'd', assunto_id: 'sig', materia: 'Ética', tipo: 'questoes', data: d, inicio: null, duracao_seg: 300, questoes: 10, acertos: 8, observacao: 'Advogando · O cliente confessou' },
       ],

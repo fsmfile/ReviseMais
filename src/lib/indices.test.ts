@@ -23,6 +23,7 @@ const dados: Dados = {
     { id: 'A7', estudo_id: 'eA', assunto_id: 'A', tipo: '7d', data_prevista: '2026-11-10', concluida_em: null, percentual: null, questoes: null },
   ],
   sessoes: [],
+  assuntos_distintos: [],
 };
 
 describe('índices por grupo de assuntos mesclados', () => {
