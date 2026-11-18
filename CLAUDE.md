@@ -145,3 +145,12 @@ e alimenta o "Meu caderno". **O app não chama IA.** Tudo em `docs/MONITOR.md`: 
 (`scripts/monitor/`, `npm run monitor:exportar` e `monitor:aplicar`), agente e comando `/monitor` (`.claude/`). O nome do personagem
 fica na constante `PERSONAGEM` de `src/lib/questoes.ts`. A pasta `monitor/` (dados pessoais) nunca vai para o git.
 `npm run navegar -- --sessao=<arquivo> --hash=#/questoes` navega logado de verdade com uma sessão de conta de teste.
+
+## Mascote (Mentor, Monitor e Sócio com rosto)
+
+Um robozinho, só o rosto, igual nos dois apps (aprovado pelo dono em 17/11/2026). Quem fala com a pessoa fala com ele:
+recados do Mentor, comentário e resposta do Monitor, pausa (rosto sonolento) e todas as notificações (título = nome de quem
+fala, ícone = `/mascote/<papel>-<expressao>.png`, selo = `/mascote/badge.png`; no iPhone o sistema mostra sempre o ícone do app).
+O desenho fica em `src/lib/mascote/rosto.ts`, **arquivo compartilhado**: igual a `src/mascote/rosto.ts` do Advogando; mude nos dois.
+Expressão por situação: `src/lib/mascote/expressoes.ts`. Componentes `Rosto` e `Fala`. Imagens: `npm run mascote`. Tudo em `docs/MASCOTE.md`.
+Confirmações pequenas ("salvo") ficam sem rosto.
