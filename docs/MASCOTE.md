@@ -29,6 +29,7 @@ Um robozinho só, só o rosto, que fala nos dois apps (Advogando e EstudeMais). 
 | Motivo da saída: outro | neutro |
 | Monitor comentou uma questão / resposta a pergunta do assunto | pensando |
 | Monitor comentou várias de uma vez / pergunta de outro assunto | surpreso |
+| Mentor pergunta na Hoje se junta um assunto repetido em planos diferentes (sim ou não) | pensando |
 | Status de pausa no cronômetro | sonolento (rosto pequeno, sem balão) |
 
 As linhas do Mentor sem tabela na prévia (chamado no celular, motivos) seguem a regra "mais sério a cada nível"; um teste garante que o rosto nunca fica mais leve quando o nível sobe.

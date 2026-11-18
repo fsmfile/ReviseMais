@@ -23,6 +23,18 @@ export function parecidos(a: string, b: string): number {
   return s;
 }
 
+/**
+ * O que o Mentor pergunta na tela Hoje (sim ou não): o nome mais curto do grupo (os de edital podem ser enormes),
+ * os planos (sem repetir) e a pergunta.
+ */
+export function falaDaSugestao(nomes: string[], planos: string[]): string {
+  const curto = [...nomes].sort((a, b) => a.length - b.length)[0] ?? '';
+  const nome = curto.length > 80 ? curto.slice(0, 79).trimEnd() + '…' : curto;
+  const ps = [...new Set(planos)];
+  const lista = ps.length > 1 ? `${ps.slice(0, -1).join(', ')} e ${ps[ps.length - 1]}` : (ps[0] ?? '');
+  return `Achei “${nome}” em ${ps.length} planos seus (${lista}). Quer que eu junte? Assim, revisou num plano, vale para todos.`;
+}
+
 /** Todos os pares entre os ids, cada um em ordem (a < b). */
 export function paresDistintos(ids: string[]): [string, string][] {
   const u = [...new Set(ids)].sort();

@@ -1,48 +1,49 @@
 import { useState } from 'react';
-import { hoje, somarDias } from '../lib/datas';
+import { nomeCurto } from '../lib/abreviar';
+import { falaDaSugestao } from '../lib/mesclagem';
 import { href } from '../lib/rota';
-import { useSugestoesMesclagem } from '../lib/store';
-import { Icone } from './Icone';
+import { useDados, useIndices, useSugestoesMesclagem } from '../lib/store';
+import { Fala } from './Fala';
 
-const CHAVE = 'revisemais:repetidos-adiado-ate';
-
-function lerAdiamento(): string {
-  try {
-    return localStorage.getItem(CHAVE) ?? '';
-  } catch {
-    return '';
-  }
-}
-
-/** Aviso na Hoje quando há assuntos repetidos entre planos para mesclar. "Agora não" esconde por 7 dias neste aparelho. */
+/**
+ * Na tela Hoje, o Mentor pergunta (sim ou não) se pode juntar um assunto repetido em planos diferentes.
+ * "Sim" mescla na hora; "Não" grava que não são iguais e a pergunta não volta. Uma sugestão por vez.
+ */
 export function AvisoRepetidos() {
   const sugestoes = useSugestoesMesclagem();
-  const [adiadoAte, setAdiadoAte] = useState(lerAdiamento);
-  if (!sugestoes.length || adiadoAte > hoje()) return null;
-  const n = sugestoes.length;
-  const adiar = () => {
-    const ate = somarDias(hoje(), 7);
-    try {
-      localStorage.setItem(CHAVE, ate);
-    } catch {
-      /* sem armazenamento: esconde só agora */
-    }
-    setAdiadoAte(ate);
+  const { dados, acoes, executar } = useDados();
+  const { contexto } = useIndices();
+  const [salvando, setSalvando] = useState(false);
+  if (!sugestoes.length) return null;
+  const s = sugestoes[0];
+  const cs = s.assuntos.map((id) => contexto(id)).filter((c) => !!c).map((c) => c!);
+  const todosPlanos = dados.planos.map((p) => p.nome);
+  const fala = falaDaSugestao(
+    cs.map((c) => c.assunto.nome),
+    cs.map((c) => nomeCurto(c.plano.nome, todosPlanos)),
+  );
+  // Um toque só: enquanto grava, os botões ficam travados.
+  const responder = async (f: () => Promise<void>) => {
+    if (salvando) return;
+    setSalvando(true);
+    await executar(f);
+    setSalvando(false);
   };
   return (
     <section className="cartao aviso-repetidos" role="status">
-      <Icone nome="mesclar" tamanho={22} />
-      <p>
-        <strong>{n === 1 ? 'Encontramos 1 assunto repetido em planos diferentes.' : `Encontramos ${n} assuntos repetidos em planos diferentes.`}</strong>{' '}
-        <span className="suave">Mesclados, uma revisão vale para todos os planos.</span>
-      </p>
+      <Fala papel="mentor" expressao="pensando">
+        <p>{fala}</p>
+      </Fala>
       <div className="acoes">
-        <a className="botao pequeno" href={href({ tela: 'repetidos' })}>
-          Ver
-        </a>
-        <button className="fantasma pequeno" onClick={adiar}>
-          Agora não
+        <button disabled={salvando} onClick={() => responder(() => acoes.mesclarAssuntos(s.assuntos))}>
+          Sim, juntar
         </button>
+        <button className="fantasma" disabled={salvando} onClick={() => responder(() => acoes.dispensarSugestao(s.assuntos))}>
+          Não
+        </button>
+        <a className="link pequeno ver-repetidos" href={href({ tela: 'repetidos' })}>
+          {sugestoes.length > 1 ? `Ver todos (${sugestoes.length})` : 'Ver detalhes'}
+        </a>
       </div>
     </section>
   );

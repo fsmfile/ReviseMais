@@ -548,6 +548,23 @@ try {
       nota('atrasadas depois de revisar uma (esperado 5 / 5)', await contarAtrasadas());
       await foto('hoje-revisei', ap);
     }
+    if (quer('recado')) {
+      // O Mentor pergunta na Hoje se pode juntar o assunto repetido: "Sim" mescla na hora, "Não" some com a pergunta.
+      await regravarExemplo();
+      await ir('#/hoje');
+      nota('fala do Mentor na Hoje', await js(`document.querySelector('.aviso-repetidos .mascote-texto')?.textContent ?? '(sem fala)'`));
+      await foto('hoje-recado', ap);
+      await clicar('.aviso-repetidos button', 'Sim, juntar');
+      await dormir(500);
+      nota('depois do Sim: fala some / atrasadas (esperado 0 / 5 / 5)', `${await js(`document.querySelectorAll('.aviso-repetidos').length`)} / ${await contarAtrasadas()}`);
+      await regravarExemplo();
+      await ir('#/hoje');
+      await clicar('.aviso-repetidos button', 'Não');
+      await dormir(500);
+      nota('depois do Não: fala some / atrasadas (esperado 0 / 6 / 6)', `${await js(`document.querySelectorAll('.aviso-repetidos').length`)} / ${await contarAtrasadas()}`);
+      await ir('#/repetidos');
+      nota('depois do Não: sugestões na tela (esperado 0)', await js(`document.querySelectorAll('.sugestao-mescla').length`));
+    }
     if (quer('mesclar')) {
       // Assunto repetido entre planos: aviso na Hoje, sugestão na tela de repetidos; mesclar junta as revisões.
       await regravarExemplo();

@@ -149,7 +149,8 @@ Pedido de uma usuária: atraso do mesmo assunto não se acumula e revisar num pl
 - **Assuntos mesclados** (migração `0007`): `assuntos.mesclado_em` aponta para a raiz do grupo; estudos e revisões ficam
   no assunto onde aconteceram e `src/lib/indices.ts` (`useIndices`) faz qualquer membro enxergar o grupo. Sugestões, mesclar,
   separar e apagar sem perder o ciclo: `src/lib/mesclagem.ts`. "Não são iguais" fica em `assuntos_distintos` (tabela opcional).
-  Telas: `#/repetidos` (menu Ferramentas), aviso na Hoje (`AvisoRepetidos`), "Mesclar com…"/"Desfazer mesclagem" no menu do assunto.
+  Telas: `#/repetidos` (menu Ferramentas), "Mesclar com…"/"Desfazer mesclagem" no menu do assunto e, na Hoje, o Mentor
+  pergunta (`AvisoRepetidos`, texto de `falaDaSugestao`): "Sim, juntar" mescla na hora, "Não" grava que não são iguais.
 - Só vira sugestão o grupo com dois ou mais assuntos estudados (revisões duplicadas); nomes parecidos ou um contido no outro.
 - Agenda da Hoje, gráfico de 14 dias do Painel e o .ics baixado mostram uma revisão por grupo por dia (`umaPorGrupoPorDia`).
   O calendário assinável faz o mesmo com a coluna `grupo` da função SQL `revisoes_calendario` (migração 0008).

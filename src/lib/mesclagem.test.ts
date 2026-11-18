@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { calcularCorrelacoes, LIMIAR_ASSUNTO } from './correlacao';
-import { paresDistintos, paresNovos, parecidos, planoDeExclusao, planoDeMesclagem, planoDeSeparacao, prepararSugestoes, sugerirMesclagens, sugestoesDe } from './mesclagem';
+import { falaDaSugestao, paresDistintos, paresNovos, parecidos, planoDeExclusao, planoDeMesclagem, planoDeSeparacao, prepararSugestoes, sugerirMesclagens, sugestoesDe } from './mesclagem';
 import type { Assunto, Dados, Estudo, ParDistinto, Revisao } from './types';
 
 // Nomes reais da conta que reclamou (18/11/2026), todos em "Direito Constitucional".
@@ -98,6 +98,20 @@ describe('unidades da sugestão (uma caixa por assunto solto ou grupo já mescla
   it('grupo já mesclado vira uma unidade só', () => {
     const doisMesclados: D = { ...d, assuntos: d.assuntos.map((a) => (a.id === 'oab' ? { ...a, mesclado_em: 'cremerj' } : a)) };
     expect(sugerirMesclagens(doisMesclados, [], c)[0].unidades).toEqual([['cremerj', 'oab'], ['pgerj']]);
+  });
+});
+
+describe('fala do Mentor na Hoje (sim ou não)', () => {
+  it('usa o nome mais curto do grupo, lista os planos e pergunta', () => {
+    expect(falaDaSugestao([NOMES.oab, NOMES.cremerj, NOMES.pgerj], ['OAB', 'CREMERJ', 'PGERJ'])).toBe(
+      'Achei “Organização político-administrativa” em 3 planos seus (OAB, CREMERJ e PGERJ). Quer que eu junte? Assim, revisou num plano, vale para todos.',
+    );
+  });
+  it('dois planos e nome comprido cortado', () => {
+    const f = falaDaSugestao([NOMES.pgerj, NOMES.pgerj], ['OAB', 'OAB', 'PGERJ']);
+    expect(f).toContain('em 2 planos seus (OAB e PGERJ)');
+    expect(f).toContain('…”');
+    expect(f.length).toBeLessThan(200);
   });
 });
 
